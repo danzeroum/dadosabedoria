@@ -28,10 +28,14 @@ _RIO = "3304557"  # Rio de Janeiro (mais vulnerável no fixture)
 
 async def _id_indicador(conn: AsyncConnection, codigo: str) -> tuple[int, int]:
     row = (
-        await conn.execute(
-            text("SELECT id, fonte_id FROM indicador WHERE codigo = :c"), {"c": codigo}
+        (
+            await conn.execute(
+                text("SELECT id, fonte_id FROM indicador WHERE codigo = :c"), {"c": codigo}
+            )
         )
-    ).mappings().first()
+        .mappings()
+        .first()
+    )
     assert row is not None
     return int(row["id"]), int(row["fonte_id"])
 

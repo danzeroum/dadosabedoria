@@ -14,9 +14,10 @@
 
 Por que assim:
 - **Sem PII no backup analítico, por construção.** A PII vive só no schema `app`. O dump analítico
-  roda como `role_analitica` — que **estruturalmente não consegue ler `app`** (invariante 2,
-  testado) — e ainda passa `--exclude-schema=app` (defesa em profundidade). Logo o artefato
-  analítico **não pode** conter PII.
+  é um **allowlist** (`--schema=public` — todo o acervo analítico vive em `public`), então pula
+  `app`, `tiger`/`topology` (PostGIS) e qualquer outro schema. Roda como `role_analitica` — que
+  **estruturalmente não lê `app`** (invariante 2, testado) — e ainda passa `--exclude-schema=app`
+  (cinto e suspensório). Logo o artefato analítico **não pode** conter PII.
 - **PII isolada e cifrada.** O dump de `app` roda como `role_consentimento` (única identidade com
   acesso ao `app`) e é canalizado direto para `gpg --symmetric` (**nunca toca o disco em claro**).
 - **Minimização (LGPD).** A PII tem retenção **mais curta**: um backup de PII expira rápido, então

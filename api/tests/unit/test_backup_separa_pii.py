@@ -34,10 +34,11 @@ def test_dump_analitico_exclui_app_e_vem_da_role_analitica() -> None:
     # URL do dump analítico vem de DATABASE_URL (analitica); a do app, de CONSENT_DATABASE_URL.
     assert 'analitico_url="$(para_libpq "$DATABASE_URL")"' in txt
     assert 'app_url="$(para_libpq "$CONSENT_DATABASE_URL")"' in txt
-    # o comando de dump analítico usa essa URL e EXCLUI o schema app (sem PII, por construção).
-    assert re.search(r'pg_dump "\$analitico_url"[^|]*?--exclude-schema=app', txt, re.S), (
-        "o dump analítico deve usar \\$analitico_url e --exclude-schema=app"
-    )
+    # ALLOWLIST: o dump analítico usa essa URL, só o schema public, + exclui app explicitamente
+    # (sem PII por construção; pula tiger/topology do PostGIS também).
+    assert re.search(
+        r'pg_dump "\$analitico_url"[^|]*?--schema=public[^|]*?--exclude-schema=app', txt, re.S
+    ), "o dump analítico deve usar \\$analitico_url, --schema=public e --exclude-schema=app"
 
 
 def test_dump_pii_usa_app_e_e_cifrado() -> None:

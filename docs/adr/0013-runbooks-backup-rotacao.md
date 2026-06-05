@@ -14,8 +14,9 @@ a **persistência do histórico do Dagster**.
 
 ### Backup/restauração (`scripts/backup.sh`, `scripts/restore.sh`)
 - **Dois artefatos, separados por classe**, espelhando o isolamento §8.1 na camada de backup:
-  - `acervo-analitico` — `pg_dump --exclude-schema=app` rodando como **`role_analitica`**, que
-    estruturalmente **não lê `app`** (defesa em profundidade sobre o flag). Sem PII por construção.
+  - `acervo-analitico` — `pg_dump --schema=public` (allowlist: todo o acervo vive em `public`, então
+    pula `app`/`tiger`/`topology`) + `--exclude-schema=app` explícito, rodando como **`role_analitica`**,
+    que estruturalmente **não lê `app`**. Sem PII por construção.
   - `app-pii` — `pg_dump --schema=app --enable-row-security` como **`role_consentimento`**,
     canalizado direto para **`gpg --symmetric` (AES256)** — a PII **nunca toca o disco em claro**.
 - **Dump só de dados** (`--data-only`): o esquema (roles, RLS, `app`) é reproduzível por

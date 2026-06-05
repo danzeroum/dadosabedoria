@@ -52,12 +52,15 @@ JSON
 }
 
 # --- 1) acervo analítico (SEM PII) -------------------------------------------------------
-# role_analitica + --exclude-schema=app: PII NÃO pode entrar neste artefato (estrutural + explícito).
+# ALLOWLIST: dumpa só o schema `public` (todo o acervo analítico vive nele) — pula `app` (PII),
+# `tiger`/`topology` (PostGIS) e qualquer outro schema por construção. + --exclude-schema=app
+# explícito (cinto e suspensório) e a role_analitica, que nem consegue ler `app`.
 analitico_url="$(para_libpq "$DATABASE_URL")"
 analitico_file="${analitico_dir}/acervo-analitico_${ts}.dump"
-log "dump analítico (role_analitica, exclui schema app) -> $(basename "$analitico_file")"
+log "dump analítico (role_analitica, só schema public) -> $(basename "$analitico_file")"
 pg_dump "$analitico_url" \
   --data-only --format=custom --no-owner \
+  --schema=public \
   --exclude-schema=app \
   --exclude-table='public.spatial_ref_sys' \
   --exclude-table='public.alembic_version' \

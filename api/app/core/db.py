@@ -63,6 +63,18 @@ async def connect(url: str) -> AsyncIterator[AsyncConnection]:
         await engine.dispose()
 
 
+@asynccontextmanager
+async def connect_autocommit(url: str) -> AsyncIterator[AsyncConnection]:
+    """Conexão em AUTOCOMMIT — para comandos que não rodam em transação
+    (ex.: ``REFRESH MATERIALIZED VIEW CONCURRENTLY``)."""
+    engine = create_async_engine(url, future=True, isolation_level="AUTOCOMMIT")
+    try:
+        async with engine.connect() as conn:
+            yield conn
+    finally:
+        await engine.dispose()
+
+
 async def dispose_engine() -> None:
     global _engine, _sessionmaker
     if _engine is not None:

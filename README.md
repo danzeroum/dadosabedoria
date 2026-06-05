@@ -20,10 +20,10 @@ Este repositório contém a **versão fundacional permanente**: a primeira base 
 - Observabilidade (logs JSON sem PII, traces OTel, `/metrics` interno, `/health`) e **quality gate**
   no CI (lint, mypy, bandit, testes, cobertura, contrato OpenAPI, scan de deps/segredos).
 
-A **ingestão real do CAGED** (Onda 1) já entrou — bronze→prata→ouro pelo mesmo `escrever_ouro`,
-com Dagster Degrau 1 (ver "Ingestão" abaixo e ADR-0006). Próximas fatias: BCB/ESTBAN + IVM (view
-materializada); frontend (mapa semafórico); IA ancorada; runtime de consentimento. Veja
-`docs/adr/` e o documento técnico.
+A **Onda 1** já está montada: ingestão real de **CAGED** e **BCB/ESTBAN** (bronze→prata→ouro pelo
+mesmo `escrever_ouro`, Dagster Degrau 1) e o **IVM** (view materializada + mapa semafórico). Veja
+"Ingestão" e "IVM" abaixo e os ADRs 0006–0008. Próximas fatias: **frontend** (mapa semafórico +
+drill-down); IA ancorada; runtime de consentimento. Veja `docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 
@@ -91,6 +91,17 @@ docker compose --profile ingestion up            # minio + worker + orchestrator
 
 Os fetchers reais baixam do FTP público do PDET (CAGED) e do BCB (ESTBAN); parse/agregação são
 cobertos por fixture.
+
+## IVM (Índice de Vulnerabilidade Municipal)
+
+A vista de topo que agrega os domínios (TRANSP-01): combina os subíndices de **emprego** (CAGED) e
+**finanças** (ESTBAN), normalizados e ponderados, num índice 0–100 por município/mês — maior = mais
+vulnerável; semáforo verde/amarelo/vermelho. É uma **view materializada** (leitura O(1)), recomputada
+após cada ingestão. Metodologia v1 em ADR-0008.
+
+- `GET /v1/ivm?periodo=YYYY-MM` — IVM de todos os municípios no período (base do **mapa semafórico**;
+  padrão = período mais recente).
+- `GET /v1/ivm/{codigo_ibge}` — série do IVM de um município (**drill-down**).
 
 ## Como testar
 

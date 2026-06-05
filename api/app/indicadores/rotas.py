@@ -10,9 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_session
 from app.core.erros import ValidacaoError
 from app.indicadores.facade import IndicadoresFacade
+from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     IndicadorOut,
     RespostaIndicadores,
+    RespostaIVM,
+    RespostaIVMSerie,
     RespostaValores,
     TerritorioOut,
 )
@@ -76,3 +79,29 @@ async def obter_territorio(
     codigo_ibge: str, session: AsyncSession = Depends(get_session)
 ) -> TerritorioOut:
     return await IndicadoresFacade(session).obter_territorio(codigo_ibge=codigo_ibge)
+
+
+@router.get("/ivm", response_model=RespostaIVM, tags=["ivm"])
+async def ivm_por_periodo(
+    periodo: str | None = Query(None, description="período YYYY-MM (padrão: mais recente)"),
+    pagina: int = Query(1, ge=1),
+    por_pagina: int = Query(1000, ge=1, le=_POR_PAGINA_MAX),
+    session: AsyncSession = Depends(get_session),
+) -> RespostaIVM:
+    """IVM de todos os municípios num período — base do mapa semafórico."""
+    return await IVMFacade(session).por_periodo(
+        periodo=_parse_mes(periodo, "periodo"), pagina=pagina, por_pagina=por_pagina
+    )
+
+
+@router.get("/ivm/{codigo_ibge}", response_model=RespostaIVMSerie, tags=["ivm"])
+async def ivm_municipio(
+    codigo_ibge: str,
+    de: str | None = Query(None, description="período inicial YYYY-MM"),
+    ate: str | None = Query(None, description="período final YYYY-MM"),
+    session: AsyncSession = Depends(get_session),
+) -> RespostaIVMSerie:
+    """Série do IVM de um município — drill-down."""
+    return await IVMFacade(session).serie(
+        codigo_ibge=codigo_ibge, de=_parse_mes(de, "de"), ate=_parse_mes(ate, "ate")
+    )

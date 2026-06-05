@@ -17,10 +17,13 @@ from app.ingestao.pipeline import executar_estban
 async def _main(ano: int, mes: int) -> None:  # pragma: no cover - rede/S3
     configurar_logs()
     settings = get_settings()
+    from app.indicadores.ivm import refrescar_ivm
+
     adaptador = AdaptadorEstban(FetcherEstbanHTTP())
     store = construir_store_padrao()
     async with connect(settings.database_url) as conn:
         await executar_estban(Janela(ano, mes), conn, adaptador, store, responsavel="cli")
+    await refrescar_ivm()
 
 
 def main() -> None:  # pragma: no cover - entrypoint

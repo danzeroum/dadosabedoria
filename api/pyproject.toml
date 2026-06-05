@@ -74,7 +74,7 @@ known-first-party = ["app", "tests"]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 # Tests may use asserts and hard-coded test secrets.
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106"]
+"tests/**" = ["S101", "S105", "S106", "S603", "S607"]  # asserts/segredos de teste; subprocess com args literais
 "alembic/**" = ["S608"]  # bootstrap DDL is built from trusted env, justified inline
 
 [tool.mypy]

@@ -37,3 +37,22 @@ def identificar_indicador(pergunta: str, catalogo: list[tuple[str, str]]) -> str
         if score > melhor_score:
             melhor, melhor_score = codigo, score
     return melhor if melhor_score >= 2 else None
+
+
+# --- Ancoragem numérica (invariante 3: o narrador NÃO inventa números) -------------------------
+_SEP_NUM = re.compile(r"(?<=\d)[.,](?=\d)")  # separador de milhar/decimal entre dígitos
+_NUM = re.compile(r"\d{2,}")  # números com 2+ dígitos (onde moram valores que não podem surgir)
+
+
+def numeros(texto: str) -> set[str]:
+    """Números (>= 2 dígitos) do texto, normalizados sem separador (``8.200`` ~ ``8200``)."""
+    return set(_NUM.findall(_SEP_NUM.sub("", texto)))
+
+
+def validar_numeros_ancorados(resposta: str, permitidos: set[str]) -> bool:
+    """True se TODO número (>= 2 díg.) da resposta consta do dado recuperado (``permitidos``).
+
+    Trava mecânica do invariante 3: se o LLM cuspir um número que não veio do repositório, reprova
+    (e o serviço cai para o narrador determinístico).
+    """
+    return numeros(resposta) <= permitidos

@@ -54,7 +54,7 @@ class ServicoIA:
             )
 
         return RespostaIA(
-            resposta=self._narrador.narrar(contexto),
+            resposta=await self._narrador.narrar(contexto),
             abstencao=False,
             citacoes=[self._citacao(contexto)],
             ressalvas=self._ressalvas(contexto),

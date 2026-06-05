@@ -52,6 +52,12 @@ class Settings(BaseSettings):
 
     # --- IA (fronteira; placeholder) ---
     llm_api_key: str | None = Field(default=None)
+    # Provedor do narrador via API OpenAI-compatível: DeepSeek (hospedado) ou Ollama (local).
+    # ``llm_base_url`` inclui /v1 — ex.: https://api.deepseek.com/v1 ou http://ollama:11434/v1.
+    # Vazio (padrão) ⇒ narrador template determinístico (sem LLM; usado em dev/CI).
+    llm_base_url: str | None = Field(default=None)
+    llm_model: str | None = Field(default=None)  # ex.: deepseek-chat | llama3.1
+    llm_timeout_segundos: float = Field(default=30.0)
 
     # --- observabilidade ---
     otel_exporter_otlp_endpoint: str | None = Field(default=None)

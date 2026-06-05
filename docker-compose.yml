@@ -169,12 +169,15 @@ services:
     networks: [net_core]
     profiles: ["ingestion"]
 
-  # --- IA ancorada (futura). Recebe DATABASE_URL (role_analitica), NUNCA cred. do app. ---
+  # --- IA ancorada. Recebe DATABASE_URL (role_analitica), NUNCA cred. do app. ---
   ai:
     build: ./api
     command: ["python", "-m", "app.ia.server"]
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      # Narrador: provedor OpenAI-compatível (DeepSeek/Ollama). Vazio ⇒ template determinístico.
+      - LLM_BASE_URL=${LLM_BASE_URL}
+      - LLM_MODEL=${LLM_MODEL}
       - LLM_API_KEY=${LLM_API_KEY}
     networks: [net_core]
     profiles: ["ai"]

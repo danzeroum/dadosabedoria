@@ -1,8 +1,13 @@
-"""Unidade dos guardrails da IA (sanitização + identificação de indicador) — puro."""
+"""Unidade dos guardrails da IA (sanitização + identificação de indicador + ancoragem) — puro."""
 
 from __future__ import annotations
 
-from app.ia.guardrails import identificar_indicador, sanitizar
+from app.ia.guardrails import (
+    identificar_indicador,
+    numeros,
+    sanitizar,
+    validar_numeros_ancorados,
+)
 
 CATALOGO = [
     ("trabalho.emprego.saldo_caged", "Saldo de empregos formais"),
@@ -32,3 +37,19 @@ def test_identifica_por_codigo() -> None:
 
 def test_sem_match_retorna_none() -> None:
     assert identificar_indicador("qual a cor do céu hoje?", CATALOGO) is None
+
+
+def test_numeros_normaliza_separadores() -> None:
+    # ``8.200`` e ``8200`` contam como o mesmo número; só conta >= 2 dígitos.
+    assert numeros("foi 8.200 em 2026-02 (conf 4/5)") == {"8200", "2026", "02"}
+
+
+def test_validar_ancoragem_aprova_quando_subconjunto() -> None:
+    permitidos = numeros("DADOS: 2026-02: 8200")
+    assert validar_numeros_ancorados("O valor foi 8.200 em 2026-02.", permitidos) is True
+    assert validar_numeros_ancorados("Sem números relevantes aqui.", permitidos) is True
+
+
+def test_validar_ancoragem_reprova_numero_inventado() -> None:
+    permitidos = numeros("DADOS: 2026-02: 8200")
+    assert validar_numeros_ancorados("Na verdade o valor foi 9999.", permitidos) is False

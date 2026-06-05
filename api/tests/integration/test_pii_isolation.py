@@ -24,6 +24,8 @@ async def test_role_analitica_negada_no_schema_app(db_pronto: None) -> None:
             await conn.fetch("SELECT * FROM app.assinante_alerta LIMIT 1")
         with pytest.raises(asyncpg.InsufficientPrivilegeError):
             await conn.fetch("SELECT * FROM app.condicao_sensivel LIMIT 1")
+        with pytest.raises(asyncpg.InsufficientPrivilegeError):
+            await conn.fetch("SELECT * FROM app.notificacao LIMIT 1")
     finally:
         await conn.close()
 

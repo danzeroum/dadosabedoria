@@ -26,3 +26,17 @@ class AlertaOut(BaseModel):
     finalidade: str
     consentido_em: str
     condicao_sensivel: bool  # apenas se há condição associada — nunca expõe o valor
+
+
+class NotificacaoOut(BaseModel):
+    """Notificação de alerta entregue ao cidadão (pull). Carrega proveniência (invariante 5)."""
+
+    id: int
+    territorio: str
+    periodo: str
+    ivm: float
+    semaforo: str
+    fonte: str
+    metodologia: str
+    criada_em: str
+    lida: bool

@@ -46,3 +46,16 @@ async def client(db_pronto: None) -> AsyncIterator[object]:
     # reuso de conexões presas a um event loop já fechado.
     await dispose_engine()
     await fechar_redis()
+
+
+@pytest.fixture
+async def consent_client(db_pronto: None) -> AsyncIterator[object]:
+    """Cliente do serviço ISOLADO de consentimento (role_consentimento)."""
+    from httpx import ASGITransport, AsyncClient
+
+    from app.consentimento.db import dispose_consent_engine
+    from app.consentimento.server import app as consent_app
+
+    async with AsyncClient(transport=ASGITransport(app=consent_app), base_url="http://test") as c:
+        yield c
+    await dispose_consent_engine()

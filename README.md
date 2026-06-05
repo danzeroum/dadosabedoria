@@ -22,10 +22,12 @@ Este repositório contém a **versão fundacional permanente**: a primeira base 
 
 A **Onda 1 está completa**: ingestão real de **CAGED**, **BCB/ESTBAN** e **IBGE** (malhas), o
 **IVM** (view materializada), o **frontend** Next.js com **coropleta geográfica** + drill-down, e a
-**IA ancorada** (`POST /v1/ia/perguntar` — responde só sobre o recuperado, com citação; sem dado,
-abstém-se; isolada do schema `app`; narrador trocável por LLM real via adaptador). Veja os ADRs
-0006–0011. Próximas iterações: provedor de LLM real (config); runtime de consentimento +
-autenticação do cidadão. Veja `docs/adr/` e o documento técnico.
+**IA ancorada** (`POST /v1/ia/perguntar`, isolada do schema `app`; narrador trocável por LLM real)
+e o **runtime de consentimento** — serviço ISOLADO que escreve PII no schema `app` via
+`role_consentimento` (rede isolada), com cifragem de campo, trilha de auditoria, auth do cidadão
+(JWT em cookie HttpOnly) e o ciclo LGPD completo (`/v1/alertas`, `/v1/eu`). Veja os ADRs 0006–0012.
+Próximas iterações: provedor de LLM real (config); OIDC real do cidadão; consumo dos alertas. Veja
+`docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 

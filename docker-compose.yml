@@ -22,7 +22,9 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./infra/traefik:/etc/traefik:ro"
-    networks: [net_core]
+    # net_consentimento só para ROTEAR ao serviço de consentimento (ingress controlado);
+    # api/worker/ai seguem sem acesso ao schema app.
+    networks: [net_core, net_consentimento]
     depends_on:
       api: {condition: service_started}
 
@@ -174,16 +176,25 @@ services:
     networks: [net_core]
     profiles: ["ai"]
 
-  # --- Consentimento (PII, futuro). ÚNICO com cred. do app; rede ISOLADA. ---
+  # --- Consentimento (PII). ÚNICO com cred. do app; rede ISOLADA. ---
   consentimento:
     build: ./api
     command: ["python", "-m", "app.consentimento.server"]
     environment:
       - CONSENT_DATABASE_URL=${CONSENT_DATABASE_URL}
       - APP_FIELD_KEY=${APP_FIELD_KEY}
-      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGINS=${CORS_ORIGINS}
     depends_on:
       db: {condition: service_healthy}
+    labels:
+      - "traefik.enable=true"
+      # Rotas de PII/auth do cidadão (prioridade > api, que pega o resto de /v1).
+      - "traefik.http.routers.consent.rule=PathPrefix(`/v1/alertas`) || PathPrefix(`/v1/auth`) || Path(`/v1/eu`)"
+      - "traefik.http.routers.consent.priority=100"
+      - "traefik.http.routers.consent.entrypoints=web"
+      - "traefik.http.services.consent.loadbalancer.server.port=8000"
+      - "traefik.http.routers.consent.middlewares=dsab-cors@file,dsab-headers@file"
     networks: [net_consentimento]
     profiles: ["consent"]
 

@@ -1,7 +1,7 @@
-"""Fronteira do serviço ISOLADO de consentimento (schema ``app``) — runtime NÃO construído aqui.
+"""Serviço ISOLADO de consentimento (schema ``app``) — runtime de PII (§6, §8.1).
 
-Nesta fatia entregamos apenas o isolamento (schema ``app``, role ``role_consentimento``, grants,
-RLS, rede) e o teste de permissão negada. O caminho de escrita de PII (assinatura de alerta,
-cifragem de campo, trilha de auditoria) vem em fatia futura — e é o ÚNICO componente que recebe
-``CONSENT_DATABASE_URL`` / ``APP_FIELD_KEY``.
+Único componente com acesso ao schema ``app``, via ``role_consentimento`` em rede isolada
+(``net_consentimento``), com ``CONSENT_DATABASE_URL`` / ``APP_FIELD_KEY``. Implementa o ciclo LGPD:
+consentir (assinatura de alerta + condição sensível cifrada) → acessar → revogar → eliminar (Art.
+18), com trilha de auditoria. A api/worker/ai **não** acessam este schema (invariante 2).
 """

@@ -1,17 +1,21 @@
+import Link from "next/link";
+
+import { Coropleta } from "../../components/Coropleta";
 import { MapaSemaforico } from "../../components/MapaSemaforico";
-import { buscarIVM } from "../../lib/api";
+import { buscarIVM, buscarMalhaIVM } from "../../lib/api";
 import { corSemaforo, rotuloSemaforo } from "../../lib/semaforo";
-import type { Semaforo } from "../../lib/types";
+import type { FeatureCollectionIVM, Semaforo } from "../../lib/types";
 
 // Renderiza por requisição (busca dado vivo da API; não pré-renderiza no build).
 export const dynamic = "force-dynamic";
 
 const ESTADOS: Semaforo[] = ["verde", "amarelo", "vermelho"];
+const UFS = ["SP", "RJ", "MG"];
 
 export default async function IVMPage({
   searchParams,
 }: {
-  searchParams: { periodo?: string };
+  searchParams: { periodo?: string; uf?: string };
 }) {
   let dados;
   let meta;
@@ -28,6 +32,16 @@ export default async function IVMPage({
     );
   }
 
+  const uf = searchParams.uf?.toUpperCase();
+  let malha: FeatureCollectionIVM | null = null;
+  if (uf) {
+    try {
+      malha = await buscarMalhaIVM(uf, meta.periodo ?? undefined);
+    } catch {
+      malha = null;
+    }
+  }
+
   return (
     <main className="pagina">
       <h1>Mapa semafórico do IVM</h1>
@@ -42,11 +56,34 @@ export default async function IVMPage({
             <strong>{s}</strong>: {rotuloSemaforo(s)} ({meta.semaforo[s]})
           </li>
         ))}
+        <li>
+          <span className="semaforo-dot" style={{ backgroundColor: "#e2e8f0" }} aria-hidden="true" /> sem
+          dado
+        </li>
       </ul>
+
+      <nav className="ufs" aria-label="Coropleta por UF">
+        <span>Coropleta por UF:</span>
+        {UFS.map((u) => (
+          <Link key={u} href={`/ivm?uf=${u}`} className={u === uf ? "uf-ativa" : ""}>
+            {u}
+          </Link>
+        ))}
+        {uf && (
+          <Link href="/ivm" className="uf-limpar">
+            limpar
+          </Link>
+        )}
+      </nav>
+
+      {uf && malha ? <Coropleta malha={malha} uf={uf} /> : null}
+      {uf && !malha ? <p className="vazio">Sem mapa para {uf} no momento.</p> : null}
+
+      <h2>Municípios</h2>
       <MapaSemaforico itens={dados} />
       <p className="nota">
-        Painel por município (cartões), do mais ao menos vulnerável. A coropleta geográfica chega
-        quando as malhas do IBGE forem ingeridas (ADR-0009).
+        A coropleta usa as malhas do IBGE (carregue com <code>run_ibge &lt;UF&gt;</code>). Município sem
+        IVM fica cinza. ADR-0010.
       </p>
     </main>
   );

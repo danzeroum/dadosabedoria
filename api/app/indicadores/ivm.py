@@ -6,6 +6,7 @@ após a ingestão (REFRESH CONCURRENTLY, em AUTOCOMMIT) e invalida o cache.
 
 from __future__ import annotations
 
+import json
 from datetime import date
 
 from sqlalchemy import RowMapping, text
@@ -109,6 +110,33 @@ class RepositorioIVM:
         sql += " ORDER BY m.periodo"
         return list((await session.execute(text(sql), params)).mappings().all())
 
+    async def malha(self, session: AsyncSession, *, uf: str, periodo: date) -> dict:
+        """GeoJSON FeatureCollection: geometria do município + IVM (null onde não há dado)."""
+        sql = text(
+            """
+            SELECT json_build_object(
+              'type', 'FeatureCollection',
+              'features', coalesce(json_agg(f), '[]'::json)
+            )
+            FROM (
+              SELECT json_build_object(
+                'type', 'Feature',
+                'geometry', ST_AsGeoJSON(ST_SimplifyPreserveTopology(t.geom, 0.005))::json,
+                'properties', json_build_object(
+                  'codigo_ibge', t.codigo_ibge, 'nome', t.nome,
+                  'ivm', m.ivm, 'semaforo', m.semaforo,
+                  'v_emprego', m.v_emprego, 'v_financas', m.v_financas)
+              ) AS f
+              FROM territorio t
+              LEFT JOIN ivm_municipio m ON m.territorio_id = t.id AND m.periodo = :periodo
+              WHERE t.nivel = 'municipio' AND t.uf = :uf AND t.geom IS NOT NULL
+              ORDER BY t.codigo_ibge
+            ) sub
+            """
+        )
+        bruto = (await session.execute(sql, {"uf": uf, "periodo": periodo})).scalar_one()
+        return json.loads(bruto) if isinstance(bruto, str) else bruto
+
 
 class IVMFacade:
     def __init__(self, session: AsyncSession) -> None:
@@ -143,3 +171,10 @@ class IVMFacade:
         if not rows:
             raise NaoEncontradoError(f"IVM para território '{codigo_ibge}'")
         return RespostaIVMSerie(dados=[_item(r) for r in rows], meta=_meta(rows[-1]["periodo"]))
+
+    @cache_leitura("v1:mapa:ivm")
+    async def malha(self, *, uf: str, periodo: date | None = None) -> dict:
+        alvo = periodo or await self._repo.periodo_mais_recente(self._s)
+        if alvo is None:  # pragma: no cover - MV sempre populada após o seed
+            return {"type": "FeatureCollection", "features": []}
+        return await self._repo.malha(self._s, uf=uf, periodo=alvo)

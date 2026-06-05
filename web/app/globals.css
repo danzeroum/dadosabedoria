@@ -255,3 +255,52 @@ section h2 {
   color: var(--cor-texto-suave);
   font-size: 0.75rem;
 }
+
+/* Coropleta + seletor de UF */
+.ufs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  font-size: 0.9rem;
+  color: var(--cor-texto-suave);
+}
+.ufs a {
+  text-decoration: none;
+  color: var(--cor-marca);
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+.ufs a.uf-ativa {
+  background: var(--cor-marca);
+  color: #fff;
+  border-color: var(--cor-marca);
+}
+.ufs a.uf-limpar {
+  border-style: dashed;
+}
+.coropleta {
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.coropleta-svg {
+  width: 100%;
+  height: auto;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+.coropleta-area {
+  stroke: #ffffff;
+  stroke-width: 0.5;
+}
+.coropleta-link .coropleta-area {
+  cursor: pointer;
+}
+.coropleta-link:hover .coropleta-area,
+.coropleta-link:focus .coropleta-area {
+  stroke: var(--cor-texto);
+  stroke-width: 1.5;
+}

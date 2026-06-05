@@ -1,4 +1,4 @@
-import type { RespostaIVM, RespostaIVMSerie } from "./types";
+import type { FeatureCollectionIVM, RespostaIVM, RespostaIVMSerie } from "./types";
 
 // Fetch server-side (sem CORS). Em compose, API_URL = http://api:8000 (rede interna).
 const BASE = process.env.API_URL ?? "http://localhost:8000";
@@ -12,6 +12,20 @@ export async function buscarIVM(periodo?: string): Promise<RespostaIVM> {
   const resp = await fetch(url, { next: { revalidate: REVALIDATE } });
   if (!resp.ok) {
     throw new Error(`Falha ao buscar IVM (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarMalhaIVM(
+  uf: string,
+  periodo?: string,
+): Promise<FeatureCollectionIVM> {
+  const url = new URL("/v1/mapa/ivm", BASE);
+  url.searchParams.set("uf", uf);
+  if (periodo) url.searchParams.set("periodo", periodo);
+  const resp = await fetch(url, { next: { revalidate: REVALIDATE } });
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar malha do IVM (${resp.status})`);
   }
   return resp.json();
 }

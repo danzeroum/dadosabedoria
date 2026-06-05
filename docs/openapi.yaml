@@ -537,6 +537,48 @@ paths:
       tags:
       - indicadores
       - ivm
+  /v1/mapa/ivm:
+    get:
+      description: GeoJSON do IVM por município de uma UF — base da coropleta geográfica.
+      operationId: ivm_malha_v1_mapa_ivm_get
+      parameters:
+      - description: 'sigla da UF (ex.: SP)'
+        in: query
+        name: uf
+        required: true
+        schema:
+          description: 'sigla da UF (ex.: SP)'
+          title: Uf
+          type: string
+      - description: 'período YYYY-MM (padrão: mais recente)'
+        in: query
+        name: periodo
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 'período YYYY-MM (padrão: mais recente)'
+          title: Periodo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Ivm Malha V1 Mapa Ivm Get
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ivm Malha
+      tags:
+      - indicadores
+      - ivm
   /v1/territorios/{codigo_ibge}:
     get:
       operationId: obter_territorio_v1_territorios__codigo_ibge__get

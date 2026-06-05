@@ -38,3 +38,28 @@ export interface RespostaIVMSerie {
   dados: IVMItem[];
   meta: MetaIVM;
 }
+
+// GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
+export type GeometriaGeoJSON =
+  | { type: "Polygon"; coordinates: number[][][] }
+  | { type: "MultiPolygon"; coordinates: number[][][][] };
+
+export interface PropriedadesIVM {
+  codigo_ibge: string;
+  nome: string;
+  ivm: number | null;
+  semaforo: Semaforo | null;
+  v_emprego: number | null;
+  v_financas: number | null;
+}
+
+export interface FeatureIVM {
+  type: "Feature";
+  geometry: GeometriaGeoJSON | null;
+  properties: PropriedadesIVM;
+}
+
+export interface FeatureCollectionIVM {
+  type: "FeatureCollection";
+  features: FeatureIVM[];
+}

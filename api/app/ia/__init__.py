@@ -1,5 +1,9 @@
-"""Fronteira do serviço de IA ancorada (§9) — NÃO construído nesta fatia.
+"""Serviço de IA ancorada (§9, invariante 3).
 
-Quando existir: só afirma o que recuperou do repositório, cita a fonte por afirmação, abstém-se sem
-dado, e — invariante 2 — NÃO recebe credencial do schema ``app`` (roda como ``role_analitica``).
+Responde SÓ sobre o que recupera do repositório canônico (camada pública/não-pessoal), com citação
+por afirmação e abstenção honesta; nunca inventa número nem afirma causalidade. Roda como
+``role_analitica`` — **sem** credencial do schema ``app``.
+
+Geração atrás de um adaptador (``narrador``): hoje um template determinístico; o provedor de LLM
+real é um plugue de configuração (``LLM_API_KEY``), trocável sem mexer no serviço.
 """

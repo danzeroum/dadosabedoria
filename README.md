@@ -21,10 +21,11 @@ Este repositório contém a **versão fundacional permanente**: a primeira base 
   no CI (lint, mypy, bandit, testes, cobertura, contrato OpenAPI, scan de deps/segredos).
 
 A **Onda 1 está completa**: ingestão real de **CAGED**, **BCB/ESTBAN** e **IBGE** (malhas), o
-**IVM** (view materializada) e o **frontend** Next.js com **coropleta geográfica** + drill-down
-(consumindo `/v1/ivm` e `/v1/mapa/ivm`). Veja "Ingestão", "IVM" e `web/`, e os ADRs 0006–0010.
-Próximas iterações: IA ancorada; runtime de consentimento + autenticação do cidadão. Veja
-`docs/adr/` e o documento técnico.
+**IVM** (view materializada), o **frontend** Next.js com **coropleta geográfica** + drill-down, e a
+**IA ancorada** (`POST /v1/ia/perguntar` — responde só sobre o recuperado, com citação; sem dado,
+abstém-se; isolada do schema `app`; narrador trocável por LLM real via adaptador). Veja os ADRs
+0006–0011. Próximas iterações: provedor de LLM real (config); runtime de consentimento +
+autenticação do cidadão. Veja `docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 

@@ -137,6 +137,23 @@ assume a role analítica e tenta ler `app.*`: **deve falhar com permissão negad
 positivo prova que a `role_consentimento` consegue. Se a leitura analítica tiver sucesso, **o build
 reprova**. Veja `docs/adr/0002-isolamento-de-pii.md`.
 
+## Operação (runbooks)
+
+Procedimentos operacionais em `docs/runbooks/` (ADR-0013):
+
+- **Backup & restauração** (`backup-restore.md`, `scripts/backup.sh` + `scripts/restore.sh`) — o
+  backup do **`app` (PII)** é **separado** do analítico e **cifrado** (gpg AES256), com retenção
+  própria mais curta (minimização LGPD). O dump analítico roda como `role_analitica` — que não lê
+  `app` — então não pode conter PII (testado, estático + vivo no CI). Dumps são só de dados; o
+  esquema vem de `alembic upgrade head`.
+- **Rotação de segredos** (`rotacao-de-segredos.md`) — senhas de role e `JWT_SECRET` (diretos);
+  `APP_FIELD_KEY` exige anel de chaves (re-chaveamento) — sinalizado.
+- **Persistência do Dagster** (`dagster-home.md`) — volume `dagster_home` guarda o histórico de runs.
+
+```bash
+DATABASE_URL=… CONSENT_DATABASE_URL=… BACKUP_PASSPHRASE=… scripts/backup.sh
+```
+
 ## Estrutura
 
 ```
@@ -149,10 +166,11 @@ api/            backend FastAPI (monólito modular) + alembic + testes
   app/domains/trabalho/  primeiro plugin de domínio (contrato ModuloDominio)
   app/seed/        seed pela MESMA regra de supressão da ingestão
   app/ia, app/consentimento  fronteiras isoladas (stubs nesta fatia)
-docs/           ADRs, openapi.yaml, arquitetura.md, modelo_dados.md
+docs/           ADRs, openapi.yaml, arquitetura.md, modelo_dados.md, runbooks/
 infra/          traefik, postgres (tuning + pg_hba), observabilidade
 web/            frontend Next.js (mapa semafórico do IVM + drill-down) — profile `app`
 worker/ orchestrator/   ingestão: worker + Dagster Degrau 1 (profile `ingestion`)
+scripts/        runbooks executáveis (backup.sh, restore.sh — separação de PII)
 docker-compose.yml  .env.example  .github/workflows/ci.yml
 ```
 

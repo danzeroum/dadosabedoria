@@ -34,6 +34,8 @@ jobs:
         run: mypy app
       - name: bandit (SAST)
         run: bandit -r app -q
+      - name: shellcheck (runbooks de backup/restore)
+        run: shellcheck ../scripts/*.sh
       - name: testes de unidade (inclui single-call-site e isolamento de creds no compose)
         run: pytest -m "not integration" -q
 
@@ -70,6 +72,8 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - uses: astral-sh/setup-uv@v5
+      - name: ferramentas de backup (pg_dump 16 + gpg) p/ o runbook
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client gnupg
       - name: instalar deps
         run: uv pip install --system -e ".[dev]"
       - name: suíte completa (migra + semeia + integração) com cobertura

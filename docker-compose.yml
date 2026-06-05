@@ -161,6 +161,9 @@ services:
       - S3_KEY=${S3_KEY}
       - S3_SECRET=${S3_SECRET}
       - S3_BUCKET_BRONZE=${S3_BUCKET_BRONZE}
+      # Persistência do histórico de runs/agendamentos do Dagster (runbook DAGSTER_HOME).
+      - DAGSTER_HOME=/dagster_home
+    volumes: ["dagster_home:/dagster_home"]
     depends_on:
       db: {condition: service_healthy}
     networks: [net_core]
@@ -238,6 +241,7 @@ services:
 volumes:
   pgdata: {}
   minio: {}
+  dagster_home: {}   # histórico de runs/agendamentos do orchestrator (sobrevive a restart)
 
 networks:
   net_core:

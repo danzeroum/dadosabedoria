@@ -34,6 +34,14 @@ class ValidacaoError(Exception):
         super().__init__(mensagem)
 
 
+class NaoAutorizadoError(Exception):
+    """Autenticação ausente ou inválida → 401."""
+
+    def __init__(self, mensagem: str = "não autenticado") -> None:
+        self.mensagem = mensagem
+        super().__init__(mensagem)
+
+
 def _trace_id() -> str:
     span = trace.get_current_span()
     ctx = span.get_span_context() if span else None
@@ -63,6 +71,10 @@ def instalar_handlers(app: FastAPI) -> None:
     @app.exception_handler(ValidacaoError)
     async def _validacao(_req: Request, exc: ValidacaoError) -> JSONResponse:
         return _envelope("validacao", exc.mensagem, status.HTTP_400_BAD_REQUEST)
+
+    @app.exception_handler(NaoAutorizadoError)
+    async def _nao_autorizado(_req: Request, exc: NaoAutorizadoError) -> JSONResponse:
+        return _envelope("nao_autorizado", exc.mensagem, status.HTTP_401_UNAUTHORIZED)
 
     @app.exception_handler(RequestValidationError)
     async def _req_validacao(_req: Request, exc: RequestValidationError) -> JSONResponse:

@@ -63,6 +63,8 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://role_analitica:ci_analitica@localhost:5432/dadosabedoria
       CONSENT_DATABASE_URL: postgresql+asyncpg://role_consentimento:ci_consent@localhost:5432/dadosabedoria
       REDIS_URL: redis://localhost:6379/0
+      APP_FIELD_KEY: ci-app-field-key-isolada-do-acervo
+      JWT_SECRET: ci-jwt-secret-com-ao-menos-32-bytes-ok
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

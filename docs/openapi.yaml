@@ -1,0 +1,440 @@
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    IndicadorOut:
+      properties:
+        atualizacao:
+          title: Atualizacao
+          type: string
+        codigo:
+          title: Codigo
+          type: string
+        descricao:
+          title: Descricao
+          type: string
+        dominio:
+          title: Dominio
+          type: string
+        meta:
+          $ref: '#/components/schemas/MetaProveniencia'
+        metodologia:
+          title: Metodologia
+          type: string
+        nivel_minimo_agregacao:
+          title: Nivel Minimo Agregacao
+          type: string
+        nome:
+          title: Nome
+          type: string
+        polaridade:
+          title: Polaridade
+          type: string
+        subdominio:
+          title: Subdominio
+          type: string
+        unidade:
+          title: Unidade
+          type: string
+        versao_metodologia:
+          title: Versao Metodologia
+          type: string
+      required:
+      - codigo
+      - nome
+      - descricao
+      - dominio
+      - subdominio
+      - unidade
+      - polaridade
+      - atualizacao
+      - nivel_minimo_agregacao
+      - metodologia
+      - versao_metodologia
+      - meta
+      title: IndicadorOut
+      type: object
+    MetaProveniencia:
+      description: Proveniência exigida em toda resposta (invariante 5).
+      properties:
+        fonte:
+          title: Fonte
+          type: string
+        indicador:
+          title: Indicador
+          type: string
+        lag_tipico_dias:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lag Tipico Dias
+        licenca:
+          title: Licenca
+          type: string
+        metodologia:
+          title: Metodologia
+          type: string
+        nome:
+          title: Nome
+          type: string
+      required:
+      - indicador
+      - nome
+      - fonte
+      - metodologia
+      - licenca
+      title: MetaProveniencia
+      type: object
+    Paginacao:
+      properties:
+        pagina:
+          title: Pagina
+          type: integer
+        por_pagina:
+          title: Por Pagina
+          type: integer
+        total:
+          title: Total
+          type: integer
+      required:
+      - pagina
+      - por_pagina
+      - total
+      title: Paginacao
+      type: object
+    RespostaIndicadores:
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/IndicadorOut'
+          title: Dados
+          type: array
+        paginacao:
+          $ref: '#/components/schemas/Paginacao'
+      required:
+      - dados
+      - paginacao
+      title: RespostaIndicadores
+      type: object
+    RespostaValores:
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/ValorOut'
+          title: Dados
+          type: array
+        meta:
+          $ref: '#/components/schemas/MetaProveniencia'
+        paginacao:
+          $ref: '#/components/schemas/Paginacao'
+      required:
+      - dados
+      - meta
+      - paginacao
+      title: RespostaValores
+      type: object
+    TerritorioOut:
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        nivel:
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        pai:
+          anyOf:
+          - $ref: '#/components/schemas/TerritorioRef'
+          - type: 'null'
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - nivel
+      title: TerritorioOut
+      type: object
+    TerritorioRef:
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        nivel:
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+      required:
+      - codigo_ibge
+      - nome
+      - nivel
+      title: TerritorioRef
+      type: object
+    ValidationError:
+      properties:
+        ctx:
+          title: Context
+          type: object
+        input:
+          title: Input
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+    ValorOut:
+      properties:
+        confiabilidade:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Confiabilidade
+        motivo_supressao:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Motivo Supressao
+        periodo:
+          examples:
+          - 2026-04
+          title: Periodo
+          type: string
+        suprimido:
+          default: false
+          title: Suprimido
+          type: boolean
+        valor:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor
+      required:
+      - periodo
+      - valor
+      title: ValorOut
+      type: object
+info:
+  description: Leitura de indicadores de dados públicos brasileiros, com proveniência.
+  title: DadoSabedoria — API pública
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /health:
+    get:
+      operationId: health_health_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Health Health Get
+                type: object
+          description: Successful Response
+      summary: Health
+      tags:
+      - infra
+  /v1/indicadores:
+    get:
+      operationId: listar_indicadores_v1_indicadores_get
+      parameters:
+      - in: query
+        name: dominio
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dominio
+      - in: query
+        name: pagina
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          title: Pagina
+          type: integer
+      - in: query
+        name: por_pagina
+        required: false
+        schema:
+          default: 100
+          maximum: 1000
+          minimum: 1
+          title: Por Pagina
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaIndicadores'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Listar Indicadores
+      tags:
+      - indicadores
+  /v1/indicadores/{codigo}:
+    get:
+      operationId: obter_indicador_v1_indicadores__codigo__get
+      parameters:
+      - in: path
+        name: codigo
+        required: true
+        schema:
+          title: Codigo
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndicadorOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Obter Indicador
+      tags:
+      - indicadores
+  /v1/territorios/{codigo_ibge}:
+    get:
+      operationId: obter_territorio_v1_territorios__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerritorioOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Obter Territorio
+      tags:
+      - indicadores
+  /v1/valores:
+    get:
+      operationId: listar_valores_v1_valores_get
+      parameters:
+      - description: código namespaced do indicador (obrigatório)
+        in: query
+        name: indicador
+        required: true
+        schema:
+          description: código namespaced do indicador (obrigatório)
+          title: Indicador
+          type: string
+      - description: codigo_ibge do território
+        in: query
+        name: territorio
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: codigo_ibge do território
+          title: Territorio
+      - description: período inicial YYYY-MM
+        in: query
+        name: de
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período inicial YYYY-MM
+          title: De
+      - description: período final YYYY-MM
+        in: query
+        name: ate
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período final YYYY-MM
+          title: Ate
+      - in: query
+        name: pagina
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          title: Pagina
+          type: integer
+      - in: query
+        name: por_pagina
+        required: false
+        schema:
+          default: 100
+          maximum: 1000
+          minimum: 1
+          title: Por Pagina
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaValores'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Listar Valores
+      tags:
+      - indicadores

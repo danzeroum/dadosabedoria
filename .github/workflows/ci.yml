@@ -1,0 +1,115 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------------- lint + SAST + unit
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: astral-sh/setup-uv@v5
+      - name: instalar deps
+        run: uv pip install --system -e ".[dev]"
+      - name: ruff (lint)
+        run: ruff check .
+      - name: ruff (format)
+        run: ruff format --check .
+      - name: mypy
+        run: mypy app
+      - name: bandit (SAST)
+        run: bandit -r app -q
+      - name: testes de unidade (inclui single-call-site e isolamento de creds no compose)
+        run: pytest -m "not integration" -q
+
+  # --------------------------------------------------------- integração + gates de cobertura
+  integration:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_PASSWORD: ci_admin
+          POSTGRES_DB: dadosabedoria
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dadosabedoria"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      ADMIN_DATABASE_URL: postgresql+asyncpg://postgres:ci_admin@localhost:5432/dadosabedoria
+      DATABASE_URL: postgresql+asyncpg://role_analitica:ci_analitica@localhost:5432/dadosabedoria
+      CONSENT_DATABASE_URL: postgresql+asyncpg://role_consentimento:ci_consent@localhost:5432/dadosabedoria
+      REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: astral-sh/setup-uv@v5
+      - name: instalar deps
+        run: uv pip install --system -e ".[dev]"
+      - name: suíte completa (migra + semeia + integração) com cobertura
+        run: pytest --cov=app --cov-report=xml --cov-report=term -q
+      - name: gate de cobertura global (>= 85%)
+        run: coverage report --fail-under=85
+      - name: gate de cobertura da supressão + caminho ouro (= 100%)
+        run: coverage report --include="app/ingestao/supressao.py,app/ingestao/ouro.py" --fail-under=100
+
+  # ------------------------------------------------------------- contrato OpenAPI (sem drift)
+  contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: astral-sh/setup-uv@v5
+      - run: uv pip install --system -e ".[dev]"
+      - name: exportar OpenAPI
+        run: python scripts/export_openapi.py
+      - name: falhar se docs/openapi.yaml divergir do código
+        run: git diff --exit-code ../docs/openapi.yaml
+
+  # ----------------------------------------------------- build da imagem + scans (deps/segredos)
+  build_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build da imagem api
+        run: docker build -t dadosabedoria-api ./api
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: pip-audit (vulnerabilidades de dependência de runtime)
+        working-directory: api
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          pip install -e .
+          # Advisory triado SEM fix compatível com as versões fixadas (risco aceito; revisitar ao
+          # subir as libs): PYSEC-2026-161 (starlette — requer FastAPI com suporte a starlette 1.x).
+          pip-audit --ignore-vuln PYSEC-2026-161
+      - name: gitleaks (segredos)
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact

@@ -71,19 +71,26 @@ curl http://localhost/v1/territorios/3550308
 docker compose --profile observability up
 ```
 
-## Ingestão (Onda 1 — CAGED)
+## Ingestão (Onda 1 — CAGED + BCB/ESTBAN)
 
-A esteira **bronze→prata→ouro** do Novo CAGED produz `trabalho.emprego.saldo_caged` (saldo de
-emprego formal por município/mês), passando pela MESMA regra de supressão da fundação e gravando
-`linhagem` (URL de origem + hash do bruto). Adaptador com fetcher injetável (testável sem rede),
-transform em Polars, bronze em MinIO (ADR-0006).
+Esteiras **bronze→prata→ouro** que passam pela MESMA regra de supressão da fundação e gravam
+`linhagem` (URL de origem + hash do bruto). Adaptadores com fetcher injetável (testáveis sem rede),
+transform em Polars, bronze em MinIO. O *tail* de carga é compartilhado entre as fontes.
 
-- **Execução manual / backfill:** `python -m app.ingestao.run_caged <ano> <mes>` (ex.: `... 2026 4`).
-- **Agendada (Dagster Degrau 1):** o serviço `orchestrator` roda um schedule mensal.
-  ```bash
-  docker compose --profile ingestion up   # minio + worker + orchestrator (Dagster, UI interna :3000)
-  ```
-- O fetcher real baixa o `.7z` do FTP público do PDET; parse/agregação são cobertos por fixture.
+- **CAGED** → `trabalho.emprego.saldo_caged` (saldo de emprego por município/mês). ADR-0006.
+- **BCB/ESTBAN** → `credito.operacoes.saldo_total` (crédito por município/mês). ADR-0007.
+
+```bash
+# execução manual / backfill
+python -m app.ingestao.run_caged <ano> <mes>     # ex.: 2026 4
+python -m app.ingestao.run_estban <ano> <mes>
+
+# agendada (Dagster Degrau 1): jobs/schedules mensais no serviço orchestrator
+docker compose --profile ingestion up            # minio + worker + orchestrator (Dagster, UI interna :3000)
+```
+
+Os fetchers reais baixam do FTP público do PDET (CAGED) e do BCB (ESTBAN); parse/agregação são
+cobertos por fixture.
 
 ## Como testar
 

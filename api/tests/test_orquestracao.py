@@ -15,18 +15,26 @@ dagster = pytest.importorskip("dagster")
 
 
 def test_definitions_carregam() -> None:
-    from app.orquestracao.definitions import job_caged, schedule_caged_mensal
+    from app.orquestracao.definitions import (
+        job_caged,
+        job_estban,
+        schedule_caged_mensal,
+        schedule_estban_mensal,
+    )
 
     assert job_caged.name == "job_caged"
+    assert job_estban.name == "job_estban"
     assert schedule_caged_mensal.name == "schedule_caged_mensal"
+    assert schedule_estban_mensal.name == "schedule_estban_mensal"
 
 
-def test_schedule_gera_competencia_com_defasagem() -> None:
-    from app.orquestracao.definitions import schedule_caged_mensal
+def test_schedules_geram_competencia_com_defasagem() -> None:
+    from app.orquestracao.definitions import schedule_caged_mensal, schedule_estban_mensal
 
     ctx = dagster.build_schedule_context(
         scheduled_execution_time=datetime(2026, 6, 5, 6, 0, tzinfo=UTC)
     )
-    req = schedule_caged_mensal(ctx)
-    competencia = req.run_config["ops"]["op_carregar_caged"]["config"]["competencia"]
-    assert competencia == "202604"  # 2 meses de defasagem
+    caged = schedule_caged_mensal(ctx).run_config["ops"]["op_carregar_caged"]["config"]
+    estban = schedule_estban_mensal(ctx).run_config["ops"]["op_carregar_estban"]["config"]
+    assert caged["competencia"] == "202604"  # CAGED: 2 meses
+    assert estban["competencia"] == "202603"  # ESTBAN: 3 meses

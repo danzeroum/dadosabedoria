@@ -20,11 +20,11 @@ Este repositório contém a **versão fundacional permanente**: a primeira base 
 - Observabilidade (logs JSON sem PII, traces OTel, `/metrics` interno, `/health`) e **quality gate**
   no CI (lint, mypy, bandit, testes, cobertura, contrato OpenAPI, scan de deps/segredos).
 
-A **Onda 1 está completa**: ingestão real de **CAGED** e **BCB/ESTBAN** (bronze→prata→ouro pelo
-mesmo `escrever_ouro`, Dagster Degrau 1), o **IVM** (view materializada) e o **frontend** Next.js
-(mapa semafórico + drill-down, consumindo `/v1/ivm`). Veja "Ingestão", "IVM" e `web/`, e os ADRs
-0006–0009. Próximas iterações: malhas do IBGE (coropleta geográfica); IA ancorada; runtime de
-consentimento. Veja `docs/adr/` e o documento técnico.
+A **Onda 1 está completa**: ingestão real de **CAGED**, **BCB/ESTBAN** e **IBGE** (malhas), o
+**IVM** (view materializada) e o **frontend** Next.js com **coropleta geográfica** + drill-down
+(consumindo `/v1/ivm` e `/v1/mapa/ivm`). Veja "Ingestão", "IVM" e `web/`, e os ADRs 0006–0010.
+Próximas iterações: IA ancorada; runtime de consentimento + autenticação do cidadão. Veja
+`docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 
@@ -85,6 +85,7 @@ transform em Polars, bronze em MinIO. O *tail* de carga é compartilhado entre a
 # execução manual / backfill
 python -m app.ingestao.run_caged <ano> <mes>     # ex.: 2026 4
 python -m app.ingestao.run_estban <ano> <mes>
+python -m app.ingestao.run_ibge <UF>             # ex.: SP — municípios + geometrias (coropleta)
 
 # agendada (Dagster Degrau 1): jobs/schedules mensais no serviço orchestrator
 docker compose --profile ingestion up            # minio + worker + orchestrator (Dagster, UI interna :3000)

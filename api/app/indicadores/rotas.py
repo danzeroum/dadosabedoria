@@ -105,3 +105,13 @@ async def ivm_municipio(
     return await IVMFacade(session).serie(
         codigo_ibge=codigo_ibge, de=_parse_mes(de, "de"), ate=_parse_mes(ate, "ate")
     )
+
+
+@router.get("/mapa/ivm", tags=["ivm"])
+async def ivm_malha(
+    uf: str = Query(..., description="sigla da UF (ex.: SP)"),
+    periodo: str | None = Query(None, description="período YYYY-MM (padrão: mais recente)"),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """GeoJSON do IVM por município de uma UF — base da coropleta geográfica."""
+    return await IVMFacade(session).malha(uf=uf.upper(), periodo=_parse_mes(periodo, "periodo"))

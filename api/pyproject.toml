@@ -108,6 +108,7 @@ omit = [
     "app/orquestracao/*",        # validado no job de CI dedicado (requer Dagster)
     "app/ingestao/run_caged.py",  # entrypoint CLI (rede/S3)
     "app/ingestao/run_estban.py", # entrypoint CLI (rede/S3)
+    "app/ingestao/run_ibge.py",   # entrypoint CLI (rede)
     "app/**/__main__.py",
     "alembic/*",
 ]

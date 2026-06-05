@@ -1,5 +1,41 @@
 components:
   schemas:
+    Citacao:
+      properties:
+        fonte:
+          title: Fonte
+          type: string
+        indicador:
+          title: Indicador
+          type: string
+        lag_tipico_dias:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lag Tipico Dias
+        metodologia:
+          title: Metodologia
+          type: string
+        nome:
+          title: Nome
+          type: string
+        periodo_ate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo Ate
+        periodo_de:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo De
+      required:
+      - indicador
+      - nome
+      - fonte
+      - metodologia
+      title: Citacao
+      type: object
     HTTPValidationError:
       properties:
         detail:
@@ -180,6 +216,74 @@ components:
       - por_pagina
       - total
       title: Paginacao
+      type: object
+    PerguntaIA:
+      properties:
+        ate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período final YYYY-MM
+          title: Ate
+        de:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período inicial YYYY-MM
+          title: De
+        indicador:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: código do indicador (opcional)
+          title: Indicador
+        pergunta:
+          maxLength: 1000
+          minLength: 1
+          title: Pergunta
+          type: string
+        territorio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: codigo_ibge (opcional)
+          title: Territorio
+      required:
+      - pergunta
+      title: PerguntaIA
+      type: object
+    RespostaIA:
+      properties:
+        abstencao:
+          title: Abstencao
+          type: boolean
+        citacoes:
+          items:
+            $ref: '#/components/schemas/Citacao'
+          title: Citacoes
+          type: array
+        narrador:
+          title: Narrador
+          type: string
+        resposta:
+          title: Resposta
+          type: string
+        ressalvas:
+          items:
+            type: string
+          title: Ressalvas
+          type: array
+        revisao_humana:
+          title: Revisao Humana
+          type: boolean
+      required:
+      - resposta
+      - abstencao
+      - citacoes
+      - ressalvas
+      - revisao_humana
+      - narrador
+      title: RespostaIA
       type: object
     RespostaIVM:
       properties:
@@ -369,6 +473,33 @@ paths:
       summary: Health
       tags:
       - infra
+  /v1/ia/perguntar:
+    post:
+      description: Responde SÓ com o que recupera do repositório, com citação; sem
+        dado, abstém-se.
+      operationId: perguntar_v1_ia_perguntar_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerguntaIA'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaIA'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Perguntar
+      tags:
+      - ia
   /v1/indicadores:
     get:
       operationId: listar_indicadores_v1_indicadores_get

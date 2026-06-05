@@ -21,6 +21,7 @@ from app.core.erros import instalar_handlers
 from app.core.observabilidade import configurar_logs, configurar_otel, get_logger
 from app.core.registro import registro
 from app.core.seguranca import configurar_cors
+from app.ia.rotas import router as router_ia
 from app.indicadores.rotas import router as router_indicadores
 
 _log = get_logger("app")
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
         return {"status": status, "db": db, "redis": redis, "modulos": registro.codigos}
 
     app.include_router(router_indicadores)
+    app.include_router(router_ia)  # IA ancorada no monólito (extraível p/ o serviço `ai`)
 
     # Encaixe de plugins de domínio (nenhum nesta fatia; rotas futuras entram aqui).
     router_dominios = APIRouter(prefix="/v1")

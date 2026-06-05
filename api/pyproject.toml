@@ -103,7 +103,7 @@ addopts = "-ra"
 [tool.coverage.run]
 source = ["app"]
 omit = [
-    "app/ia/*",
+    "app/ia/server.py",          # entrypoint do serviço isolado de IA
     "app/consentimento/*",
     "app/orquestracao/*",        # validado no job de CI dedicado (requer Dagster)
     "app/ingestao/run_caged.py",  # entrypoint CLI (rede/S3)

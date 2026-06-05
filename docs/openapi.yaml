@@ -9,6 +9,39 @@ components:
           type: array
       title: HTTPValidationError
       type: object
+    IVMItem:
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        ivm:
+          title: Ivm
+          type: number
+        nome:
+          title: Nome
+          type: string
+        periodo:
+          title: Periodo
+          type: string
+        semaforo:
+          title: Semaforo
+          type: string
+        v_emprego:
+          title: V Emprego
+          type: number
+        v_financas:
+          title: V Financas
+          type: number
+      required:
+      - codigo_ibge
+      - nome
+      - periodo
+      - ivm
+      - semaforo
+      - v_emprego
+      - v_financas
+      title: IVMItem
+      type: object
     IndicadorOut:
       properties:
         atualizacao:
@@ -61,6 +94,45 @@ components:
       - meta
       title: IndicadorOut
       type: object
+    MetaIVM:
+      description: Proveniência do IVM — índice composto, não vem de uma fonte única.
+      properties:
+        componentes:
+          items:
+            type: string
+          title: Componentes
+          type: array
+        indicador:
+          title: Indicador
+          type: string
+        metodologia:
+          title: Metodologia
+          type: string
+        nome:
+          title: Nome
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        semaforo:
+          additionalProperties:
+            type: string
+          title: Semaforo
+          type: object
+        versao_metodologia:
+          title: Versao Metodologia
+          type: string
+      required:
+      - indicador
+      - nome
+      - metodologia
+      - versao_metodologia
+      - componentes
+      - semaforo
+      title: MetaIVM
+      type: object
     MetaProveniencia:
       description: Proveniência exigida em toda resposta (invariante 5).
       properties:
@@ -108,6 +180,37 @@ components:
       - por_pagina
       - total
       title: Paginacao
+      type: object
+    RespostaIVM:
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/IVMItem'
+          title: Dados
+          type: array
+        meta:
+          $ref: '#/components/schemas/MetaIVM'
+        paginacao:
+          $ref: '#/components/schemas/Paginacao'
+      required:
+      - dados
+      - meta
+      - paginacao
+      title: RespostaIVM
+      type: object
+    RespostaIVMSerie:
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/IVMItem'
+          title: Dados
+          type: array
+        meta:
+          $ref: '#/components/schemas/MetaIVM'
+      required:
+      - dados
+      - meta
+      title: RespostaIVMSerie
       type: object
     RespostaIndicadores:
       properties:
@@ -337,6 +440,103 @@ paths:
       summary: Obter Indicador
       tags:
       - indicadores
+  /v1/ivm:
+    get:
+      description: IVM de todos os municípios num período — base do mapa semafórico.
+      operationId: ivm_por_periodo_v1_ivm_get
+      parameters:
+      - description: 'período YYYY-MM (padrão: mais recente)'
+        in: query
+        name: periodo
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 'período YYYY-MM (padrão: mais recente)'
+          title: Periodo
+      - in: query
+        name: pagina
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          title: Pagina
+          type: integer
+      - in: query
+        name: por_pagina
+        required: false
+        schema:
+          default: 1000
+          maximum: 1000
+          minimum: 1
+          title: Por Pagina
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaIVM'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ivm Por Periodo
+      tags:
+      - indicadores
+      - ivm
+  /v1/ivm/{codigo_ibge}:
+    get:
+      description: Série do IVM de um município — drill-down.
+      operationId: ivm_municipio_v1_ivm__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      - description: período inicial YYYY-MM
+        in: query
+        name: de
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período inicial YYYY-MM
+          title: De
+      - description: período final YYYY-MM
+        in: query
+        name: ate
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período final YYYY-MM
+          title: Ate
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaIVMSerie'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ivm Municipio
+      tags:
+      - indicadores
+      - ivm
   /v1/territorios/{codigo_ibge}:
     get:
       operationId: obter_territorio_v1_territorios__codigo_ibge__get

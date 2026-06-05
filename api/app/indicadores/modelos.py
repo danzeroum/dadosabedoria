@@ -78,3 +78,39 @@ class ErroOut(BaseModel):
     mensagem: str
     doc_url: str
     trace_id: str
+
+
+# ----------------------------------------------------------------------- IVM (índice composto)
+
+
+class MetaIVM(BaseModel):
+    """Proveniência do IVM — índice composto, não vem de uma fonte única."""
+
+    indicador: str
+    nome: str
+    metodologia: str
+    versao_metodologia: str
+    componentes: list[str]
+    semaforo: dict[str, str]
+    periodo: str | None = None
+
+
+class IVMItem(BaseModel):
+    codigo_ibge: str
+    nome: str
+    periodo: str  # YYYY-MM
+    ivm: float  # 0..100, maior = mais vulnerável
+    semaforo: str  # verde | amarelo | vermelho
+    v_emprego: float
+    v_financas: float
+
+
+class RespostaIVM(BaseModel):
+    dados: list[IVMItem]
+    meta: MetaIVM
+    paginacao: Paginacao
+
+
+class RespostaIVMSerie(BaseModel):
+    dados: list[IVMItem]
+    meta: MetaIVM

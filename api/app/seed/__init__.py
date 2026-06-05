@@ -298,7 +298,10 @@ async def _semear_fatos(
 
 
 async def main() -> None:
+    from app.indicadores.ivm import refrescar_ivm
+
     settings = get_settings()
     async with connect(settings.database_url) as conn:
         resumo = await executar_seed(conn)
+    await refrescar_ivm()  # popula a MV do IVM após o seed (fora da transação)
     print(f"seed concluído: {resumo}")  # noqa: T201 (saída de CLI)

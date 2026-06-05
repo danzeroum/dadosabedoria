@@ -82,6 +82,17 @@ def cache_leitura(
     return deco
 
 
+async def invalidar(prefixo: str) -> None:
+    """Remove do cache todas as chaves com o prefixo dado (ex.: após refresh do IVM)."""
+    try:
+        r = get_redis()
+        chaves = [chave async for chave in r.scan_iter(match=f"{prefixo}*")]
+        if chaves:
+            await r.delete(*chaves)
+    except Exception:  # noqa: BLE001 - invalidação nunca derruba a operação
+        _log.warning("cache_invalidar_falhou", prefixo=prefixo)
+
+
 async def fechar_redis() -> None:
     global _cliente
     if _cliente is not None:

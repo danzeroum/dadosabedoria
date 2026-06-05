@@ -24,21 +24,27 @@ class ConfigIngestao(dg.Config):
 
 
 async def _rodar_caged(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    from app.indicadores.ivm import refrescar_ivm
+
     settings = get_settings()
     adaptador = AdaptadorCaged(FetcherCagedFTP())
     async with connect(settings.database_url) as conn:
         await executar_caged(
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
+    await refrescar_ivm()
 
 
 async def _rodar_estban(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    from app.indicadores.ivm import refrescar_ivm
+
     settings = get_settings()
     adaptador = AdaptadorEstban(FetcherEstbanHTTP(), skip_rows=2)
     async with connect(settings.database_url) as conn:
         await executar_estban(
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
+    await refrescar_ivm()
 
 
 @dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))

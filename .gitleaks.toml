@@ -1,0 +1,14 @@
+# gitleaks — varredura de segredos no CI.
+title = "DadoSabedoria gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders e exemplos não são segredos reais."
+paths = [
+  '''\.env\.example$''',
+]
+regexes = [
+  '''change_me[_a-z]*''',
+]

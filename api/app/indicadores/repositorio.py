@@ -1,0 +1,116 @@
+"""Repository (SQLAlchemy Core) — consultas parametrizadas, sem N+1, sobre a camada analítica.
+
+Privacidade: a série lê de ``valor`` apenas para indicadores ``publico=true`` e força ``NULL`` em
+célula suprimida via ``CASE`` (dupla proteção — a camada ouro já grava NULL ao suprimir). Assim a
+resposta pode sinalizar a célula protegida (UX, esquema §8) sem nunca expor um valor suprimido.
+A view canônica ``valor_publico`` (valores-only) permanece como base das agregações/IVM.
+"""
+
+from __future__ import annotations
+
+from datetime import date
+
+from sqlalchemy import RowMapping, case, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.tables import fonte, indicador, territorio, valor
+
+
+def _cols_meta() -> list:
+    return [
+        indicador.c.codigo,
+        indicador.c.nome,
+        indicador.c.metodologia,
+        fonte.c.nome.label("fonte_nome"),
+        fonte.c.licenca.label("fonte_licenca"),
+        fonte.c.lag_tipico_dias.label("fonte_lag"),
+    ]
+
+
+class RepositorioIndicadores:
+    async def listar_indicadores(
+        self, session: AsyncSession, *, dominio: str | None, pagina: int, por_pagina: int
+    ) -> tuple[list[RowMapping], int]:
+        j = indicador.join(fonte, fonte.c.id == indicador.c.fonte_id)
+        base = select(indicador, *_cols_meta()[3:]).select_from(j)
+        cont = select(func.count()).select_from(indicador)
+        if dominio:
+            base = base.where(indicador.c.dominio == dominio)
+            cont = cont.where(indicador.c.dominio == dominio)
+        base = base.order_by(indicador.c.codigo).limit(por_pagina).offset((pagina - 1) * por_pagina)
+        linhas = (await session.execute(base)).mappings().all()
+        total = (await session.execute(cont)).scalar_one()
+        return list(linhas), int(total)
+
+    async def obter_indicador(self, session: AsyncSession, codigo: str) -> RowMapping | None:
+        j = indicador.join(fonte, fonte.c.id == indicador.c.fonte_id)
+        stmt = (
+            select(indicador, *_cols_meta()[3:]).select_from(j).where(indicador.c.codigo == codigo)
+        )
+        return (await session.execute(stmt)).mappings().first()
+
+    async def meta_indicador(self, session: AsyncSession, codigo: str) -> RowMapping | None:
+        j = indicador.join(fonte, fonte.c.id == indicador.c.fonte_id)
+        stmt = select(*_cols_meta()).select_from(j).where(indicador.c.codigo == codigo)
+        return (await session.execute(stmt)).mappings().first()
+
+    async def listar_valores(
+        self,
+        session: AsyncSession,
+        *,
+        indicador_codigo: str,
+        territorio_codigo: str | None,
+        de: date | None,
+        ate: date | None,
+        pagina: int,
+        por_pagina: int,
+    ) -> tuple[list[RowMapping], int]:
+        valor_seguro = case((valor.c.suprimido, None), else_=valor.c.valor).label("valor")
+        j = valor.join(indicador, indicador.c.id == valor.c.indicador_id).join(
+            territorio, territorio.c.id == valor.c.territorio_id
+        )
+        filtros = [indicador.c.codigo == indicador_codigo, indicador.c.publico.is_(True)]
+        if territorio_codigo:
+            filtros.append(territorio.c.codigo_ibge == territorio_codigo)
+        if de:
+            filtros.append(valor.c.periodo >= de)
+        if ate:
+            filtros.append(valor.c.periodo <= ate)
+
+        base = (
+            select(
+                valor.c.periodo,
+                valor_seguro,
+                valor.c.confiabilidade,
+                valor.c.suprimido,
+                valor.c.motivo_supressao,
+            )
+            .select_from(j)
+            .where(*filtros)
+            .order_by(valor.c.periodo)
+            .limit(por_pagina)
+            .offset((pagina - 1) * por_pagina)
+        )
+        cont = select(func.count()).select_from(j).where(*filtros)
+        linhas = (await session.execute(base)).mappings().all()
+        total = (await session.execute(cont)).scalar_one()
+        return list(linhas), int(total)
+
+    async def obter_territorio(self, session: AsyncSession, codigo_ibge: str) -> RowMapping | None:
+        pai = territorio.alias("pai")
+        j = territorio.outerjoin(pai, pai.c.id == territorio.c.pai_id)
+        stmt = (
+            select(
+                territorio.c.codigo_ibge,
+                territorio.c.nome,
+                territorio.c.nivel,
+                territorio.c.uf,
+                territorio.c.populacao,
+                pai.c.codigo_ibge.label("pai_codigo_ibge"),
+                pai.c.nome.label("pai_nome"),
+                pai.c.nivel.label("pai_nivel"),
+            )
+            .select_from(j)
+            .where(territorio.c.codigo_ibge == codigo_ibge)
+        )
+        return (await session.execute(stmt)).mappings().first()

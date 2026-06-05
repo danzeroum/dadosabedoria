@@ -1,0 +1,209 @@
+# DadoSabedoria — stack da versão fundacional (VPS, docker-compose).
+#
+# Stack MÍNIMA (default, sem profile): proxy, api, db, redis + migrator (one-shot).
+#   `docker compose up`  → sobe só o essencial (economia de recurso na VPS — invariante 6).
+# MinIO entra com a ingestão (profile `ingestion`); observabilidade é opt-in (profile
+# `observability`). Detalhes em ADR-0005.
+#
+# Isolamento de PII (§8.1): api/worker/ai NÃO recebem CONSENT_DATABASE_URL/APP_FIELD_KEY
+# (checado por teste estático no CI) e ficam na rede `net_core`; o serviço de consentimento
+# fica sozinho com o banco em `net_consentimento` — a `ai` não compartilha rede com ele.
+
+services:
+  proxy:
+    image: traefik:v3.1
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports: ["80:80", "443:443"]
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./infra/traefik:/etc/traefik:ro"
+    networks: [net_core]
+    depends_on:
+      api: {condition: service_started}
+
+  db:
+    image: postgis/postgis:16-3.4
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql/postgresql.conf"
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=dadosabedoria
+    shm_size: "256mb"
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+      - "./infra/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro"
+      - "./infra/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "dadosabedoria"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [net_core, net_consentimento]
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [net_core]
+
+  # One-shot: migra (admin) e semeia (role_analitica), depois encerra. É privilegiado —
+  # único, além do consentimento, que recebe CONSENT_DATABASE_URL (para criar a role).
+  migrator:
+    build: ./api
+    command: ["python", "-m", "app.migrate"]
+    environment:
+      - ADMIN_DATABASE_URL=${ADMIN_DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL}
+      - CONSENT_DATABASE_URL=${CONSENT_DATABASE_URL}
+    depends_on:
+      db: {condition: service_healthy}
+    restart: "no"
+    networks: [net_core]
+
+  api:
+    build: ./api
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_KEY=${S3_KEY}
+      - S3_SECRET=${S3_SECRET}
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      migrator: {condition: service_completed_successfully}
+    labels:
+      - "traefik.enable=true"
+      # Expõe só a API pública (/v1) e /health. /metrics NÃO é roteado (interno) — §13.
+      - "traefik.http.routers.api.rule=PathPrefix(`/v1`) || Path(`/health`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+      - "traefik.http.routers.api.middlewares=dsab-ratelimit@file,dsab-cors@file,dsab-headers@file"
+    networks: [net_core]
+
+  # --- MinIO: só com a ingestão (nada escreve bronze/parquet na fundação) — ADR-0005 ---
+  minio:
+    image: minio/minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      - MINIO_ROOT_USER=${S3_KEY}
+      - MINIO_ROOT_PASSWORD=${S3_SECRET}
+    volumes: ["minio:/data"]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks: [net_core]
+    profiles: ["ingestion"]
+
+  worker:
+    build: ./api
+    command: ["python", "-m", "app.worker"]
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_KEY=${S3_KEY}
+      - S3_SECRET=${S3_SECRET}
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    networks: [net_core]
+    profiles: ["ingestion"]
+
+  orchestrator:
+    build: ./orchestrator
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    networks: [net_core]
+    profiles: ["ingestion"]
+
+  # --- IA ancorada (futura). Recebe DATABASE_URL (role_analitica), NUNCA cred. do app. ---
+  ai:
+    build: ./api
+    command: ["python", "-m", "app.ia.server"]
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - LLM_API_KEY=${LLM_API_KEY}
+    networks: [net_core]
+    profiles: ["ai"]
+
+  # --- Consentimento (PII, futuro). ÚNICO com cred. do app; rede ISOLADA. ---
+  consentimento:
+    build: ./api
+    command: ["python", "-m", "app.consentimento.server"]
+    environment:
+      - CONSENT_DATABASE_URL=${CONSENT_DATABASE_URL}
+      - APP_FIELD_KEY=${APP_FIELD_KEY}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      db: {condition: service_healthy}
+    networks: [net_consentimento]
+    profiles: ["consent"]
+
+  # --- Observabilidade (opt-in; pesada — não co-residir com api+ingestão na VPS, ADR-0005) ---
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes: ["./infra/otel-collector/config.yaml:/etc/otel/config.yaml:ro"]
+    networks: [net_core]
+    profiles: ["observability"]
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    volumes: ["./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    networks: [net_core]
+    profiles: ["observability"]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes: ["./infra/grafana/provisioning:/etc/grafana/provisioning:ro"]
+    networks: [net_core]
+    profiles: ["observability"]
+
+  loki:
+    image: grafana/loki:3.2.0
+    command: ["-config.file=/etc/loki/loki-config.yml"]
+    volumes: ["./infra/loki/loki-config.yml:/etc/loki/loki-config.yml:ro"]
+    networks: [net_core]
+    profiles: ["observability"]
+
+  tempo:
+    image: grafana/tempo:2.6.0
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes: ["./infra/tempo/tempo.yml:/etc/tempo/tempo.yml:ro"]
+    networks: [net_core]
+    profiles: ["observability"]
+
+volumes:
+  pgdata: {}
+  minio: {}
+
+networks:
+  net_core:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+  net_consentimento:
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16

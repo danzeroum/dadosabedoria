@@ -25,9 +25,12 @@ A **Onda 1 está completa**: ingestão real de **CAGED**, **BCB/ESTBAN** e **IBG
 **IA ancorada** (`POST /v1/ia/perguntar`, isolada do schema `app`; narrador trocável por LLM real)
 e o **runtime de consentimento** — serviço ISOLADO que escreve PII no schema `app` via
 `role_consentimento` (rede isolada), com cifragem de campo, trilha de auditoria, auth do cidadão
-(JWT em cookie HttpOnly) e o ciclo LGPD completo (`/v1/alertas`, `/v1/eu`). Veja os ADRs 0006–0012.
-Próximas iterações: provedor de LLM real (config); OIDC real do cidadão; consumo dos alertas. Veja
-`docs/adr/` e o documento técnico.
+(JWT em cookie HttpOnly) e o ciclo LGPD completo (`/v1/alertas`, `/v1/eu`). O ciclo fecha com o
+**consumo dos alertas**: quando o IVM de um território entra em **vermelho**, o serviço de
+consentimento casa o evento (IVM público) com os assinantes e grava uma notificação — entrega
+**pull** (`GET /v1/notificacoes`, autenticado; o contato bruto nunca é guardado). Veja os ADRs
+0006–0014. Próximas iterações: provedor de LLM real (config); OIDC real do cidadão; agendamento do
+consumo após o REFRESH do IVM. Veja `docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 

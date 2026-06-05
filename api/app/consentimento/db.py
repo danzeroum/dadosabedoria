@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -37,8 +38,9 @@ def _maker() -> async_sessionmaker[AsyncSession]:
     return _sessionmaker
 
 
-async def get_consent_session() -> AsyncIterator[AsyncSession]:
-    """Unit-of-work: commit no sucesso, rollback no erro."""
+@asynccontextmanager
+async def consent_session() -> AsyncIterator[AsyncSession]:
+    """Unit-of-work (commit no sucesso, rollback no erro). Usável fora do FastAPI (ex.: CLI)."""
     async with _maker()() as session:
         try:
             yield session
@@ -46,6 +48,12 @@ async def get_consent_session() -> AsyncIterator[AsyncSession]:
         except Exception:
             await session.rollback()
             raise
+
+
+async def get_consent_session() -> AsyncIterator[AsyncSession]:
+    """Dependency do FastAPI — delega ao unit-of-work ``consent_session``."""
+    async with consent_session() as session:
+        yield session
 
 
 async def dispose_consent_engine() -> None:

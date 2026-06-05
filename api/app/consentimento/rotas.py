@@ -11,7 +11,13 @@ from app.consentimento import repositorio
 from app.consentimento.auth import cidadao_atual, definir_cookie, emitir_token, limpar_cookie
 from app.consentimento.cripto import hash_contato
 from app.consentimento.db import get_consent_session
-from app.consentimento.modelos import AlertaIn, AlertaOut, LoginIn, RespostaLogin
+from app.consentimento.modelos import (
+    AlertaIn,
+    AlertaOut,
+    LoginIn,
+    NotificacaoOut,
+    RespostaLogin,
+)
 from app.core.erros import NaoEncontradoError
 
 router = APIRouter(prefix="/v1", tags=["consentimento"])
@@ -79,6 +85,29 @@ async def revogar_alerta(
 ) -> None:
     if not await repositorio.revogar(session, sub, alerta_id):
         raise NaoEncontradoError(f"alerta {alerta_id}")
+
+
+@router.get("/notificacoes", response_model=list[NotificacaoOut])
+async def listar_notificacoes(
+    sub: str = Depends(cidadao_atual),
+    session: AsyncSession = Depends(get_consent_session),
+) -> list[NotificacaoOut]:
+    """Alertas consumidos para o cidadão (entrega pull; o contato bruto nunca é guardado)."""
+    linhas = await repositorio.listar_notificacoes(session, sub)
+    return [
+        NotificacaoOut(
+            id=r["id"],
+            territorio=r["codigo_ibge"],
+            periodo=r["periodo"].strftime("%Y-%m"),
+            ivm=float(r["ivm"]),
+            semaforo=r["semaforo"],
+            fonte=r["fonte"],
+            metodologia=r["metodologia"],
+            criada_em=r["criada_em"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+            lida=r["lida"],
+        )
+        for r in linhas
+    ]
 
 
 @router.delete("/eu", status_code=status.HTTP_204_NO_CONTENT)

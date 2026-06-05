@@ -6,11 +6,18 @@ gravar (cifragem de campo). O contato já chega pseudonimizado (``contato_hash``
 
 from __future__ import annotations
 
+from datetime import date
+
 from sqlalchemy import RowMapping, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.consentimento.cripto import cifrar
 from app.core.erros import ValidacaoError
+
+# Convenção: alertas do IVM usam esta finalidade; proveniência (invariante 5) na notificação.
+ALERTA_IVM_FINALIDADE = "alerta_ivm"
+ALERTA_IVM_FONTE = "IVM municipal (CAGED + BCB/ESTBAN)"
+ALERTA_IVM_METODOLOGIA = "v1 — min-max + ponderação 50/50; vermelho = IVM > 66"
 
 
 async def _territorio_id(session: AsyncSession, codigo_ibge: str) -> int:
@@ -128,3 +135,72 @@ async def eliminar(session: AsyncSession, contato_hash: str) -> int:
         session, ator=contato_hash, acao="eliminar", recurso="assinante_alerta", detalhe=f"{n}"
     )
     return n
+
+
+async def processar_alertas(session: AsyncSession, periodo: date | None = None) -> int:
+    """Consumo dos alertas: casa eventos de IVM **vermelho** (dado público) com os assinantes
+    ativos daquele território e grava ``app.notificacao`` (idempotente). Roda como
+    role_consentimento — a leitura do IVM é a única que cruza para o público (benigna, §8.1).
+
+    ``periodo=None`` processa o período mais recente do IVM. Devolve quantas notificações novas.
+    """
+    if periodo is None:
+        periodo = (
+            await session.execute(text("SELECT max(periodo) FROM ivm_municipio"))
+        ).scalar_one_or_none()
+    if periodo is None:
+        return 0
+    res = await session.execute(
+        text(
+            """
+            INSERT INTO app.notificacao (assinante_id, periodo, ivm, semaforo, fonte, metodologia)
+            SELECT a.id, m.periodo, m.ivm, m.semaforo, :fonte, :metodo
+            FROM ivm_municipio m
+            JOIN app.assinante_alerta a ON a.territorio_id = m.territorio_id
+            WHERE m.periodo = :p AND m.semaforo = 'vermelho'
+              AND a.finalidade = :fin AND a.revogado_em IS NULL
+            ON CONFLICT (assinante_id, periodo) DO NOTHING
+            """
+        ),
+        {
+            "p": periodo,
+            "fonte": ALERTA_IVM_FONTE,
+            "metodo": ALERTA_IVM_METODOLOGIA,
+            "fin": ALERTA_IVM_FINALIDADE,
+        },
+    )
+    novas = res.rowcount or 0  # type: ignore[attr-defined]  # CursorResult em runtime
+    await auditar(
+        session,
+        ator="sistema",
+        acao="notificar",
+        recurso="notificacao",
+        detalhe=f"periodo={periodo} novas={novas}",
+    )
+    return int(novas)
+
+
+async def listar_notificacoes(session: AsyncSession, contato_hash: str) -> list[RowMapping]:
+    """Entrega *pull*: o cidadão autenticado recupera suas notificações (com proveniência)."""
+    linhas = (
+        (
+            await session.execute(
+                text(
+                    """
+                SELECT n.id, t.codigo_ibge, n.periodo, n.ivm, n.semaforo, n.fonte,
+                       n.metodologia, n.criada_em, (n.lida_em IS NOT NULL) AS lida
+                FROM app.notificacao n
+                JOIN app.assinante_alerta a ON a.id = n.assinante_id
+                JOIN territorio t ON t.id = a.territorio_id
+                WHERE a.contato_hash = :h
+                ORDER BY n.criada_em DESC, n.id DESC
+                """
+                ),
+                {"h": contato_hash},
+            )
+        )
+        .mappings()
+        .all()
+    )
+    await auditar(session, ator=contato_hash, acao="listar_notificacoes", recurso="notificacao")
+    return list(linhas)

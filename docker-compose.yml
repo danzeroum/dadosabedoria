@@ -95,6 +95,25 @@ services:
       - "traefik.http.routers.api.middlewares=dsab-ratelimit@file,dsab-cors@file,dsab-headers@file"
     networks: [net_core]
 
+  # --- Frontend (Next.js) — mapa semafórico do IVM. Profile `app`. ---
+  web:
+    build: ./web
+    environment:
+      - API_URL=http://api:8000 # SSR busca a API pela rede interna (sem CORS)
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      api: {condition: service_started}
+    labels:
+      - "traefik.enable=true"
+      # api (PathPrefix /v1, /health) tem prioridade maior; web é o catch-all.
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.web.priority=1"
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+      - "traefik.http.routers.web.middlewares=dsab-headers@file"
+    networks: [net_core]
+    profiles: ["app"]
+
   # --- MinIO: só com a ingestão (nada escreve bronze/parquet na fundação) — ADR-0005 ---
   minio:
     image: minio/minio

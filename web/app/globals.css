@@ -1,0 +1,257 @@
+/* Design system (tokens) — proposta v1 (ADR-0009). Minimalista e acessível (foco visível,
+   contraste AA, sem comunicar só por cor). */
+:root {
+  --cor-fundo: #f8fafc;
+  --cor-superficie: #ffffff;
+  --cor-texto: #0f172a;
+  --cor-texto-suave: #475569;
+  --cor-borda: #e2e8f0;
+  --cor-marca: #0f766e;
+  --raio: 10px;
+  --sombra: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --largura-max: 1100px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 3px solid var(--cor-marca);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.topo {
+  background: var(--cor-marca);
+  color: #fff;
+  padding: 14px 20px;
+}
+.topo-marca {
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.conteudo {
+  max-width: var(--largura-max);
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+.rodape {
+  max-width: var(--largura-max);
+  margin: 0 auto;
+  padding: 16px 20px 32px;
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+}
+
+.pagina h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+.subtitulo {
+  margin: 0 0 8px;
+  color: var(--cor-texto-suave);
+}
+.metodologia {
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+  max-width: 70ch;
+}
+.nota,
+.vazio {
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+}
+.erro {
+  color: #b91c1c;
+}
+.voltar {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--cor-marca);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.legenda {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 0;
+  margin: 12px 0 20px;
+  font-size: 0.9rem;
+}
+.legenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Semáforo */
+.semaforo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+.semaforo-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* Mapa (grade de cartões) */
+.mapa-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.card {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-inline-start: 5px solid #94a3b8;
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+.card-link {
+  display: block;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+}
+.card-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card-nome {
+  font-weight: 600;
+}
+.card-ivm {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 8px 0;
+}
+.card-ivm strong {
+  font-size: 1.7rem;
+}
+.card-ivm-rotulo {
+  color: var(--cor-texto-suave);
+  font-size: 0.8rem;
+}
+
+/* Comparador (barras de subíndice) */
+.comparador {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+.barra-linha {
+  display: grid;
+  grid-template-columns: 70px 1fr 28px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+.barra-rotulo {
+  color: var(--cor-texto-suave);
+}
+.barra-trilha {
+  background: #e2e8f0;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.barra-preenchida {
+  display: block;
+  height: 100%;
+  background: var(--cor-marca);
+  border-radius: 999px;
+}
+.barra-valor {
+  text-align: right;
+  color: var(--cor-texto-suave);
+}
+
+/* Drill-down */
+.destaque {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0 20px;
+}
+.destaque-ivm strong {
+  font-size: 2rem;
+}
+.destaque-periodo {
+  color: var(--cor-texto-suave);
+}
+section h2 {
+  font-size: 1.1rem;
+  margin: 20px 0 8px;
+}
+
+/* Série temporal */
+.serie {
+  margin: 0;
+  max-width: 520px;
+}
+.serie figcaption {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+.serie-svg {
+  width: 100%;
+  height: auto;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+.serie-eixo {
+  stroke: var(--cor-borda);
+  stroke-width: 1;
+}
+.serie-linha {
+  stroke: var(--cor-marca);
+  stroke-width: 2;
+}
+.serie-rotulos {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 24px 0;
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.75rem;
+}

@@ -109,6 +109,25 @@ jobs:
       - name: validar definições do Dagster
         run: pytest -m orquestracao -q
 
+  # --------------------------------------------------------------- frontend (Next.js)
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
   # ----------------------------------------------------- build da imagem + scans (deps/segredos)
   build_scan:
     runs-on: ubuntu-latest

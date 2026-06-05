@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 _NEGADAS = {"CONSENT_DATABASE_URL", "APP_FIELD_KEY", "CONSENT_PWD"}
-_SERVICOS_ANALITICOS = {"api", "worker", "ai"}
+_SERVICOS_ANALITICOS = {"api", "worker", "ai", "orchestrator"}
 
 
 def _achar_compose() -> Path:

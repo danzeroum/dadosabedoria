@@ -94,6 +94,21 @@ jobs:
       - name: falhar se docs/openapi.yaml divergir do código
         run: git diff --exit-code ../docs/openapi.yaml
 
+  # --------------------------------------------------- Dagster Degrau 1 (definitions carregam)
+  orquestracao:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: astral-sh/setup-uv@v5
+      - run: uv pip install --system -e ".[dev,orquestracao]"
+      - name: validar definições do Dagster
+        run: pytest -m orquestracao -q
+
   # ----------------------------------------------------- build da imagem + scans (deps/segredos)
   build_scan:
     runs-on: ubuntu-latest

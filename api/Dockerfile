@@ -14,10 +14,15 @@ COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
 COPY scripts ./scripts
 
-RUN pip install -U pip && pip install .
+# INSTALL_EXTRAS="" para api/worker/ai/migrator; "[orquestracao]" para o orchestrator (Dagster).
+ARG INSTALL_EXTRAS=""
+RUN pip install -U pip && pip install ".${INSTALL_EXTRAS}"
 
-# Usuário não-root (least privilege).
-RUN useradd --create-home --uid 10001 dsab && chown -R dsab:dsab /app
+# Usuário não-root (least privilege) + DAGSTER_HOME gravável (orchestrator).
+RUN useradd --create-home --uid 10001 dsab \
+    && mkdir -p /opt/dagster/home \
+    && chown -R dsab:dsab /app /opt/dagster
+ENV DAGSTER_HOME=/opt/dagster/home
 USER dsab
 
 EXPOSE 8000

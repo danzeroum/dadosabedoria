@@ -20,9 +20,18 @@ dependencies = [
     "opentelemetry-instrumentation-redis>=0.46b0",
     "opentelemetry-exporter-otlp>=1.25",
     "PyYAML>=6.0,<7.0",
+    # --- ingestão (medallion) ---
+    "polars>=1.0,<2.0",
+    "minio>=7.2,<8.0",
+    "py7zr>=0.21,<1.0",
 ]
 
 [project.optional-dependencies]
+# Runtime de orquestração (só o contêiner `orchestrator` precisa do Dagster).
+orquestracao = [
+    "dagster>=1.8,<2.0",
+    "dagster-webserver>=1.8,<2.0",
+]
 dev = [
     "pytest>=8.2,<9.0",
     "pytest-asyncio>=0.23,<1.0",
@@ -87,12 +96,20 @@ testpaths = ["tests"]
 markers = [
     "integration: requires a live Postgres+PostGIS (and Redis)",
     "system: end-to-end across the running stack",
+    "orquestracao: requires the Dagster runtime (extra orquestracao)",
 ]
 addopts = "-ra"
 
 [tool.coverage.run]
 source = ["app"]
-omit = ["app/ia/*", "app/consentimento/*", "app/**/__main__.py", "alembic/*"]
+omit = [
+    "app/ia/*",
+    "app/consentimento/*",
+    "app/orquestracao/*",       # validado no job de CI dedicado (requer Dagster)
+    "app/ingestao/run_caged.py", # entrypoint CLI (rede/S3)
+    "app/**/__main__.py",
+    "alembic/*",
+]
 # SQLAlchemy async usa greenlet; sem isto o coverage perde linhas após um await no DB.
 concurrency = ["thread", "greenlet"]
 

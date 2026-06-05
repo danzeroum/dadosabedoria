@@ -20,9 +20,10 @@ Este repositório contém a **versão fundacional permanente**: a primeira base 
 - Observabilidade (logs JSON sem PII, traces OTel, `/metrics` interno, `/health`) e **quality gate**
   no CI (lint, mypy, bandit, testes, cobertura, contrato OpenAPI, scan de deps/segredos).
 
-Próximas fatias: ingestão real (CAGED → BCB/ESTBAN → IBGE) + Dagster; IVM como view materializada;
-frontend (mapa semafórico); IA ancorada; runtime de consentimento. Veja `docs/adr/` e o documento
-técnico.
+A **ingestão real do CAGED** (Onda 1) já entrou — bronze→prata→ouro pelo mesmo `escrever_ouro`,
+com Dagster Degrau 1 (ver "Ingestão" abaixo e ADR-0006). Próximas fatias: BCB/ESTBAN + IVM (view
+materializada); frontend (mapa semafórico); IA ancorada; runtime de consentimento. Veja
+`docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 
@@ -70,6 +71,20 @@ curl http://localhost/v1/territorios/3550308
 docker compose --profile observability up
 ```
 
+## Ingestão (Onda 1 — CAGED)
+
+A esteira **bronze→prata→ouro** do Novo CAGED produz `trabalho.emprego.saldo_caged` (saldo de
+emprego formal por município/mês), passando pela MESMA regra de supressão da fundação e gravando
+`linhagem` (URL de origem + hash do bruto). Adaptador com fetcher injetável (testável sem rede),
+transform em Polars, bronze em MinIO (ADR-0006).
+
+- **Execução manual / backfill:** `python -m app.ingestao.run_caged <ano> <mes>` (ex.: `... 2026 4`).
+- **Agendada (Dagster Degrau 1):** o serviço `orchestrator` roda um schedule mensal.
+  ```bash
+  docker compose --profile ingestion up   # minio + worker + orchestrator (Dagster, UI interna :3000)
+  ```
+- O fetcher real baixa o `.7z` do FTP público do PDET; parse/agregação são cobertos por fixture.
+
 ## Como testar
 
 ```bash
@@ -106,11 +121,14 @@ api/            backend FastAPI (monólito modular) + alembic + testes
   app/core/       config, db, cache, observabilidade, erros, registro de plugins, tables
   app/indicadores/ serviço de leitura (Facade + Repository) + rotas + modelos
   app/ingestao/    supressao.py (regra única) + ouro.py (único ponto de escrita)
+                   + adaptadores/ (CAGED), bronze.py, pipeline.py (medallion)
+  app/orquestracao/ Dagster Degrau 1 (job + schedule da esteira CAGED)
+  app/domains/trabalho/  primeiro plugin de domínio (contrato ModuloDominio)
   app/seed/        seed pela MESMA regra de supressão da ingestão
   app/ia, app/consentimento  fronteiras isoladas (stubs nesta fatia)
 docs/           ADRs, openapi.yaml, arquitetura.md, modelo_dados.md
 infra/          traefik, postgres (tuning + pg_hba), observabilidade
-worker/ orchestrator/ web/   reusam/estendem na próxima fatia
+worker/ orchestrator/ web/   worker/orchestrator ativos (ingestão); web na próxima fatia
 docker-compose.yml  .env.example  .github/workflows/ci.yml
 ```
 

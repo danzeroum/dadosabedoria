@@ -126,11 +126,22 @@ services:
     networks: [net_core]
     profiles: ["ingestion"]
 
+  # Dagster Degrau 1: reusa a imagem da api + o extra `orquestracao` (build arg). Schedule mensal
+  # dispara a esteira CAGED. UI/daemon na 3000 (INTERNA — não roteada publicamente).
   orchestrator:
-    build: ./orchestrator
+    build:
+      context: ./api
+      args:
+        INSTALL_EXTRAS: "[orquestracao]"
+    command: ["dagster", "dev", "-m", "app.orquestracao.definitions", "-h", "0.0.0.0", "-p", "3000"]
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_KEY=${S3_KEY}
+      - S3_SECRET=${S3_SECRET}
+      - S3_BUCKET_BRONZE=${S3_BUCKET_BRONZE}
+    depends_on:
+      db: {condition: service_healthy}
     networks: [net_core]
     profiles: ["ingestion"]
 

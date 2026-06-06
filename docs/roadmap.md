@@ -22,6 +22,12 @@ parar. Só os **🔴 gates externos** (dependem de conta/chave/domínio/pessoa d
 esses seguem a regra **adiar-e-seguir**: adia SÓ aquele item, constrói tudo ao redor, e acumula o
 pendente na **Lista de desbloqueio** abaixo. O agente **nunca fica ocioso** esperando um gate.
 
+**PIVÔ (2026-06-06) — da "prontidão de fonte" para "valor de produto até a TELA".** O backbone já
+basta (financas/educacao/compras/saude no ar pelo `ModuloDominio`; 5+ domínios). **Pare de adicionar
+fonte nova**; feche o ciclo ponta-a-ponta: **(1) IVM completo → (2) mapa semafórico (1ª tela) →
+(3) puxar produtos por valor (#5)**, cada um como fatia vertical **até a tela**, com a dupla-face do
+§17. Fonte nova só quando um produto priorizado exigir. Os únicos pontos que param seguem os 5 🔴.
+
 **🟢 Pré-autorizados (seguir o default, não perguntar):**
 - **#1 Metodologia do IVM** — min-max v1 agora; **z-score = v2** no *IVM completo* (multidomínio +
   cobertura nacional), versionado (ADR-0018). _(decidido)_
@@ -51,7 +57,7 @@ _O agente acrescenta aqui ao bater num 🔴 e segue construindo o resto._
 
 ## Estado atual (reconciliação — 2026-06-06)
 
-23 PRs mergeados; ADRs 0001–0024. **Adiantado** em capacidades transversais em relação à sequência
+24 PRs mergeados; ADRs 0001–0025. **Adiantado** em capacidades transversais em relação à sequência
 do briefing: o consentimento (runtime + ciclo LGPD + **anel de chaves**), a **IA ancorada** (RAG +
 guardrails + **provedor de LLM** DeepSeek/Ollama) e os **runbooks** (backup/restore com PII separada,
 rotação) já estão entregues — eles aparecem na Onda 2D/Onda 0 e estão marcados `[x]` abaixo. **Falta
@@ -132,6 +138,9 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 
 **Produtos entregues** (sobre CAGED/IBGE/BCB):
 - [x] 🟢 **TRANSP-01 IVM básico** (view materializada O(1)) — ADR-0008; `/v1/ivm`.
+- [x] 🟢 **TRANSP-01 IVM completo (multidomínio)** — soma o subíndice de **saúde** (SIH) a
+  emprego+finanças, peso dinâmico (saúde opcional, respeita supressão), `versao_metodologia=v1.1`;
+  min-max mantido (z-score = v2 ao atingir cobertura nacional) — ADR-0025; migração 0015.
 - [ ] 🔵 **TRAB-01 Pulso Produtivo** — empacotar o produto/endpoint nomeado (dado já no ar via `/v1/valores`).
 - [ ] 🔵 TRAB-03 Giro Local (CAGED+IBGE+ESTBAN); TRAB-02 Salário Radar; TRAB-04 Região Emprega.
 
@@ -171,8 +180,10 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.
 - [ ] 🔵 TRANSP-06 OndeFoi (SICONFI); TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud);
   TRANSP-05 ObraViva (PNCP/SIOP/SIAFI+CAGED+OSM).
-- [ ] 🟢 IVM **completo** (incorpora saúde/educação/transparência; nova `versao_metodologia`, série
-  antiga preservada).
+- [x] 🟢 IVM **completo** (multidomínio) — incorpora o subíndice de **saúde** (SIH) a emprego+finanças
+  (`versao_metodologia=v1.1`, min-max; z-score=v2 ao atingir cobertura nacional) — ADR-0025. Os
+  indicadores **neutros** (matrículas, transferências, contratos) seguem descritivos (fora do índice
+  de vulnerabilidade) até existir recorte direcional/per capita.
 
 ### 2B. Fontes de saúde (ETL pesado — DATASUS)
 **Fontes:** DATASUS SIA/SIH/CNES/SINAN/SINASC/SIM (PySUS/FTP DBC), INSS, BPS; clima (INMET/INPE).

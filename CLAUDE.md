@@ -12,8 +12,10 @@ cada commit.
   externos** param (LLM key, OIDC, domínio/TLS, credenciais de fonte restrita, conselho PbD) e, mesmo
   esses, com **adiar-e-seguir**: adia só o item, constrói o resto, e anota na **Lista de desbloqueio**
   do roadmap. **Nunca fique ocioso** num gate.
-- **Sequência de domínios (Onda 2, por prontidão):** SICONFI → INEP → PNCP → DATASUS … — fatia
-  vertical (dado→API→tela), dupla-face por §17 onde marcado.
+- **Lente atual (PIVÔ 2026-06-06): puxar PRODUTO até a TELA, por valor (#5).** O backbone já basta
+  (financas/educacao/compras/saude no ar pelo `ModuloDominio`). **Não adicionar fonte nova agora** —
+  cada fatia vai do dado à **tela**, com dupla-face §17. Marco: **IVM completo → mapa semafórico →
+  produtos por valor** (OndeFoi/EDU-01/saúde/PNCP). Fonte nova só quando um produto priorizado exigir.
 
 ## Fluxo de trabalho (cada fatia)
 1. Branch nova a partir de `origin/main` (o contêiner é efêmero e **reseta**; sempre

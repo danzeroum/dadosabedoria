@@ -103,6 +103,7 @@ class IVMItem(BaseModel):
     semaforo: str  # verde | amarelo | vermelho
     v_emprego: float
     v_financas: float
+    v_saude: float | None = None  # subíndice de saúde (None onde não há dado não suprimido)
 
 
 class RespostaIVM(BaseModel):

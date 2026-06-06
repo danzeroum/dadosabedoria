@@ -12,13 +12,46 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 - **Camadas de autoridade** (honestidade sobre a origem de cada item):
   - **🟢 Definido** — vem do briefing / documento técnico / esquema. Executar sem perguntar.
   - **🔵 Backlog implícito** — decorre dos invariantes e ADRs; executável sem perguntar.
-  - **🟡 Decisão de produto** — escolha do dono (§10 do briefing). **Pare** (ou siga o default se o
-    dono autorizou "siga sem perguntar").
+  - **🟡 Decisão de produto** — escolha do dono (§10 do briefing). Ver **Política de autonomia**.
 - Cada onda termina num **critério de saída** com a mesma régua de qualidade.
+
+## Política de autonomia (pré-autorização do dono — 2026-06-06)
+
+O dono **pré-autorizou** os 🟡 "seguros" (reversíveis/direcionais): o agente segue o *default* sem
+parar. Só os **🔴 gates externos** (dependem de conta/chave/domínio/pessoa de fora) param — e mesmo
+esses seguem a regra **adiar-e-seguir**: adia SÓ aquele item, constrói tudo ao redor, e acumula o
+pendente na **Lista de desbloqueio** abaixo. O agente **nunca fica ocioso** esperando um gate.
+
+**🟢 Pré-autorizados (seguir o default, não perguntar):**
+- **#1 Metodologia do IVM** — min-max v1 agora; **z-score = v2** no *IVM completo* (multidomínio +
+  cobertura nacional), versionado (ADR-0018). _(decidido)_
+- **#2 Design system** — DS mínimo acessível (WCAG); feito (#16). _(decidido)_
+- **#5 Ordem de produtos** — valor de produto **dentro** do que a fonte já desbloqueou.
+- **#6 Metas north-star** — direcionais; não enshrine; calibrar com dado real.
+- **#7 Canal/parcerias** — priorizar transparência/saneamento (pull legal B2G).
+- **#8 TLS/gateway** — Traefik em **dev-mode** até existir domínio (vira 🔴 só em produção).
+
+**🔴 Gates externos (HARD STOP do item — adiar-e-seguir + Lista de desbloqueio):**
+1. **Provedor/chave de LLM** (DeepSeek key + orçamento; Ollama local dispensa) — gate da IA real.
+2. **IdP/OIDC do cidadão** (provedor + client credentials) — gate da auth real do cidadão.
+3. **Domínio + TLS/ACME de produção** — gate ao sair do dev-mode.
+4. **Credenciais de fontes restritas** (ex.: DataJud) — gate só dessas fontes; as abertas seguem.
+5. **Conselho PbD (Defensoria/ONGs)** — **não** é gate de código: bloqueia só **HAB-04 e DIR-01**;
+   o resto é construído e esses dois ficam adiados/sinalizados.
+
+## Lista de desbloqueio (gates externos pendentes — para o dono resolver em bloco)
+
+_O agente acrescenta aqui ao bater num 🔴 e segue construindo o resto._
+- [ ] **LLM real:** `LLM_BASE_URL`/`LLM_MODEL`/`LLM_API_KEY` (DeepSeek) ou subir Ollama. _(IA roda em
+  template até lá — degradação graciosa, ADR-0015.)_
+- [ ] **OIDC:** provedor (gov.br/Keycloak) + client id/secret. _(login v1 por JWT segue até lá.)_
+- [ ] **Domínio + `ACME_EMAIL`:** para TLS de produção no Traefik. _(dev-mode até lá.)_
+- [ ] **DataJud (e outras fontes com auth):** credencial/chave. _(fontes abertas seguem sem isso.)_
+- [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 
 ## Estado atual (reconciliação — 2026-06-06)
 
-16 PRs mergeados; ADRs 0001–0018. **Adiantado** em capacidades transversais em relação à sequência
+19 PRs mergeados; ADRs 0001–0020. **Adiantado** em capacidades transversais em relação à sequência
 do briefing: o consentimento (runtime + ciclo LGPD + **anel de chaves**), a **IA ancorada** (RAG +
 guardrails + **provedor de LLM** DeepSeek/Ollama) e os **runbooks** (backup/restore com PII separada,
 rotação) já estão entregues — eles aparecem na Onda 2D/Onda 0 e estão marcados `[x]` abaixo. **Falta
@@ -28,8 +61,10 @@ largura**: mais domínios/produtos (Ondas 2–3) e as fontes de ETL médio/pesad
 - **Onda 1 (Backbone + IVM básico): essencialmente completa** — ADRs 0006–0010, 0017, 0018;
   contratos de dados + frescor + calibrações 🟡 (IVM, design tokens) resolvidos; só faltam os
   **produtos TRAB extra** (precisam de definição de produto/fonte).
-- **Onda 2D (cidadão + IA + open-core): parcial** — consentimento/IA/LLM `[x]` (ADRs 0011, 0012,
-  0014, 0015, 0016); faltam OIDC real e a camada profunda paga.
+- **Onda 2D (cidadão + IA + open-core): parcial** — consentimento/IA/LLM + **camada profunda paga
+  com chaves por cliente** `[x]` (ADRs 0011–0020); falta **OIDC real** (🔴 gate) e cotas/billing.
+- **Onda 2A/2B/2C (novos domínios): a abrir** — sequência por prontidão de fonte:
+  **SICONFI → INEP → PNCP → DATASUS …** (decisão do dono, 2026-06-06).
 
 ## Princípios que valem em TODAS as ondas
 

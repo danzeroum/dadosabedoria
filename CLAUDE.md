@@ -6,8 +6,14 @@ cada commit.
 
 ## O plano vive no repo
 - **`docs/roadmap.md` é a fonte única do plano.** No início da sessão, leia-o e **execute o próximo
-  item `[ ]` de cima para baixo**. Marque `[x]` ao mergear. Itens `[B]`/`[A]` não se re-perguntam;
-  itens `🟡` têm *default proposto* — siga o default salvo se a decisão for irreversível/cara.
+  item `[ ]` de cima para baixo**. Marque `[x]` ao mergear.
+- **Política de autonomia (pré-autorizada pelo dono — ver `docs/roadmap.md`):** os `🟡` "seguros"
+  (#1,#2,#5,#6,#7,#8) estão **pré-autorizados** — siga o *default*, não pare. Só os **🔴 gates
+  externos** param (LLM key, OIDC, domínio/TLS, credenciais de fonte restrita, conselho PbD) e, mesmo
+  esses, com **adiar-e-seguir**: adia só o item, constrói o resto, e anota na **Lista de desbloqueio**
+  do roadmap. **Nunca fique ocioso** num gate.
+- **Sequência de domínios (Onda 2, por prontidão):** SICONFI → INEP → PNCP → DATASUS … — fatia
+  vertical (dado→API→tela), dupla-face por §17 onde marcado.
 
 ## Fluxo de trabalho (cada fatia)
 1. Branch nova a partir de `origin/main` (o contêiner é efêmero e **reseta**; sempre

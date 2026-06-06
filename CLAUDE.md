@@ -16,6 +16,14 @@ cada commit.
   (financas/educacao/compras/saude no ar pelo `ModuloDominio`). **Não adicionar fonte nova agora** —
   cada fatia vai do dado à **tela**, com dupla-face §17. Marco: **IVM completo → mapa semafórico →
   produtos por valor** (OndeFoi/EDU-01/saúde/PNCP). Fonte nova só quando um produto priorizado exigir.
+- **Doutrina dado-vivo (refino 2026-06-06):** todo produto nomeado vai à tela com **dado VIVO**
+  (pipeline `run_*` + schedule Dagster), **não seed** — começando pela fonte **gate-free**. Seed é só
+  demo/fixture, sempre rotulado. **Realidade de rede do contêiner: github-only** — IBGE/BCB/SICONFI
+  respondem 403 ("Host not in allowlist"), então **nenhuma fonte busca dado real aqui**; "vivo" =
+  esteira completa (adapter→bronze→prata→ouro) + schedule + fixture fiel + fetcher real, exercida no CI
+  por fetcher *fake* (mesmo nível de CAGED/ESTBAN); o dado real flui no ambiente com rede aberta.
+  Desbloqueio (🔴 do dono do ambiente): liberar no allowlist `apidatalake.tesouro.gov.br` (SICONFI),
+  `servicodados.ibge.gov.br` (IBGE), `www4.bcb.gov.br` (CAGED/ESTBAN) → rodar `python -m app.ingestao.run_<fonte>`.
 
 ## Fluxo de trabalho (cada fatia)
 1. Branch nova a partir de `origin/main` (o contêiner é efêmero e **reseta**; sempre

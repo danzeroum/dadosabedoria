@@ -1,0 +1,13 @@
+{
+  "name": "dadosabedoria-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Captura de telas (Playwright) para artefato de CI + smoke visual da tela do IVM.",
+  "scripts": {
+    "captura": "node captura.mjs"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

@@ -139,8 +139,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: build da imagem api
-        run: docker build -t dadosabedoria-api ./api
+      - name: build da imagem api (retry — o pull do base image é flaky no Docker Hub)
+        run: |
+          for i in 1 2 3; do
+            docker build -t dadosabedoria-api ./api && exit 0
+            echo "::warning::docker build falhou (tentativa $i/3 — provável timeout no pull do base image); retry…"
+            sleep $((i * 15))
+          done
+          echo "::error::docker build falhou após 3 tentativas"; exit 1
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - name: pip-audit (vulnerabilidades de dependência de runtime)

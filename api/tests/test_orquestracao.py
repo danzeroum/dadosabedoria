@@ -18,14 +18,18 @@ def test_definitions_carregam() -> None:
     from app.orquestracao.definitions import (
         job_caged,
         job_estban,
+        job_siconfi,
         schedule_caged_mensal,
         schedule_estban_mensal,
+        schedule_siconfi_anual,
     )
 
     assert job_caged.name == "job_caged"
     assert job_estban.name == "job_estban"
+    assert job_siconfi.name == "job_siconfi"
     assert schedule_caged_mensal.name == "schedule_caged_mensal"
     assert schedule_estban_mensal.name == "schedule_estban_mensal"
+    assert schedule_siconfi_anual.name == "schedule_siconfi_anual"
 
 
 def test_schedules_geram_competencia_com_defasagem() -> None:
@@ -38,3 +42,13 @@ def test_schedules_geram_competencia_com_defasagem() -> None:
     estban = schedule_estban_mensal(ctx).run_config["ops"]["op_carregar_estban"]["config"]
     assert caged["competencia"] == "202604"  # CAGED: 2 meses
     assert estban["competencia"] == "202603"  # ESTBAN: 3 meses
+
+
+def test_schedule_siconfi_usa_exercicio_anterior() -> None:
+    from app.orquestracao.definitions import schedule_siconfi_anual
+
+    ctx = dagster.build_schedule_context(
+        scheduled_execution_time=datetime(2026, 6, 1, 8, 0, tzinfo=UTC)
+    )
+    cfg = schedule_siconfi_anual(ctx).run_config["ops"]["op_carregar_siconfi"]["config"]
+    assert cfg["competencia"] == "202501"  # DCA anual → exercício anterior

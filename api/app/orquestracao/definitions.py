@@ -1,4 +1,4 @@
-"""Dagster Degrau 1 — jobs agendados (mensais) das esteiras CAGED e BCB/ESTBAN.
+"""Dagster Degrau 1 — jobs agendados das esteiras CAGED, BCB/ESTBAN (mensais) e SICONFI (anual).
 
 Retry e logs já ligados. Degraus 2–4 (assets, sensors, partições, backfills) entram por dor (§2.1).
 """
@@ -14,9 +14,10 @@ from app.core.db import connect
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import AdaptadorCaged, FetcherCagedFTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
+from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi, FetcherSiconfiHTTP
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
-from app.ingestao.pipeline import executar_caged, executar_estban
+from app.ingestao.pipeline import executar_caged, executar_estban, executar_siconfi
 
 
 class ConfigIngestao(dg.Config):
@@ -47,6 +48,16 @@ async def _rodar_estban(janela: Janela) -> None:  # pragma: no cover - rede/S3
     await refrescar_ivm()
 
 
+async def _rodar_siconfi(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    # SICONFI alimenta um indicador de PRODUTO (OndeFoi), não o IVM → sem refrescar_ivm.
+    settings = get_settings()
+    adaptador = AdaptadorSiconfi(FetcherSiconfiHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_siconfi(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
 @dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
 def op_carregar_caged(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
     context.log.info(f"CAGED: carregando competência {config.competencia}")
@@ -59,6 +70,12 @@ def op_carregar_estban(context: dg.OpExecutionContext, config: ConfigIngestao) -
     asyncio.run(_rodar_estban(Janela.de_competencia(config.competencia)))  # pragma: no cover
 
 
+@dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
+def op_carregar_siconfi(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
+    context.log.info(f"SICONFI: carregando exercício {config.competencia}")
+    asyncio.run(_rodar_siconfi(Janela.de_competencia(config.competencia)))  # pragma: no cover
+
+
 @dg.job
 def job_caged() -> None:
     op_carregar_caged()
@@ -67,6 +84,11 @@ def job_caged() -> None:
 @dg.job
 def job_estban() -> None:
     op_carregar_estban()
+
+
+@dg.job
+def job_siconfi() -> None:
+    op_carregar_siconfi()
 
 
 @dg.schedule(job=job_caged, cron_schedule="0 6 5 * *")  # dia 5, 06h UTC (lag CAGED ~40d)
@@ -85,7 +107,18 @@ def schedule_estban_mensal(context: dg.ScheduleEvaluationContext) -> dg.RunReque
     )
 
 
+@dg.schedule(
+    job=job_siconfi, cron_schedule="0 8 1 6 *"
+)  # 1º jun, 08h UTC — DCA do exercício anterior
+def schedule_siconfi_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    # DCA é publicada no ano seguinte (prazo ~abr/mai) → ingere o exercício anterior.
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(
+        run_config={"ops": {"op_carregar_siconfi": {"config": {"competencia": f"{ano:04d}01"}}}}
+    )
+
+
 defs = dg.Definitions(
-    jobs=[job_caged, job_estban],
-    schedules=[schedule_caged_mensal, schedule_estban_mensal],
+    jobs=[job_caged, job_estban, job_siconfi],
+    schedules=[schedule_caged_mensal, schedule_estban_mensal, schedule_siconfi_anual],
 )

@@ -21,6 +21,9 @@ from app.ingestao.adaptadores.caged import CODIGO_INDICADOR as CODIGO_CAGED
 from app.ingestao.adaptadores.caged import AdaptadorCaged
 from app.ingestao.adaptadores.estban import CODIGO_INDICADOR as CODIGO_ESTBAN
 from app.ingestao.adaptadores.estban import AdaptadorEstban
+from app.ingestao.adaptadores.siconfi import CODIGO_INDICADOR as CODIGO_SICONFI
+from app.ingestao.adaptadores.siconfi import CONTRATO as CONTRATO_SICONFI
+from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi
 from app.ingestao.bronze import ArmazenamentoBronze, gravar_bronze
 from app.ingestao.ouro import CelulaOuro, ContextoLinhagem, GravadorOuro, ResumoCarga
 from app.ingestao.supressao import MetaIndicadorSupressao
@@ -196,6 +199,61 @@ async def executar_estban(
         janela,
         fonte_codigo="bcb_estban",
         transformacoes=f"estban {janela.competencia}: bronze->prata->ouro (crédito por município)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_siconfi(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorSiconfi,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira SICONFI/DCA de um exercício (anual). Requer ``conn`` numa transação aberta.
+
+    Indicador de PRODUTO (``OndeFoi``/TRANSP-06), não subíndice do IVM → sem ``refrescar_ivm``.
+    ``janela.ano`` é o exercício da DCA; ``janela.periodo`` (1º jan) marca o ano.
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"siconfi/{janela.ano}.json", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_SICONFI.validar(df)  # borda bronze: falha claro se o layout do SICONFI mudar
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind = await _carregar_indicador(conn, CODIGO_SICONFI)
+    mapa7 = await _mapa_municipios(conn)  # SICONFI usa cod_ibge IBGE de 7 dígitos
+
+    celulas = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["transferencias"]), 2))),
+                n_amostra=None,
+                confiabilidade=4,
+                fonte_id=ind.fonte_id,
+            )
+        )
+    return await _gravar_celulas(
+        conn,
+        ind,
+        celulas,
+        janela,
+        fonte_codigo="siconfi",
+        transformacoes=f"siconfi {janela.ano}: bronze->prata->ouro (transferências correntes DCA)",
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

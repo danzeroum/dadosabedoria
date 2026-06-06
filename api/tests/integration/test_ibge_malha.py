@@ -37,10 +37,11 @@ async def test_carrega_geometria_e_serve_geojson(client) -> None:
     assert sp["properties"]["ivm"] is not None
     assert sp["properties"]["semaforo"] in ("verde", "amarelo", "vermelho")
 
-    # Campinas: tem geometria mas não tem IVM (sem crédito no período) → ivm null.
+    # Campinas: tem geometria E IVM (crédito semeado no período) — entra no mapa com semáforo.
     cps = por_cod["3509502"]
     assert cps["geometry"] is not None
-    assert cps["properties"]["ivm"] is None
+    assert cps["properties"]["ivm"] is not None
+    assert cps["properties"]["semaforo"] in ("verde", "amarelo", "vermelho")
 
 
 async def test_uf_sem_geometria_retorna_vazio(client) -> None:

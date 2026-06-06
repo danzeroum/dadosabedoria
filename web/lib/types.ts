@@ -10,6 +10,7 @@ export interface IVMItem {
   semaforo: Semaforo;
   v_emprego: number;
   v_financas: number;
+  v_saude: number | null; // subíndice de saúde (null onde não há dado não suprimido)
 }
 
 export interface MetaIVM {
@@ -51,6 +52,7 @@ export interface PropriedadesIVM {
   semaforo: Semaforo | null;
   v_emprego: number | null;
   v_financas: number | null;
+  v_saude: number | null;
 }
 
 export interface FeatureIVM {

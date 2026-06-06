@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-_NEGADAS = {"CONSENT_DATABASE_URL", "APP_FIELD_KEY", "CONSENT_PWD"}
+_NEGADAS = {"CONSENT_DATABASE_URL", "APP_FIELD_KEY", "APP_FIELD_KEYS_ANTIGAS", "CONSENT_PWD"}
 _SERVICOS_ANALITICOS = {"api", "worker", "ai", "orchestrator"}
 
 

@@ -50,32 +50,30 @@ no gestor de segredos enquanto existirem artefatos `app-pii_*.dump.gpg` dentro d
 (`APP_RETENTION_DAYS`, padrão 7 dias) — sem ela, não dá para restaurá-los. Passada a retenção,
 descarte a antiga.
 
-## `APP_FIELD_KEY` — a difícil (key-ring)
+## `APP_FIELD_KEY` — anel de chaves (implementado, ADR-0016)
 
-`app/consentimento/cripto.py` usa **uma** chave para duas coisas **determinísticas**:
-- `contato_hash = HMAC-SHA256(APP_FIELD_KEY, contato)` — pseudônimo do cidadão (o e-mail bruto
-  **nunca** é gravado; o `sub` do JWT é esse hash);
-- cifragem de campo (`condicao_sensivel`) com Fernet, chave derivada da `APP_FIELD_KEY`.
+`app/consentimento/cripto.py` usa a chave **primária** (`APP_FIELD_KEY`) para duas coisas
+**determinísticas**: o pseudônimo `contato_hash = HMAC-SHA256(chave, contato)` (o e-mail bruto
+**nunca** é gravado; o `sub` do JWT é esse hash) e a cifragem de campo (`condicao_sensivel`, Fernet).
+Trocar a chave “na lata” quebraria tudo (hashes órfãos, textos ilegíveis) — por isso há um **anel**:
+`APP_FIELD_KEYS_ANTIGAS` (CSV) lista chaves aposentadas, aceitas só para **decifrar/verificar**.
 
-Trocar a chave “na lata” **quebra os dados existentes**: os `contato_hash` antigos ficam órfãos (o
-cidadão volta, gera um hash novo e não acha seus alertas) e os textos cifrados ficam ilegíveis.
-Como o e-mail bruto **não** foi guardado (privacidade), não dá para apenas re-hashear.
+- **Cifragem:** `MultiFernet` cifra com a primária e decifra com qualquer chave do anel.
+- **Pseudônimo:** `hashes_contato` calcula o hash com cada chave; no **login**, `migrar_pseudonimo`
+  casa qualquer versão e **regrava** a linha com o hash da primária (re-chave preguiçoso).
 
-**Procedimento suportado (key-ring + re-chaveamento preguiçoso):**
+**Procedimento de rotação (sem perda):**
 
-1. **Pré-requisito de código (sinalizado — ainda não implementado):** adicionar uma coluna
-   `chave_versao` nas tabelas de `app` e fazer `cripto.py` operar com um **anel de chaves**:
-   - cifragem: `MultiFernet([nova, antiga])` — decifra com qualquer uma, recifra com a nova;
-   - pseudônimo: ao logar, compute o hash com **todas** as versões e case com qualquer uma;
-     ao casar com uma versão antiga, **regrave** a linha com o hash da chave nova (migração
-     preguiçosa, no próximo contato do cidadão).
-2. Publique a chave nova como versão corrente; mantenha a antiga no anel.
-3. **Re-cifre** `condicao_sensivel` em lote (decifra com a antiga, cifra com a nova) — isso é
-   possível porque o texto está no banco.
-4. Os **pseudônimos** migram sozinhos conforme os cidadãos acessam (passo 1). Aposente a chave antiga
-   só quando a migração estiver completa (ou aceite que pseudônimos nunca mais vistos fiquem na
-   versão antiga até expirarem por retenção).
+1. Gere a chave nova. No gestor de segredos: mova a atual para `APP_FIELD_KEYS_ANTIGAS` e ponha a
+   **nova** em `APP_FIELD_KEY`. Reinicie o serviço de consentimento (lê o anel no boot).
+2. **Re-cifre** as condições sensíveis para a primária (no contêiner de consentimento):
+   ```bash
+   python -m app.consentimento.run_rechave
+   ```
+3. Os **pseudônimos** migram sozinhos conforme os cidadãos fazem login (re-chave preguiçoso).
+4. Quando a migração estiver completa (ou após a janela de retenção dos alertas), **remova** a chave
+   antiga de `APP_FIELD_KEYS_ANTIGAS` e reinicie. Pronto — a antiga não decifra mais nada.
 
-> Até esse código existir, considere a `APP_FIELD_KEY` **não rotacionável sem perda**. Está listado
-> como evolução no ADR-0012 e ADR-0013. Em incidente (vazamento da chave), o caminho de menor dano é:
-> nova chave + re-cifrar o que dá + invalidar sessões (trocar `JWT_SECRET`) + avisar os titulares.
+> Com o anel vazio, o comportamento é o de chave única (compatível-para-trás). Em incidente
+> (vazamento), rotacione já + `run_rechave` + invalide sessões (trocar `JWT_SECRET`) + avise os
+> titulares. Verificado por teste (unidade + integração de rotação contra Postgres real).

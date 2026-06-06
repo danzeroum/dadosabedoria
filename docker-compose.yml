@@ -189,6 +189,7 @@ services:
     environment:
       - CONSENT_DATABASE_URL=${CONSENT_DATABASE_URL}
       - APP_FIELD_KEY=${APP_FIELD_KEY}
+      - APP_FIELD_KEYS_ANTIGAS=${APP_FIELD_KEYS_ANTIGAS}
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGINS=${CORS_ORIGINS}
     depends_on:

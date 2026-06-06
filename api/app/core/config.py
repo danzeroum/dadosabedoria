@@ -33,7 +33,10 @@ class Settings(BaseSettings):
     # --- caminhos privilegiados (NÃO entregues à api/worker/ai) ---
     admin_database_url: str | None = Field(default=None)
     consent_database_url: str | None = Field(default=None)
-    app_field_key: str | None = Field(default=None)
+    app_field_key: str | None = Field(default=None)  # chave de campo PRIMÁRIA (cifra/HMAC novos)
+    # Chaves aposentadas (CSV), aceitas só p/ DECIFRAR/VERIFICAR durante a rotação (anel de chaves).
+    # Vazio ⇒ comportamento de chave única. Ver runbook docs/runbooks/rotacao-de-segredos.md.
+    app_field_keys_antigas: str | None = Field(default=None)
 
     # --- cache / eventos ---
     redis_url: str = Field(default="redis://localhost:6379/0")

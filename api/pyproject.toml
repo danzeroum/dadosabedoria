@@ -114,6 +114,7 @@ omit = [
     "app/ingestao/run_estban.py", # entrypoint CLI (rede/S3)
     "app/ingestao/run_ibge.py",   # entrypoint CLI (rede)
     "app/consentimento/run_alertas.py",  # entrypoint CLI (roda no contêiner de consentimento)
+    "app/consentimento/run_rechave.py",  # entrypoint CLI (rotação da chave de campo)
     "app/**/__main__.py",
     "alembic/*",
 ]

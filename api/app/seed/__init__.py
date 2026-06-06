@@ -118,6 +118,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 90,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "siconfi",
+        "nome": "SICONFI/STN",
+        "orgao": "Tesouro Nacional (STN)",
+        "url_doc": "https://apidatalake.tesouro.gov.br/ords/siconfi/docs",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 365,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -187,6 +199,27 @@ INDICADORES: list[dict[str, Any]] = [
         "codigo_externo": "CID-10:J00-J99",
         "metodologia": (
             "Contagem de AIH com diagnóstico principal no grupo J do SIH/SUS por município/mês."
+        ),
+    },
+    {
+        "codigo": "financas.transferencias.correntes",
+        "nome": "Transferências correntes recebidas",
+        "descricao": "Transferências correntes recebidas pelo município no exercício (DCA).",
+        "dominio": "financas",
+        "subdominio": "transferencias",
+        "unidade": "reais",
+        "polaridade": "neutra",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "siconfi",
+        "codigo_externo": "DCA",
+        "metodologia": (
+            "Soma das Transferências Correntes da DCA (SICONFI/STN) por município/exercício."
         ),
     },
 ]
@@ -294,6 +327,21 @@ async def _semear_fatos(
         sau_cels,
         meta,
         ContextoLinhagem(f_sih, sau, "seed Onda 1: prata->ouro (internações resp.)", "seed"),
+    )
+
+    # FINANÇAS (SICONFI/DCA, anual): transferências correntes por município/exercício. n_minimo 0.
+    fin = ind_ids["financas.transferencias.correntes"]
+    f_siconfi = fonte_ids["siconfi"]
+    fin_cels = [
+        CelulaOuro(fin, sp, date(2024, 1, 1), "anual", Decimal("1.50e9"), None, 4, f_siconfi),
+        CelulaOuro(fin, cps, date(2024, 1, 1), "anual", Decimal("2.50e8"), None, 4, f_siconfi),
+    ]
+    await grav.escrever_ouro(
+        fin_cels,
+        meta,
+        ContextoLinhagem(
+            f_siconfi, fin, "seed Onda 2A: prata->ouro (SICONFI transferências)", "seed"
+        ),
     )
 
 

@@ -153,8 +153,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 
 ### 2A. Fontes de ETL médio + transparência
 **Fontes:** DataJud, INEP (anual), Portal da Transparência, SICONFI/STN, PNCP/COMPRASNET, OSM, INMET/INPE/OpenAQ.
-- [ ] 🔵 Adaptadores + contratos dessas fontes; **Dagster Degrau 2** (assets c/ linhagem) e **Degrau 3**
-  (sensors por chegada de arquivo, partições por período/domínio).
+- [x] 🔵 **SICONFI/STN — domínio `financas`** (1ª fonte 2A, ADR-0021): `AdaptadorSiconfi` + contrato
+  na borda bronze + `ModuloFinancas` (plugin) + indicador `financas.transferencias.correntes`
+  semeado pelo caminho ouro e **servido pela API genérica**. _Falta: pipeline live (`run_siconfi` +
+  Dagster), produto OndeFoi (tela), subíndice no IVM completo._
+- [ ] 🔵 Demais adaptadores 2A (INEP → PNCP → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
+  e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
 - [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.
 - [ ] 🔵 TRANSP-06 OndeFoi (SICONFI); TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud);
   TRANSP-05 ObraViva (PNCP/SIOP/SIAFI+CAGED+OSM).

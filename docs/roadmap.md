@@ -51,7 +51,7 @@ _O agente acrescenta aqui ao bater num 🔴 e segue construindo o resto._
 
 ## Estado atual (reconciliação — 2026-06-06)
 
-21 PRs mergeados; ADRs 0001–0022. **Adiantado** em capacidades transversais em relação à sequência
+22 PRs mergeados; ADRs 0001–0023. **Adiantado** em capacidades transversais em relação à sequência
 do briefing: o consentimento (runtime + ciclo LGPD + **anel de chaves**), a **IA ancorada** (RAG +
 guardrails + **provedor de LLM** DeepSeek/Ollama) e os **runbooks** (backup/restore com PII separada,
 rotação) já estão entregues — eles aparecem na Onda 2D/Onda 0 e estão marcados `[x]` abaixo. **Falta
@@ -63,8 +63,8 @@ largura**: mais domínios/produtos (Ondas 2–3) e as fontes de ETL médio/pesad
   **produtos TRAB extra** (precisam de definição de produto/fonte).
 - **Onda 2D (cidadão + IA + open-core): parcial** — consentimento/IA/LLM + **camada profunda paga
   com chaves por cliente** `[x]` (ADRs 0011–0020); falta **OIDC real** (🔴 gate) e cotas/billing.
-- **Onda 2A (novos domínios): em andamento** — `financas` (SICONFI) e `educacao` (INEP) no ar pelo
-  `ModuloDominio`; 2B/2C a abrir. Sequência por prontidão de fonte:
+- **Onda 2A (novos domínios): em andamento** — `financas` (SICONFI), `educacao` (INEP) e `compras`
+  (PNCP) no ar pelo `ModuloDominio`; 2B/2C a abrir. Sequência por prontidão de fonte:
   **SICONFI → INEP → PNCP → DATASUS …** (decisão do dono, 2026-06-06).
 
 ## Princípios que valem em TODAS as ondas
@@ -162,7 +162,11 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   latin-1 via `utf8-lossy`) + contrato na borda bronze + `ModuloEducacao` (plugin) + indicador
   `educacao.matriculas.fundamental` semeado pelo caminho ouro e **servido pela API genérica**.
   _Falta: pipeline live (`run_inep` + Dagster), produtos EDU-01/EDU-02 (telas), subíndice no IVM._
-- [ ] 🔵 Demais adaptadores 2A (PNCP → DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
+- [x] 🔵 **PNCP/Contratações — domínio `compras`** (3ª fonte 2A, ADR-0023): `AdaptadorPncp` (JSON
+  aninhado/Struct: `unidadeOrgao.codigoIbge`) + contrato na borda bronze + `ModuloCompras` (plugin) +
+  indicador `compras.contratos.valor_total` semeado pelo caminho ouro e **servido pela API genérica**.
+  _Falta: pipeline live (`run_pncp` + Dagster), produtos TRANSP-03/05 (telas, dupla face §17)._
+- [ ] 🔵 Demais adaptadores 2A (DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
   e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
 - [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.
 - [ ] 🔵 TRANSP-06 OndeFoi (SICONFI); TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud);

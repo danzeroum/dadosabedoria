@@ -139,10 +139,11 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [ ] 🔵 ALIM-01 Prato no Frio; ALIM-02 Fome Oculta; ALIM-05 Semeando Transparência.
 
 ### 2D. Open-core profundo + cidadão + IA (capacidades transversais)
-- [x] 🟢 **Camada profunda paga:** `POST /v1/consultas-lote` (lote de consultas sobre o acervo
-  público — paga-se escala, não acesso), **auth por chave de API** (Bearer/X-API-Key; servidor guarda
-  só o SHA-256 em `DEEP_API_KEYS`); lote resiliente (erro por item) — ADR-0019. *(Emissão/revogação
-  de chaves por cliente + cotas/billing + rate-limit autenticado no gateway: próximos.)*
+- [x] 🟢 **Camada profunda paga:** `POST /v1/consultas-lote` (lote sobre o acervo público — paga-se
+  escala, não acesso), **auth por chave de API** (Bearer/X-API-Key) com **emissão/revogação por
+  cliente no banco** (`chave_api`, só hash; api só lê, admin emite — least-privilege; CLI
+  `run_chaves`) + break-glass por `DEEP_API_KEYS` — ADR-0019/0020. *(Cotas/billing + rate-limit
+  autenticado no gateway + consulta-lote otimizada: próximos.)*
 - [ ] 🟢 **Autenticação do cidadão (OIDC):** OIDC → JWT curto → cookie HttpOnly/Secure/SameSite →
   refresh. Hoje há **login v1** (JWT em cookie HttpOnly, ADR-0012); falta o OIDC real. 🟡 provedor.
 - [x] 🟢 **Serviço de consentimento (runtime):** escrita em `app`, cifragem de campo (+ **anel de

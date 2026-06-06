@@ -1,8 +1,6 @@
 import { projetar } from "../lib/geo";
-import { corSemaforo } from "../lib/semaforo";
+import { COR_SEM_DADO, corSemaforo } from "../lib/semaforo";
 import type { FeatureCollectionIVM } from "../lib/types";
-
-const CINZA = "#e2e8f0"; // sem dado
 
 // Mapa coroplético (SVG). Município com IVM é clicável (→ drill-down); sem dado fica cinza.
 export function Coropleta({ malha, uf }: { malha: FeatureCollectionIVM; uf: string }) {
@@ -18,7 +16,7 @@ export function Coropleta({ malha, uf }: { malha: FeatureCollectionIVM; uf: stri
     <figure className="coropleta">
       <svg viewBox={viewBox} role="img" aria-label={`Mapa do IVM — ${uf}`} className="coropleta-svg">
         {formas.map((f) => {
-          const cor = f.semaforo ? corSemaforo(f.semaforo) : CINZA;
+          const cor = f.semaforo ? corSemaforo(f.semaforo) : COR_SEM_DADO;
           const titulo =
             f.ivm == null ? `${f.nome}: sem dado` : `${f.nome}: IVM ${f.ivm.toFixed(1)}`;
           const area = (

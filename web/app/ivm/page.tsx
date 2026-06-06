@@ -1,15 +1,14 @@
 import Link from "next/link";
 
 import { Coropleta } from "../../components/Coropleta";
+import { Legenda } from "../../components/Legenda";
 import { MapaSemaforico } from "../../components/MapaSemaforico";
 import { buscarIVM, buscarMalhaIVM } from "../../lib/api";
-import { corSemaforo, rotuloSemaforo } from "../../lib/semaforo";
-import type { FeatureCollectionIVM, Semaforo } from "../../lib/types";
+import type { FeatureCollectionIVM } from "../../lib/types";
 
 // Renderiza por requisição (busca dado vivo da API; não pré-renderiza no build).
 export const dynamic = "force-dynamic";
 
-const ESTADOS: Semaforo[] = ["verde", "amarelo", "vermelho"];
 const UFS = ["SP", "RJ", "MG"];
 
 export default async function IVMPage({
@@ -49,18 +48,7 @@ export default async function IVMPage({
         {meta.nome} — período {meta.periodo ?? "—"} · metodologia {meta.versao_metodologia}
       </p>
       <p className="metodologia">{meta.metodologia}</p>
-      <ul className="legenda">
-        {ESTADOS.map((s) => (
-          <li key={s}>
-            <span className="semaforo-dot" style={{ backgroundColor: corSemaforo(s) }} aria-hidden="true" />
-            <strong>{s}</strong>: {rotuloSemaforo(s)} ({meta.semaforo[s]})
-          </li>
-        ))}
-        <li>
-          <span className="semaforo-dot" style={{ backgroundColor: "#e2e8f0" }} aria-hidden="true" /> sem
-          dado
-        </li>
-      </ul>
+      <Legenda faixas={meta.semaforo} />
 
       <nav className="ufs" aria-label="Coropleta por UF">
         <span>Coropleta por UF:</span>

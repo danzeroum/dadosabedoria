@@ -1,11 +1,19 @@
 import type { Semaforo } from "./types";
 
+// Estados do semáforo, do menos ao mais vulnerável — ordem canônica (legenda, iteração).
+export const ESTADOS: Semaforo[] = ["verde", "amarelo", "vermelho"];
+
 // Tokens de cor do semáforo (contraste AA sobre fundo claro). Único lugar onde a cor é definida.
 export const CORES: Record<Semaforo, string> = {
   verde: "#16a34a",
   amarelo: "#b45309",
   vermelho: "#dc2626",
 };
+
+// Token neutro para célula "sem dado" (único lugar — antes hardcoded no mapa/legenda).
+export const COR_SEM_DADO = "#e2e8f0";
+// Cor de fallback para um estado desconhecido (defensivo).
+const COR_NEUTRA = "#6b7280";
 
 // Rótulo textual — acessibilidade: nunca comunicar só por cor.
 export const ROTULOS: Record<Semaforo, string> = {
@@ -15,7 +23,7 @@ export const ROTULOS: Record<Semaforo, string> = {
 };
 
 export function corSemaforo(estado: Semaforo): string {
-  return CORES[estado] ?? "#6b7280";
+  return CORES[estado] ?? COR_NEUTRA;
 }
 
 export function rotuloSemaforo(estado: Semaforo): string {

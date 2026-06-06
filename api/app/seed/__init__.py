@@ -142,6 +142,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 365,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "pncp",
+        "nome": "PNCP — Contratações Públicas",
+        "orgao": "PNCP (MGI)",
+        "url_doc": "https://pncp.gov.br/api/consulta/swagger-ui/index.html",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "diaria",
+        "lag_tipico_dias": 30,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -254,6 +266,27 @@ INDICADORES: list[dict[str, Any]] = [
         "metodologia": (
             "Soma das matrículas no ensino fundamental (QT_MAT_FUND) do Censo Escolar por "
             "município/ano."
+        ),
+    },
+    {
+        "codigo": "compras.contratos.valor_total",
+        "nome": "Valor total de contratos públicos",
+        "descricao": "Soma do valor dos contratos públicos do município no ano (PNCP).",
+        "dominio": "compras",
+        "subdominio": "contratos",
+        "unidade": "reais",
+        "polaridade": "neutra",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "pncp",
+        "codigo_externo": "valorGlobal",
+        "metodologia": (
+            "Soma do valorGlobal dos contratos do PNCP por município/ano (unidadeOrgao.codigoIbge)."
         ),
     },
 ]
@@ -389,6 +422,19 @@ async def _semear_fatos(
         edu_cels,
         meta,
         ContextoLinhagem(f_inep, edu, "seed Onda 2A: prata->ouro (INEP matrículas)", "seed"),
+    )
+
+    # COMPRAS (PNCP/contratos, anual): valor de contratos públicos por município/ano. n_minimo 0.
+    com = ind_ids["compras.contratos.valor_total"]
+    f_pncp = fonte_ids["pncp"]
+    com_cels = [
+        CelulaOuro(com, sp, date(2024, 1, 1), "anual", Decimal("2.00e9"), None, 4, f_pncp),
+        CelulaOuro(com, cps, date(2024, 1, 1), "anual", Decimal("3.00e8"), None, 4, f_pncp),
+    ]
+    await grav.escrever_ouro(
+        com_cels,
+        meta,
+        ContextoLinhagem(f_pncp, com, "seed Onda 2A: prata->ouro (PNCP contratos)", "seed"),
     )
 
 

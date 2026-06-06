@@ -18,15 +18,16 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 
 ## Estado atual (reconciliação — 2026-06-06)
 
-13 PRs mergeados; ADRs 0001–0016. **Adiantado** em capacidades transversais em relação à sequência
+16 PRs mergeados; ADRs 0001–0018. **Adiantado** em capacidades transversais em relação à sequência
 do briefing: o consentimento (runtime + ciclo LGPD + **anel de chaves**), a **IA ancorada** (RAG +
 guardrails + **provedor de LLM** DeepSeek/Ollama) e os **runbooks** (backup/restore com PII separada,
 rotação) já estão entregues — eles aparecem na Onda 2D/Onda 0 e estão marcados `[x]` abaixo. **Falta
 largura**: mais domínios/produtos (Ondas 2–3) e as fontes de ETL médio/pesado.
 
 - **Onda 0 (Fundação): COMPLETA** ✅ — ADRs 0001–0005, 0013, 0016.
-- **Onda 1 (Backbone + IVM básico): núcleo completo** — ADRs 0006–0010; faltam produtos TRAB extra,
-  contratos de dados formais e calibrações 🟡.
+- **Onda 1 (Backbone + IVM básico): essencialmente completa** — ADRs 0006–0010, 0017, 0018;
+  contratos de dados + frescor + calibrações 🟡 (IVM, design tokens) resolvidos; só faltam os
+  **produtos TRAB extra** (precisam de definição de produto/fonte).
 - **Onda 2D (cidadão + IA + open-core): parcial** — consentimento/IA/LLM `[x]` (ADRs 0011, 0012,
   0014, 0015, 0016); faltam OIDC real e a camada profunda paga.
 
@@ -89,8 +90,9 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 - [x] 🔵 `frescor_dias{fonte}` populado pela ingestão (dias desde o período mais recente) — `pipeline.py`.
 - [x] 🔵 **Contratos de dados formais** por fonte (CAGED/ESTBAN): colunas obrigatórias validadas na
   **borda bronze** (`extrair`), falha clara se o layout mudar — ADR-0017. *(IBGE/JSON: próximo passo.)*
-- [ ] 🟡 **Metodologia e pesos do IVM** — entregue **v1** (min-max normalizado + 50/50, ADR-0008,
-  versionado). Default 🟡 para calibrar: z-score, pesos iguais até calibração — decisão do dono.
+- [x] 🟡 **Metodologia e pesos do IVM** — **decidido (ADR-0018):** manter **v1** (min-max + 50/50,
+  robusto com poucos municípios; o IVM é MV recomputada, não há série a preservar). O **z-score é a
+  v2**, adiada até cobertura nacional (com guarda de `stddev=0`, reescala 0–100, gatilho na Onda 2).
 
 **Produtos entregues** (sobre CAGED/IBGE/BCB):
 - [x] 🟢 **TRANSP-01 IVM básico** (view materializada O(1)) — ADR-0008; `/v1/ivm`.

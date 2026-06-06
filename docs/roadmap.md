@@ -51,7 +51,7 @@ _O agente acrescenta aqui ao bater num 🔴 e segue construindo o resto._
 
 ## Estado atual (reconciliação — 2026-06-06)
 
-22 PRs mergeados; ADRs 0001–0023. **Adiantado** em capacidades transversais em relação à sequência
+23 PRs mergeados; ADRs 0001–0024. **Adiantado** em capacidades transversais em relação à sequência
 do briefing: o consentimento (runtime + ciclo LGPD + **anel de chaves**), a **IA ancorada** (RAG +
 guardrails + **provedor de LLM** DeepSeek/Ollama) e os **runbooks** (backup/restore com PII separada,
 rotação) já estão entregues — eles aparecem na Onda 2D/Onda 0 e estão marcados `[x]` abaixo. **Falta
@@ -63,9 +63,9 @@ largura**: mais domínios/produtos (Ondas 2–3) e as fontes de ETL médio/pesad
   **produtos TRAB extra** (precisam de definição de produto/fonte).
 - **Onda 2D (cidadão + IA + open-core): parcial** — consentimento/IA/LLM + **camada profunda paga
   com chaves por cliente** `[x]` (ADRs 0011–0020); falta **OIDC real** (🔴 gate) e cotas/billing.
-- **Onda 2A (novos domínios): em andamento** — `financas` (SICONFI), `educacao` (INEP) e `compras`
-  (PNCP) no ar pelo `ModuloDominio`; 2B/2C a abrir. Sequência por prontidão de fonte:
-  **SICONFI → INEP → PNCP → DATASUS …** (decisão do dono, 2026-06-06).
+- **Onda 2A/2B (novos domínios): em andamento** — `financas` (SICONFI), `educacao` (INEP), `compras`
+  (PNCP) e `saude` (DATASUS/SIH — 1ª fonte sensível) no ar pelo `ModuloDominio`; 2C a abrir.
+  Sequência por prontidão de fonte: **SICONFI → INEP → PNCP → DATASUS …** (decisão do dono).
 
 ## Princípios que valem em TODAS as ondas
 
@@ -176,7 +176,11 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 
 ### 2B. Fontes de saúde (ETL pesado — DATASUS)
 **Fontes:** DATASUS SIA/SIH/CNES/SINAN/SINASC/SIM (PySUS/FTP DBC), INSS, BPS; clima (INMET/INPE).
-- [ ] 🔵 Adaptador DATASUS robusto (DBC→Parquet, incremental, idempotente) — o de maior atrito.
+- [x] 🔵 **DATASUS/SIH — domínio `saude`** (1ª fonte sensível, ADR-0024): `AdaptadorDatasus` (conta
+  AIH do grupo J por município = `n_amostra`) + contrato na borda bronze + `ModuloSaude` alimentando
+  `saude.resp.internacoes_j` pelo caminho ouro (k-anon). _Falta o pipeline robusto abaixo._
+- [ ] 🔵 Adaptador DATASUS **robusto** (DBC→Parquet, incremental/idempotente, mapa IBGE 6→7) +
+  Dagster; demais sistemas (SIA/CNES/SINAN/SINASC/SIM) — o de maior atrito.
 - [ ] 🔵 SAUDE-04 Fila Visível; SAUDE-06 Receita Cidadã; SAUDE-05 Navegador de Acesso.
 - [ ] 🔵 SAUDE-01 Sentinela Respiratória; SAUDE-02 Caçador de Arboviroses; SAUDE-03 Materno-Infantil;
   SAUDE-11 Burnout. *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*

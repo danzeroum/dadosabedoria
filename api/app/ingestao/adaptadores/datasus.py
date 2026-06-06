@@ -1,0 +1,98 @@
+"""Adaptador do DATASUS/SIH — internações respiratórias por município, domínio ``saude``.
+
+Bronze (parse): lê o tabular do SIH-RD (uma linha por AIH) num DataFrame Polars. Prata: filtra o
+diagnóstico principal do grupo J (CID-10 respiratório) e normaliza ``MUNIC_RES`` (IBGE de 6 dígitos
+do DATASUS). Ouro: conta as AIH por município — a contagem é também o ``n_amostra`` da supressão.
+
+Origem **sensível** (saúde): a contagem entra pelo caminho ouro, onde a regra de k-anonimato suprime
+células abaixo do piso (ADR-0004). Contrato (ASSUNÇÕES a confirmar contra o RD real do SIH): o
+arquivo traz ``MUNIC_RES`` e ``DIAG_PRINC``. Fonte aberta (dado já anonimizado), sem credencial.
+O IBGE do SIH tem 6 dígitos (sem dígito verificador); o mapa 6→7 é responsabilidade do pipeline.
+"""
+
+from __future__ import annotations
+
+import io
+
+import polars as pl
+
+from app.ingestao.adaptadores.base import FetcherFonte, Janela
+from app.ingestao.contratos import ContratoFonte
+
+#: Indicador alimentado por este adaptador (origem sensível — k-anon no caminho ouro).
+CODIGO_INDICADOR = "saude.resp.internacoes_j"
+
+COL_MUNICIPIO = "MUNIC_RES"
+COL_DIAG = "DIAG_PRINC"
+GRUPO_RESPIRATORIO = "J"  # CID-10 J00–J99 (doenças do aparelho respiratório)
+
+#: Contrato do bruto SIH-RD: cada AIH precisa do município de residência e do diagnóstico principal.
+CONTRATO = ContratoFonte(
+    fonte="datasus_sih",
+    colunas_obrigatorias=frozenset({COL_MUNICIPIO, COL_DIAG}),
+)
+
+
+class AdaptadorDatasus:
+    """Padrão Adapter: isola o formato do SIH-RD. Fetcher injetado (testável sem rede)."""
+
+    codigo = "datasus_sih"
+
+    def __init__(self, fetcher: FetcherFonte) -> None:
+        self._fetcher = fetcher
+
+    def baixar_bruto(self, janela: Janela) -> tuple[bytes, str]:
+        return self._fetcher.baixar(janela)
+
+    def parse(self, bruto: bytes) -> pl.DataFrame:
+        # Tudo como texto no bronze (infer_schema_length=0); a contagem vem no ouro.
+        return pl.read_csv(io.BytesIO(bruto), infer_schema_length=0, ignore_errors=True)
+
+    def extrair(self, janela: Janela) -> pl.DataFrame:
+        bruto, _ = self.baixar_bruto(janela)
+        df = self.parse(bruto)
+        CONTRATO.validar(df)  # borda bronze: falha claro se o layout do SIH mudar
+        return df
+
+    def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
+        return df.select(
+            pl.col(COL_MUNICIPIO).cast(pl.Utf8).str.strip_chars().alias("cod_munres"),
+            pl.col(COL_DIAG).cast(pl.Utf8).str.strip_chars().alias("diag"),
+        ).filter(
+            pl.col("cod_munres").is_not_null()
+            & (pl.col("cod_munres") != "")
+            & pl.col("diag").str.starts_with(GRUPO_RESPIRATORIO)
+        )
+
+    def agregar(self, df_prata: pl.DataFrame) -> pl.DataFrame:
+        """Internações respiratórias = contagem de AIH (grupo J) por município (= n_amostra)."""
+        return df_prata.group_by("cod_munres").agg(pl.len().alias("internacoes")).sort("cod_munres")
+
+
+class FetcherDatasusFTP:
+    """Fetcher real: baixa o RD<UF><AAMM>.dbc do FTP do DATASUS e decodifica DBC→tabular.
+
+    Não exercitado em teste (rede/DBC); parse/transformação são cobertos por fixture.
+    """
+
+    HOST = "ftp.datasus.gov.br"
+    CAMINHO = "/dissemin/publicos/SIHSUS/200801_/Dados/"
+    UF = "SP"  # UF da extração (exemplo); a parametrizar quando o pipeline ligar
+
+    def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede/dbc
+        import ftplib  # nosec B402
+        import tempfile
+
+        from pysus.utilities.readdbc import read_dbc  # decodifica DBC→DataFrame
+
+        comp = f"{janela.ano % 100:02d}{janela.mes:02d}"
+        nome = f"RD{self.UF}{comp}.dbc"
+        url = f"ftp://{self.HOST}{self.CAMINHO}{nome}"
+        with tempfile.NamedTemporaryFile(suffix=".dbc") as tmp:
+            with ftplib.FTP(self.HOST, timeout=180) as ftp:  # noqa: S321  # nosec B321
+                ftp.login()
+                ftp.cwd(self.CAMINHO)
+                ftp.retrbinary(f"RETR {nome}", tmp.write)
+            tmp.flush()
+            df = read_dbc(tmp.name, encoding="latin-1")
+        return df.to_csv(index=False).encode("utf-8"), url

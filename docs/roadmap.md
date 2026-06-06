@@ -99,9 +99,10 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 
 **Frontend (design system):**
 - [x] 🟢 App `web/` Next.js: **mapa semafórico do IVM** + drill-down — ADR-0009/0010.
-- [ ] 🟡 **Tokens/componentes do design system** (acessibilidade WCAG formal) — componentes existem
-  (Semaforo/Mapa/SerieTemporal/Comparador/Coropleta); falta tokenização + WCAG. Default: DS mínimo
-  neutro, semáforo acessível (não só cor).
+- [x] 🟡 **Tokens/componentes do design system** (WCAG) — tokens centralizados (`lib/semaforo.ts`:
+  `ESTADOS`, `CORES`, `COR_SEM_DADO`; CSS vars em `globals.css`), componente `Legenda` reutilizável,
+  semáforo acessível (cor redundante com texto + `sr-only` + `:focus-visible`; coropleta com
+  `role=img`/`<title>`). Default aplicado: DS mínimo neutro, não comunica só por cor.
 
 **Critério de saída:** ingestão reexecutável/idempotente; IVM no ar com proveniência; mapa navegável;
 cobertura mantida (100% supressão/IVM). **Núcleo ✅; resta produtos TRAB e contratos formais.**

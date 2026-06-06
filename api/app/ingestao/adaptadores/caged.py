@@ -15,6 +15,7 @@ import io
 import polars as pl
 
 from app.ingestao.adaptadores.base import FetcherFonte, Janela
+from app.ingestao.contratos import ContratoFonte
 
 #: Código do indicador alimentado por este adaptador.
 CODIGO_INDICADOR = "trabalho.emprego.saldo_caged"
@@ -23,6 +24,12 @@ CODIGO_INDICADOR = "trabalho.emprego.saldo_caged"
 COL_COMPETENCIA = "competênciamov"
 COL_MUNICIPIO = "município"
 COL_SALDO = "saldomovimentação"
+
+#: Contrato de dados do bruto CAGEDMOV — checado na borda bronze (extrair).
+CONTRATO = ContratoFonte(
+    fonte="caged",
+    colunas_obrigatorias=frozenset({COL_COMPETENCIA, COL_MUNICIPIO, COL_SALDO}),
+)
 
 
 class AdaptadorCaged:
@@ -48,7 +55,9 @@ class AdaptadorCaged:
 
     def extrair(self, janela: Janela) -> pl.DataFrame:
         bruto, _ = self.baixar_bruto(janela)
-        return self.parse(bruto)
+        df = self.parse(bruto)
+        CONTRATO.validar(df)  # borda bronze: falha claro se o layout do CAGED mudar
+        return df
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
         return df.select(

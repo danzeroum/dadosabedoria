@@ -14,6 +14,7 @@ import io
 import polars as pl
 
 from app.ingestao.adaptadores.base import FetcherFonte, Janela
+from app.ingestao.contratos import ContratoFonte
 
 #: Indicador alimentado por este adaptador.
 CODIGO_INDICADOR = "credito.operacoes.saldo_total"
@@ -21,6 +22,13 @@ CODIGO_INDICADOR = "credito.operacoes.saldo_total"
 COL_CODMUN = "CODMUN"
 PADRAO_VERBETE_CREDITO = "160"  # verbete 160 = Operações de Crédito
 ESCALA_REAIS = 1000  # ESTBAN em R$ mil → reais
+
+#: Contrato do bruto ESTBAN: CODMUN + ao menos uma coluna do verbete de crédito (dinâmica).
+CONTRATO = ContratoFonte(
+    fonte="estban",
+    colunas_obrigatorias=frozenset({COL_CODMUN}),
+    coluna_contendo=PADRAO_VERBETE_CREDITO,
+)
 
 
 class AdaptadorEstban:
@@ -45,7 +53,9 @@ class AdaptadorEstban:
 
     def extrair(self, janela: Janela) -> pl.DataFrame:
         bruto, _ = self.baixar_bruto(janela)
-        return self.parse(bruto)
+        df = self.parse(bruto)
+        CONTRATO.validar(df)  # borda bronze: falha claro se o layout do ESTBAN mudar
+        return df
 
     def _coluna_credito(self, df: pl.DataFrame) -> str:
         for nome in df.columns:

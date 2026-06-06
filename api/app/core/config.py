@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     s3_secret: str | None = Field(default=None)
     s3_bucket_bronze: str = Field(default="bronze")
 
+    # --- Tier profundo (open-core pago): SHA-256 (hex, CSV) das chaves de API emitidas a clientes.
+    # Guarda-se o HASH, não a chave bruta. Vazio ⇒ tier profundo sem chaves válidas (tudo 401).
+    deep_api_keys: str | None = Field(default=None)
+
     # --- IA (fronteira; placeholder) ---
     llm_api_key: str | None = Field(default=None)
     # Provedor do narrador via API OpenAI-compatível: DeepSeek (hospedado) ou Ollama (local).

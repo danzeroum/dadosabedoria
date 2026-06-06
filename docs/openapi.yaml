@@ -36,6 +36,53 @@ components:
       - metodologia
       title: Citacao
       type: object
+    ConsultaItem:
+      properties:
+        ate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período final YYYY-MM
+          title: Ate
+        de:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: período inicial YYYY-MM
+          title: De
+        indicador:
+          description: código namespaced do indicador (obrigatório)
+          title: Indicador
+          type: string
+        por_pagina:
+          default: 100
+          maximum: 1000.0
+          minimum: 1.0
+          title: Por Pagina
+          type: integer
+        territorio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: codigo_ibge do território
+          title: Territorio
+      required:
+      - indicador
+      title: ConsultaItem
+      type: object
+    ConsultaLoteIn:
+      properties:
+        consultas:
+          items:
+            $ref: '#/components/schemas/ConsultaItem'
+          maxItems: 50
+          minItems: 1
+          title: Consultas
+          type: array
+      required:
+      - consultas
+      title: ConsultaLoteIn
+      type: object
     HTTPValidationError:
       properties:
         detail:
@@ -330,6 +377,21 @@ components:
       - paginacao
       title: RespostaIndicadores
       type: object
+    RespostaLote:
+      properties:
+        resultados:
+          items:
+            $ref: '#/components/schemas/ResultadoLote'
+          title: Resultados
+          type: array
+        total:
+          title: Total
+          type: integer
+      required:
+      - resultados
+      - total
+      title: RespostaLote
+      type: object
     RespostaValores:
       properties:
         dados:
@@ -346,6 +408,40 @@ components:
       - meta
       - paginacao
       title: RespostaValores
+      type: object
+    ResultadoLote:
+      properties:
+        dados:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ValorOut'
+            type: array
+          - type: 'null'
+          title: Dados
+        erro:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Erro
+        indicador:
+          title: Indicador
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        paginacao:
+          anyOf:
+          - $ref: '#/components/schemas/Paginacao'
+          - type: 'null'
+        territorio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Territorio
+      required:
+      - indicador
+      title: ResultadoLote
       type: object
     TerritorioOut:
       properties:
@@ -473,6 +569,35 @@ paths:
       summary: Health
       tags:
       - infra
+  /v1/consultas-lote:
+    post:
+      description: 'Tier PROFUNDO: várias consultas de valores num só request. Mesmo
+        dado público; o que muda é
+
+        a conveniência/escala (open-core). Requer chave de API válida (Bearer ou X-API-Key).'
+      operationId: consultas_lote_v1_consultas_lote_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultaLoteIn'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaLote'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Consultas Lote
+      tags:
+      - profundo
   /v1/ia/perguntar:
     post:
       description: Responde SÓ com o que recupera do repositório, com citação; sem

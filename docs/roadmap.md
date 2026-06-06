@@ -86,9 +86,9 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 - [x] 🟢 Primeiro plugin de domínio `domains/trabalho/` pelo contrato `ModuloDominio` (Open/Closed).
 - [x] 🟢 Orquestração **Dagster Degrau 1** (schedules mensais) por fonte — ADR-0006.
 - [x] 🟢 Métrica `supressao_total{indicador}`.
-- [ ] 🔵 `frescor_dias{fonte}` populado de verdade (frescor vs lag) — hoje é gauge stub.
-- [ ] 🔵 **Contratos de dados formais** por fonte (CAGED/BCB/IBGE): schema esperado, tipos, defasagem,
-  validação na borda bronze. *(Lacuna "próxima iteração"; ADR-0007/0010.)*
+- [x] 🔵 `frescor_dias{fonte}` populado pela ingestão (dias desde o período mais recente) — `pipeline.py`.
+- [x] 🔵 **Contratos de dados formais** por fonte (CAGED/ESTBAN): colunas obrigatórias validadas na
+  **borda bronze** (`extrair`), falha clara se o layout mudar — ADR-0017. *(IBGE/JSON: próximo passo.)*
 - [ ] 🟡 **Metodologia e pesos do IVM** — entregue **v1** (min-max normalizado + 50/50, ADR-0008,
   versionado). Default 🟡 para calibrar: z-score, pesos iguais até calibração — decisão do dono.
 

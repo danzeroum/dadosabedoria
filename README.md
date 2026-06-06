@@ -30,8 +30,10 @@ e o **runtime de consentimento** — serviço ISOLADO que escreve PII no schema 
 **consumo dos alertas**: quando o IVM de um território entra em **vermelho**, o serviço de
 consentimento casa o evento (IVM público) com os assinantes e grava uma notificação — entrega
 **pull** (`GET /v1/notificacoes`, autenticado; o contato bruto nunca é guardado). Veja os ADRs
-0006–0015. Próximas iterações: OIDC real do cidadão; anel de chaves p/ rotação da `APP_FIELD_KEY`;
-agendamento do consumo após o REFRESH do IVM. Veja `docs/adr/` e o documento técnico.
+0006–0015. O **plano de execução** (ondas, backlog e decisões pendentes) vive em
+[`docs/roadmap.md`](docs/roadmap.md); próximos passos imediatos: anel de chaves p/ rotação da
+`APP_FIELD_KEY`; agendamento do consumo após o REFRESH do IVM; OIDC real do cidadão. Veja também
+`docs/adr/` e o documento técnico.
 
 ## Invariantes inegociáveis
 

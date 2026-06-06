@@ -11,7 +11,7 @@ from datetime import date
 from sqlalchemy import RowMapping, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.consentimento.cripto import cifrar
+from app.consentimento.cripto import cifrar, hashes_contato, recifrar
 from app.core.erros import ValidacaoError
 
 # Convenção: alertas do IVM usam esta finalidade; proveniência (invariante 5) na notificação.
@@ -204,3 +204,58 @@ async def listar_notificacoes(session: AsyncSession, contato_hash: str) -> list[
     )
     await auditar(session, ator=contato_hash, acao="listar_notificacoes", recurso="notificacao")
     return list(linhas)
+
+
+async def migrar_pseudonimo(session: AsyncSession, contato: str) -> str:
+    """Re-chave preguiçoso do pseudônimo: casa o contato com qualquer chave do anel e migra as
+    linhas para o hash da chave PRIMÁRIA. Devolve o hash primário (``sub`` do cidadão).
+
+    Sem chaves antigas, é um no-op (só devolve o hash primário) — compatível-para-trás.
+    """
+    todos = hashes_contato(contato)
+    primaria = todos[0]
+    for antigo in todos[1:]:
+        if antigo == primaria:
+            continue
+        res = await session.execute(
+            text("UPDATE app.assinante_alerta SET contato_hash = :p WHERE contato_hash = :a"),
+            {"p": primaria, "a": antigo},
+        )
+        migradas = res.rowcount or 0  # type: ignore[attr-defined]  # CursorResult em runtime
+        if migradas > 0:
+            # mantém a trilha de auditoria consistente com o novo pseudônimo.
+            await session.execute(
+                text("UPDATE app.auditoria_acesso SET ator = :p WHERE ator = :a"),
+                {"p": primaria, "a": antigo},
+            )
+            await auditar(
+                session,
+                ator=primaria,
+                acao="rechave_pseudonimo",
+                recurso="assinante_alerta",
+                detalhe=f"migradas={migradas}",
+            )
+    return primaria
+
+
+async def recifrar_condicoes(session: AsyncSession) -> int:
+    """Re-cifra TODAS as condições sensíveis para a chave primária (rotação de campo em lote).
+
+    Não precisa do dado bruto: ``recifrar`` decifra com o anel e re-cifra com a primária.
+    """
+    linhas = (await session.execute(text("SELECT id, tipo FROM app.condicao_sensivel"))).all()
+    for cid, token in linhas:
+        await session.execute(
+            text("UPDATE app.condicao_sensivel SET tipo = :t WHERE id = :i"),
+            {"t": recifrar(token), "i": cid},
+        )
+    n = len(linhas)
+    if n:
+        await auditar(
+            session,
+            ator="sistema",
+            acao="rechave_campo",
+            recurso="condicao_sensivel",
+            detalhe=f"recifradas={n}",
+        )
+    return n

@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.consentimento import repositorio
 from app.consentimento.auth import cidadao_atual, definir_cookie, emitir_token, limpar_cookie
-from app.consentimento.cripto import hash_contato
 from app.consentimento.db import get_consent_session
 from app.consentimento.modelos import (
     AlertaIn,
@@ -24,9 +23,17 @@ router = APIRouter(prefix="/v1", tags=["consentimento"])
 
 
 @router.post("/auth/login", response_model=RespostaLogin)
-async def login(dados: LoginIn, resposta: Response) -> RespostaLogin:
-    """Login simples (v1): emite JWT curto em cookie HttpOnly. OIDC real é plugue futuro."""
-    sub = hash_contato(dados.email)
+async def login(
+    dados: LoginIn,
+    resposta: Response,
+    session: AsyncSession = Depends(get_consent_session),
+) -> RespostaLogin:
+    """Login simples (v1): emite JWT curto em cookie HttpOnly. OIDC real é plugue futuro.
+
+    Faz o re-chave preguiçoso do pseudônimo (anel de chaves): ``sub`` = hash da chave primária;
+    linhas sob chaves antigas migram para ela no acesso.
+    """
+    sub = await repositorio.migrar_pseudonimo(session, dados.email)
     definir_cookie(resposta, emitir_token(sub))
     return RespostaLogin(autenticado=True, sub=sub)
 

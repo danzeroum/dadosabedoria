@@ -370,10 +370,15 @@ async def _semear_fatos(
     # CRÉDITO (ESTBAN): reais; n_minimo 0.
     cred = ind_ids["credito.operacoes.saldo_total"]
     f_estban = fonte_ids["bcb_estban"]
+    # SP e Campinas nos mesmos meses → o IVM tem ≥2 municípios (mapa com contraste verde→vermelho).
+    # Campinas com crédito maior (menos vulnerável em finanças) — dado ilustrativo de seed.
     cred_cels = [
         CelulaOuro(cred, sp, date(2026, 2, 1), "mensal", Decimal("1.00e11"), None, 4, f_estban),
         CelulaOuro(cred, sp, date(2026, 3, 1), "mensal", Decimal("1.01e11"), None, 4, f_estban),
         CelulaOuro(cred, sp, date(2026, 4, 1), "mensal", Decimal("0.99e11"), None, 4, f_estban),
+        CelulaOuro(cred, cps, date(2026, 2, 1), "mensal", Decimal("2.00e11"), None, 4, f_estban),
+        CelulaOuro(cred, cps, date(2026, 3, 1), "mensal", Decimal("2.01e11"), None, 4, f_estban),
+        CelulaOuro(cred, cps, date(2026, 4, 1), "mensal", Decimal("1.99e11"), None, 4, f_estban),
     ]
     await grav.escrever_ouro(
         cred_cels,

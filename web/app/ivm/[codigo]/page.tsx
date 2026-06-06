@@ -33,7 +33,7 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
 
       <section>
         <h2>Subíndices de vulnerabilidade ({atual.periodo})</h2>
-        <Comparador vEmprego={atual.v_emprego} vFinancas={atual.v_financas} />
+        <Comparador vEmprego={atual.v_emprego} vFinancas={atual.v_financas} vSaude={atual.v_saude} />
       </section>
 
       <section>

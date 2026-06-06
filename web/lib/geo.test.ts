@@ -26,6 +26,7 @@ function quadrado(cod: string, lon: number, lat: number, ivm: number | null) {
       semaforo: ivm == null ? null : ("amarelo" as const),
       v_emprego: null,
       v_financas: null,
+      v_saude: null,
     },
   };
 }

@@ -12,11 +12,21 @@ function Barra({ rotulo, valor }: { rotulo: string; valor: number }) {
 }
 
 // Compara os subíndices de vulnerabilidade (maior = mais vulnerável).
-export function Comparador({ vEmprego, vFinancas }: { vEmprego: number; vFinancas: number }) {
+// Saúde é opcional: só aparece onde há dado não suprimido no período (multidomínio, ADR-0025).
+export function Comparador({
+  vEmprego,
+  vFinancas,
+  vSaude,
+}: {
+  vEmprego: number;
+  vFinancas: number;
+  vSaude?: number | null;
+}) {
   return (
     <div className="comparador" role="group" aria-label="Subíndices de vulnerabilidade">
       <Barra rotulo="Emprego" valor={vEmprego} />
       <Barra rotulo="Finanças" valor={vFinancas} />
+      {vSaude != null ? <Barra rotulo="Saúde" valor={vSaude} /> : null}
     </div>
   );
 }

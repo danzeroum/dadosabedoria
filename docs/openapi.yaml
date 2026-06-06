@@ -115,6 +115,11 @@ components:
         v_financas:
           title: V Financas
           type: number
+        v_saude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: V Saude
       required:
       - codigo_ibge
       - nome

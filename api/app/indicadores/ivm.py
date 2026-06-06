@@ -28,11 +28,16 @@ from app.indicadores.modelos import (
 _log = get_logger("ivm")
 
 CODIGO_IVM = "transp.ivm.municipal"
-COMPONENTES = ["trabalho.emprego.saldo_caged", "credito.operacoes.saldo_total"]
+COMPONENTES = [
+    "trabalho.emprego.saldo_caged",
+    "credito.operacoes.saldo_total",
+    "saude.resp.internacoes_j",
+]
 _CACHE_PREFIXO = "v1:ivm"
 
 _SELECT_BASE = """
-    SELECT t.codigo_ibge, t.nome, m.periodo, m.ivm, m.semaforo, m.v_emprego, m.v_financas
+    SELECT t.codigo_ibge, t.nome, m.periodo, m.ivm, m.semaforo,
+           m.v_emprego, m.v_financas, m.v_saude
     FROM ivm_municipio m JOIN territorio t ON t.id = m.territorio_id
 """
 
@@ -50,10 +55,11 @@ def _meta(periodo: date | None) -> MetaIVM:
         indicador=CODIGO_IVM,
         nome="Índice de Vulnerabilidade Municipal (IVM)",
         metodologia=(
-            "Subíndices de emprego (saldo CAGED) e finanças (crédito ESTBAN), normalizados "
-            "min-max por período e ponderados 50/50; maior = mais vulnerável."
+            "Subíndices de emprego (CAGED), finanças (crédito ESTBAN) e saúde (internações "
+            "respiratórias SIH), min-max por período; média dos disponíveis (saúde opcional); "
+            "maior = mais vulnerável. z-score = v2 (cobertura nacional, ADR-0025)."
         ),
-        versao_metodologia="v1",
+        versao_metodologia="v1.1",
         componentes=COMPONENTES,
         semaforo={"verde": "< 33", "amarelo": "33–66", "vermelho": "> 66"},
         periodo=periodo.strftime("%Y-%m") if periodo else None,
@@ -69,6 +75,7 @@ def _item(r: RowMapping) -> IVMItem:
         semaforo=r["semaforo"],
         v_emprego=float(r["v_emprego"]),
         v_financas=float(r["v_financas"]),
+        v_saude=float(r["v_saude"]) if r["v_saude"] is not None else None,
     )
 
 
@@ -125,7 +132,8 @@ class RepositorioIVM:
                 'properties', json_build_object(
                   'codigo_ibge', t.codigo_ibge, 'nome', t.nome,
                   'ivm', m.ivm, 'semaforo', m.semaforo,
-                  'v_emprego', m.v_emprego, 'v_financas', m.v_financas)
+                  'v_emprego', m.v_emprego, 'v_financas', m.v_financas,
+                  'v_saude', m.v_saude)
               ) AS f
               FROM territorio t
               LEFT JOIN ivm_municipio m ON m.territorio_id = t.id AND m.periodo = :periodo

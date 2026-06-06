@@ -61,19 +61,24 @@ async def _semear_ivm(conn: AsyncConnection) -> None:
     )
     caged_id, caged_fonte = await _id_indicador(conn, "trabalho.emprego.saldo_caged")
     cred_id, cred_fonte = await _id_indicador(conn, "credito.operacoes.saldo_total")
+    sau_id, sau_fonte = await _id_indicador(conn, "saude.resp.internacoes_j")
     bh = await _id_territorio(conn, _BH)
     rio = await _id_territorio(conn, _RIO)
 
     meta = {
         caged_id: MetaIndicadorSupressao(0, origem_sensivel=False),
         cred_id: MetaIndicadorSupressao(0, origem_sensivel=False),
+        sau_id: MetaIndicadorSupressao(5, origem_sensivel=True),
     }
-    # BH: muito emprego + muito crédito (menos vulnerável). Rio: o oposto (mais vulnerável).
+    # BH: muito emprego + crédito + POUCAS internações (menos vulnerável nos 3 subíndices).
+    # Rio: o oposto (mais vulnerável nos 3). n_amostra ≥ 5 → saúde não suprimida.
     celulas = [
         CelulaOuro(caged_id, bh, _PERIODO, "mensal", Decimal(10000), None, 5, caged_fonte),
         CelulaOuro(caged_id, rio, _PERIODO, "mensal", Decimal(-5000), None, 5, caged_fonte),
         CelulaOuro(cred_id, bh, _PERIODO, "mensal", Decimal("2e11"), None, 4, cred_fonte),
         CelulaOuro(cred_id, rio, _PERIODO, "mensal", Decimal("5e10"), None, 4, cred_fonte),
+        CelulaOuro(sau_id, bh, _PERIODO, "mensal", Decimal(20), 20, 4, sau_fonte),
+        CelulaOuro(sau_id, rio, _PERIODO, "mensal", Decimal(800), 800, 4, sau_fonte),
     ]
     await grav_escrever(conn, celulas, meta, caged_fonte)
 
@@ -95,10 +100,12 @@ async def test_mapa_semaforo_por_periodo(client) -> None:
     por_mun = {d["codigo_ibge"]: d for d in body["dados"]}
     assert por_mun[_BH]["ivm"] == 0.0
     assert por_mun[_BH]["semaforo"] == "verde"
+    assert por_mun[_BH]["v_saude"] == 0.0  # BH: poucas internações → subíndice de saúde baixo
     assert por_mun[_RIO]["ivm"] == 100.0
     assert por_mun[_RIO]["semaforo"] == "vermelho"
-    assert body["meta"]["versao_metodologia"] == "v1"
-    assert "trabalho.emprego.saldo_caged" in body["meta"]["componentes"]
+    assert por_mun[_RIO]["v_saude"] == 100.0  # Rio: muitas internações → subíndice de saúde alto
+    assert body["meta"]["versao_metodologia"] == "v1.1"
+    assert "saude.resp.internacoes_j" in body["meta"]["componentes"]
 
 
 async def test_periodo_padrao_e_o_mais_recente(client) -> None:

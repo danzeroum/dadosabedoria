@@ -130,6 +130,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 365,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "inep",
+        "nome": "INEP — Censo Escolar",
+        "orgao": "INEP/MEC",
+        "url_doc": "https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 365,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -220,6 +232,28 @@ INDICADORES: list[dict[str, Any]] = [
         "codigo_externo": "DCA",
         "metodologia": (
             "Soma das Transferências Correntes da DCA (SICONFI/STN) por município/exercício."
+        ),
+    },
+    {
+        "codigo": "educacao.matriculas.fundamental",
+        "nome": "Matrículas no ensino fundamental",
+        "descricao": "Matrículas no ensino fundamental por município (Censo Escolar/INEP).",
+        "dominio": "educacao",
+        "subdominio": "matriculas",
+        "unidade": "contagem",
+        "polaridade": "neutra",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "inep",
+        "codigo_externo": "QT_MAT_FUND",
+        "metodologia": (
+            "Soma das matrículas no ensino fundamental (QT_MAT_FUND) do Censo Escolar por "
+            "município/ano."
         ),
     },
 ]
@@ -342,6 +376,19 @@ async def _semear_fatos(
         ContextoLinhagem(
             f_siconfi, fin, "seed Onda 2A: prata->ouro (SICONFI transferências)", "seed"
         ),
+    )
+
+    # EDUCAÇÃO (INEP/Censo Escolar, anual): matrículas no fundamental por município/ano. n_minimo 0.
+    edu = ind_ids["educacao.matriculas.fundamental"]
+    f_inep = fonte_ids["inep"]
+    edu_cels = [
+        CelulaOuro(edu, sp, date(2024, 1, 1), "anual", Decimal(980000), None, 4, f_inep),
+        CelulaOuro(edu, cps, date(2024, 1, 1), "anual", Decimal(150000), None, 4, f_inep),
+    ]
+    await grav.escrever_ouro(
+        edu_cels,
+        meta,
+        ContextoLinhagem(f_inep, edu, "seed Onda 2A: prata->ouro (INEP matrículas)", "seed"),
     )
 
 

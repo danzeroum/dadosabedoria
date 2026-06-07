@@ -50,6 +50,10 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
         <Link href={`/pulso/${atual.codigo_ibge}`}>
           Ver o Pulso Produtivo (saldo de emprego formal) →
         </Link>
+        <br />
+        <Link href={`/municipio/${atual.codigo_ibge}`}>
+          Ver o panorama completo do município →
+        </Link>
       </p>
 
       <p className="metodologia">{resp.meta.metodologia}</p>

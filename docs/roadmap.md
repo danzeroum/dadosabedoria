@@ -56,11 +56,13 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [ ] **Domínio + `ACME_EMAIL`:** para TLS de produção no Traefik. _(dev-mode até lá.)_
 - [ ] **DataJud (e outras fontes com auth):** credencial/chave. _(fontes abertas seguem sem isso.)_
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
-- [ ] **Handoff de design (arquivos):** o protótipo HTML + o PDF do handoff eram **uploads efêmeros**
-  e sumiram num reset de contêiner. Para a **tela do OndeFoi nascer fiel aos primitivos do design**,
-  re-fornecer os arquivos OU commitá-los no repo. _(Sem isso, sigo construindo telas na DS atual do
-  web — ADR-0009, acessível — por intenção descrita, ex.: o `EstadoSupressao` desta fatia, alinhável
-  quando o handoff voltar. Não bloqueia backend/IVM.)_
+- [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
+  (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
+  primitivos compartilhados, sem forkar): OndeFoi **enquadramento honesto** (donut + enquadra +
+  callout "atenção honesta" + trilha por função + "o que é execução") feito. Faltam: OndeFoi
+  **selo de confiança** + **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar,
+  gates degradando); IVM (selo, frescor do `meta`, busca, "o que é IVM", comparar parecidas);
+  **gate axe/WCAG no DOM** do job de screenshot.
 
 ## Estado atual (reconciliação — 2026-06-06)
 

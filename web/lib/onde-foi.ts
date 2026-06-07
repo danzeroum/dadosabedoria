@@ -47,3 +47,26 @@ export function formatarReais(n: number): string {
 export function formatarPct(p: number | null): string {
   return p == null ? "—" : `${p}%`;
 }
+
+// Banda por função a partir do % (mesma regra do backend, ADR-0026; espelha o handoff de design).
+export function banda(pct: number | null): Banda {
+  if (pct == null) return "indef";
+  if (pct >= 80) return "alta";
+  if (pct >= 55) return "parcial";
+  return "baixa";
+}
+
+// Valor em R$ milhões (intenção do handoff: orçamentos municipais em bi/mi). Grau-demo — os números
+// do OndeFoi são ilustrativos até a 1ª busca real no SICONFI/DCA (#0).
+export function formatarMilhoes(n: number): string {
+  if (n >= 1000) return `R$ ${(n / 1000).toFixed(1).replace(".", ",")} bi`;
+  return `R$ ${Math.round(n)} mi`;
+}
+
+// Mensagem honesta de acompanhamento conforme a banda (sinal de atenção, nunca veredito).
+export function mensagemBanda(b: Banda): string {
+  if (b === "baixa") return "Executar pouco pode significar recurso parado — vale cobrar por quê.";
+  if (b === "alta") return "Executou quase tudo — o próximo passo é checar se virou serviço na ponta.";
+  if (b === "parcial") return "Execução parcial — acompanhe onde o recurso travou.";
+  return "Sem execução divulgada para a base.";
+}

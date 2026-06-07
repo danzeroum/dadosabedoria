@@ -96,13 +96,13 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
   **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
   IVM (reusar o `SeloConfianca` — precisa enriquecer a `MetaIVM` com `fontes`/frescor —, busca,
-  "o que é IVM", comparar parecidas). **axe/WCAG no DOM vivo** do screenshot: ⚠️ **achado
-  2026-06-07** — o axe **nunca rodava** (falso-verde): o `captura.mjs` usava `browser.newPage()`, que o
-  `@axe-core/playwright` rejeita (`"Please use browser.newContext()"`) → a auditoria era **pulada em
-  silêncio** e `violacoesGraves` ficava 0 por isso, não por estar limpo. **Corrigido** (PR axe-gate:
-  `browser.newContext()`), ainda **report-only** para a 1ª rodada **real** surgir as violações no log
-  sem quebrar a CI. **Próximo:** ler as violações REAIS (agora que o axe roda) → corrigir
-  contraste/estrutura → trocar report por `process.exit` (bloquear serious/critical).
+  "o que é IVM", comparar parecidas). **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
+  (2026-06-07)** — (1) o axe **nunca rodava** (falso-verde): `captura.mjs` usava `browser.newPage()`,
+  rejeitado pelo `@axe-core/playwright` → auditoria pulada em silêncio; corrigido com
+  `browser.newContext()`. (2) A 1ª rodada real acusou **1 violação** (`color-contrast` em `.tendencia`
+  do Pulso: verde #16a34a=3.15:1, vermelho #dc2626=4.62:1); corrigida (#15803d=4.79:1, #b91c1c=6.18:1;
+  a seta+rótulo já garantem que não é só cor). (3) Gate **apertado para BLOQUEAR** serious/critical
+  **e** "axe não rodou" (anti-falso-verde). As outras 6 telas já passavam limpas.
 
 ## Estado atual (reconciliação — 2026-06-06)
 

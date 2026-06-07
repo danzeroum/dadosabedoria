@@ -434,8 +434,8 @@ components:
       title: MetaProveniencia
       type: object
     OndeFoiOut:
-      description: Liquidado ÷ empenhado por função (ADR-0029). % sobre a base divulgada;
-        parcela fora explícita.
+      description: Liquidado ÷ empenhado por função (ADR-0029); % sobre a base divulgada,
+        fora explícito.
       properties:
         banda:
           enum:

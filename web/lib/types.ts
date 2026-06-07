@@ -43,6 +43,41 @@ export interface RespostaIVMSerie {
   meta: MetaIVM;
 }
 
+// ----------------------------------------------------------------- Pulso Produtivo (TRAB-01)
+
+export type Pulso = "aquecido" | "estavel" | "esfriando";
+export type Tendencia = "melhorando" | "estavel" | "piorando";
+
+export interface MesSaldo {
+  periodo: string; // YYYY-MM
+  saldo: number;
+}
+
+export interface MetaProveniencia {
+  indicador: string;
+  nome: string;
+  fonte: string;
+  metodologia: string;
+  lag_tipico_dias: number | null;
+  licenca: string;
+}
+
+export interface PulsoProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  periodo: string; // YYYY-MM (último mês)
+  saldo_mes: number; // a batida atual
+  saldo_acumulado: number; // soma da janela (contexto, não veredito)
+  pulso: Pulso;
+  tendencia: Tendencia | null; // null com 1 só mês
+  meses_positivos: number;
+  meses_negativos: number;
+  meses: MesSaldo[];
+  nota: string; // enquadramento honesto (formal, fluxo volátil, merece a pergunta)
+  meta: MetaProveniencia;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

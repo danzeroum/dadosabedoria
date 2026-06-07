@@ -1,4 +1,9 @@
-import type { FeatureCollectionIVM, RespostaIVM, RespostaIVMSerie } from "./types";
+import type {
+  FeatureCollectionIVM,
+  PulsoProduto,
+  RespostaIVM,
+  RespostaIVMSerie,
+} from "./types";
 
 // Fetch server-side (sem CORS). Em compose, API_URL = http://api:8000 (rede interna).
 const BASE = process.env.API_URL ?? "http://localhost:8000";
@@ -39,6 +44,19 @@ export async function buscarSerieIVM(codigoIbge: string): Promise<RespostaIVMSer
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar série do IVM (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | null> {
+  const resp = await fetch(new URL(`/v1/pulso-produtivo/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar o Pulso Produtivo (${resp.status})`);
   }
   return resp.json();
 }

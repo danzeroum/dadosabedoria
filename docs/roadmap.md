@@ -151,7 +151,9 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 - [x] 🔵 **TRAB-01 Pulso Produtivo** — endpoint `/v1/pulso-produtivo/{ibge}` sobre o saldo CAGED
   **real** (mesmo Repository de `/v1/valores`): nível = a batida do mês, momento = mês vs anterior,
   janela como contexto explícito. Honesto: emprego **formal**, fluxo volátil que "merece a pergunta",
-  **sem cadeado** (n_minimo=0). *(Tela mínima = próxima fatia, conforme o pivô "até a tela".)*
+  **sem cadeado** (n_minimo=0). **Tela** `/pulso/{ibge}` (pivô "até a tela"): selo de nível +
+  tendência + série mês-a-mês a partir do **zero** (sinal explícito) + a nota honesta; acessível
+  (cor nunca sozinha, ADR-0009) e **certificada no screenshot de CI**; cross-link do drill-down do IVM.
 - [ ] 🔵 TRAB-03 Giro Local (CAGED+IBGE+ESTBAN); TRAB-02 Salário Radar; TRAB-04 Região Emprega.
 
 **Frontend (design system):**

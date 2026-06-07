@@ -323,3 +323,147 @@ section h2 {
   stroke: var(--cor-texto);
   stroke-width: 1.5;
 }
+
+/* Pulso Produtivo (TRAB-01) */
+.pulso-pergunta {
+  color: var(--cor-texto-suave);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 2px;
+}
+.pulso-destaque {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 8px 0 20px;
+}
+.pulso-numero {
+  display: flex;
+  flex-direction: column;
+}
+.pulso-numero strong {
+  font-size: 2rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.pulso-numero-rotulo {
+  color: var(--cor-texto-suave);
+  font-size: 0.8rem;
+}
+.pulso-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.pulso-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+/* a seta carrega cor, mas o texto ao lado sempre diz o que é (nunca só cor) */
+.tendencia {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+.tendencia-melhorando {
+  color: #16a34a;
+}
+.tendencia-piorando {
+  color: #dc2626;
+}
+
+.serie-saldo {
+  margin: 0;
+  max-width: 520px;
+}
+.serie-saldo figcaption {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+.serie-saldo-svg {
+  width: 100%;
+  height: auto;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+.serie-saldo-zero {
+  stroke: var(--cor-texto-suave);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.serie-saldo-rotulos {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 20px 0;
+  margin: 0;
+  font-size: 0.75rem;
+}
+.serie-saldo-rotulos li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.serie-saldo-periodo {
+  color: var(--cor-texto-suave);
+}
+.serie-saldo-valor {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pulso-contexto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 16px 0 8px;
+}
+.pulso-contexto dt {
+  color: var(--cor-texto-suave);
+  font-size: 0.78rem;
+}
+.pulso-contexto dd {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pulso-aviso {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  max-width: 560px;
+}
+.pulso-nota {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-left: 3px solid var(--cor-marca);
+  border-radius: var(--raio);
+  padding: 12px 16px;
+  margin-top: 16px;
+  max-width: 640px;
+}
+.pulso-nota p {
+  margin: 4px 0 0;
+}
+.ver-produto {
+  margin: 16px 0;
+}
+.ver-produto a {
+  color: var(--cor-marca);
+  font-weight: 600;
+  text-decoration: none;
+}
+.ver-produto a:hover {
+  text-decoration: underline;
+}

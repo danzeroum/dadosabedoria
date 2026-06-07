@@ -28,10 +28,15 @@ manda **furar a fila**: antes da próxima fatia do roadmap, **valide o OndeFoi c
    ambiente (claude.ai/code): Network = **Custom** (não só "Trusted"), **"include default list of common
    package managers"** marcada, e **salvo**. Contorno só pra validar: Network = **Full**, voltando ao Custom.
 
-**Estado do OndeFoi (TRANSP-06):** contrato travado (ADR-0026 + refino); **fatia 1** mergeada (denominador
-em código: `app/produtos/onde_foi.py` + 6 testes). Fatias seguintes seguem **grau-demo honesto mesmo sem
-o #0**: `v_saude_estado` do IVM (mesmo padrão `*_estado`) → esqueleto de `/v1/onde-foi/{ibge}` → esteira
-de despesa por função (dimensão mínima/promovível) → **(b)** tela sobre os primitivos do handoff, com axe no DOM.
+**Estado dos produtos à TELA (maratona 2026-06-07):** o backbone foi puxado até a tela por valor —
+**Pulso Produtivo (TRAB-01)**: `/v1/pulso-produtivo/{ibge}` + tela `/pulso/{ibge}` sobre o saldo CAGED
+real (ADR-0027); **OndeFoi (TRANSP-06)**: contrato (ADR-0026) + `/v1/onde-foi/{ibge}` + tela
+`/onde-foi/{ibge}` em **grau-demo** (DS atual — o handoff de design sumiu num reset, ver Lista de
+desbloqueio); **Panorama do município**: `/v1/territorios/{ibge}/panorama` + tela `/municipio/{ibge}`
+(todos os indicadores, supressão honesta); **porta de entrada** em `/`. **Falta no OndeFoi:** a esteira
+de despesa **por função** (codifica o vocabulário de funções = forma-verdade) — adiada pro **pós-#0**,
+que a validação acima destrava. Os demais produtos seguem por valor (roadmap), telas na **DS atual**
+(ADR-0009, acessível) até o handoff voltar.
 
 ## O plano vive no repo
 - **`docs/roadmap.md` é a fonte única do plano.** No início da sessão, leia-o e **execute o próximo

@@ -165,7 +165,10 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
   o último valor de **cada** indicador público do acervo (todos os domínios, não só os do IVM), com
   proveniência por fonte; a célula suprimida vira **protegido** (reusa `EstadoSupressao`). Uma
   consulta sem N+1 (DISTINCT ON). Cross-link do drill-down do IVM e da porta de entrada.
-- [x] 🟡 **Tokens/componentes do design system** (WCAG) — tokens centralizados (`lib/semaforo.ts`:
+- [x] 🔵 **IA ancorada à tela** (`/perguntar` ← `POST /v1/ia/perguntar`): dá rosto ao diferencial
+  (ADR-0011/0015) — exemplos navegáveis (server-side, sem JS no cliente) mostram a resposta **com
+  citação** + ressalvas, o selo do **narrador** (template sem chave de LLM — degradação graciosa,
+  honesta) e a **abstenção** quando a pergunta sai do acervo (não inventa). Certificada no screenshot.
   `ESTADOS`, `CORES`, `COR_SEM_DADO`; CSS vars em `globals.css`), componente `Legenda` reutilizável,
   semáforo acessível (cor redundante com texto + `sr-only` + `:focus-visible`; coropleta com
   `role=img`/`<title>`). Default aplicado: DS mínimo neutro, não comunica só por cor.

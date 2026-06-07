@@ -145,6 +145,35 @@ export interface Panorama {
   indicadores: IndicadorValor[];
 }
 
+// ----------------------------------------------------------------- IA ancorada (/v1/ia/perguntar)
+
+export interface Citacao {
+  indicador: string;
+  nome: string;
+  fonte: string;
+  metodologia: string;
+  periodo_de: string | null;
+  periodo_ate: string | null;
+  lag_tipico_dias: number | null;
+}
+
+export interface RespostaIA {
+  resposta: string;
+  abstencao: boolean;
+  citacoes: Citacao[];
+  ressalvas: string[];
+  revisao_humana: boolean;
+  narrador: string; // model card do narrador (ex.: "template" sem chave de LLM)
+}
+
+export interface PerguntaInput {
+  pergunta: string;
+  indicador?: string;
+  territorio?: string;
+  de?: string;
+  ate?: string;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

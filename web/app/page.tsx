@@ -52,6 +52,15 @@ const PRODUTOS: {
     cta: "Ver exemplo (São Paulo)",
     selo: null,
   },
+  {
+    titulo: "Pergunte aos dados",
+    pergunta: "Posso perguntar em vez de procurar?",
+    descricao:
+      "A IA responde só com o que recupera do repositório, sempre com citação da fonte. Sem dado, abstém-se — não inventa número nem causalidade.",
+    href: "/perguntar",
+    cta: "Fazer uma pergunta",
+    selo: null,
+  },
 ];
 
 export default function Home() {

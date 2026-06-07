@@ -14,6 +14,10 @@ const paginas = [
   { nome: "pulso-sp", url: `${BASE}/pulso/3550308` }, // TRAB-01: saldo de emprego formal
   { nome: "onde-foi-rio", url: `${BASE}/onde-foi/3304557` }, // TRANSP-06: execução + sem cobertura
   { nome: "municipio-campinas", url: `${BASE}/municipio/3509502` }, // panorama: domínios + protegido
+  {
+    nome: "ia-perguntar",
+    url: `${BASE}/perguntar?q=${encodeURIComponent("Como está o emprego formal em São Paulo?")}&indicador=trabalho.emprego.saldo_caged&territorio=3550308`,
+  }, // IA ancorada: resposta + citações
 ];
 
 await mkdir(OUT, { recursive: true });

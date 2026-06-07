@@ -240,6 +240,69 @@ components:
       - meta
       title: IndicadorOut
       type: object
+    IndicadorValorOut:
+      description: Último valor de um indicador no território, com proveniência por
+        indicador (multi-fonte).
+      properties:
+        codigo:
+          title: Codigo
+          type: string
+        dominio:
+          title: Dominio
+          type: string
+        fonte:
+          title: Fonte
+          type: string
+        lag_tipico_dias:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lag Tipico Dias
+        metodologia:
+          title: Metodologia
+          type: string
+        motivo_supressao:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Motivo Supressao
+        nome:
+          title: Nome
+          type: string
+        periodo:
+          title: Periodo
+          type: string
+        polaridade:
+          title: Polaridade
+          type: string
+        subdominio:
+          title: Subdominio
+          type: string
+        suprimido:
+          default: false
+          title: Suprimido
+          type: boolean
+        unidade:
+          title: Unidade
+          type: string
+        valor:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor
+      required:
+      - codigo
+      - nome
+      - dominio
+      - subdominio
+      - unidade
+      - polaridade
+      - periodo
+      - valor
+      - fonte
+      - metodologia
+      title: IndicadorValorOut
+      type: object
     MesSaldoOut:
       properties:
         periodo:
@@ -427,6 +490,36 @@ components:
       - por_pagina
       - total
       title: Paginacao
+      type: object
+    PanoramaOut:
+      description: 'O que sabemos do município: o último valor de cada indicador público,
+        com proveniência.'
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        indicadores:
+          items:
+            $ref: '#/components/schemas/IndicadorValorOut'
+          title: Indicadores
+          type: array
+        nivel:
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - nivel
+      - indicadores
+      title: PanoramaOut
       type: object
     PerguntaIA:
       properties:
@@ -1167,6 +1260,42 @@ paths:
       summary: Obter Territorio
       tags:
       - indicadores
+  /v1/territorios/{codigo_ibge}/panorama:
+    get:
+      description: 'Panorama do município: o último valor de cada indicador público,
+        com proveniência por fonte.
+
+
+        404 só se o território não existir; território sem dado retorna lista vazia
+        (honesto: existe,
+
+        ainda sem indicadores). Célula suprimida aparece como protegida (valor nulo),
+        nunca exposta.'
+      operationId: panorama_territorio_v1_territorios__codigo_ibge__panorama_get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanoramaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Panorama Territorio
+      tags:
+      - indicadores
+      - panorama
   /v1/valores:
     get:
       operationId: listar_valores_v1_valores_get

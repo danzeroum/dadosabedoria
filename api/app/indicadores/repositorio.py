@@ -96,6 +96,44 @@ class RepositorioIndicadores:
         total = (await session.execute(cont)).scalar_one()
         return list(linhas), int(total)
 
+    async def panorama_municipio(
+        self, session: AsyncSession, *, codigo_ibge: str
+    ) -> list[RowMapping]:
+        """Último valor de CADA indicador público para o território — uma consulta, sem N+1.
+
+        ``DISTINCT ON (indicador.codigo)`` + ordem por período/versão desc ⇒ a célula mais recente
+        por indicador. Lê de ``valor`` (não de ``valor_publico``) para **mostrar** a célula
+        suprimida como protegida, forçando ``NULL`` no valor (nunca expõe o suprimido).
+        """
+        valor_seguro = case((valor.c.suprimido, None), else_=valor.c.valor).label("valor")
+        j = (
+            valor.join(indicador, indicador.c.id == valor.c.indicador_id)
+            .join(territorio, territorio.c.id == valor.c.territorio_id)
+            .join(fonte, fonte.c.id == indicador.c.fonte_id)
+        )
+        stmt = (
+            select(
+                indicador.c.codigo,
+                indicador.c.nome,
+                indicador.c.dominio,
+                indicador.c.subdominio,
+                indicador.c.unidade,
+                indicador.c.polaridade,
+                indicador.c.metodologia,
+                valor.c.periodo,
+                valor_seguro,
+                valor.c.suprimido,
+                valor.c.motivo_supressao,
+                fonte.c.nome.label("fonte_nome"),
+                fonte.c.lag_tipico_dias.label("fonte_lag"),
+            )
+            .select_from(j)
+            .where(territorio.c.codigo_ibge == codigo_ibge, indicador.c.publico.is_(True))
+            .distinct(indicador.c.codigo)
+            .order_by(indicador.c.codigo, valor.c.periodo.desc(), valor.c.versao.desc())
+        )
+        return list((await session.execute(stmt)).mappings().all())
+
     async def obter_territorio(self, session: AsyncSession, codigo_ibge: str) -> RowMapping | None:
         pai = territorio.alias("pai")
         j = territorio.outerjoin(pai, pai.c.id == territorio.c.pai_id)

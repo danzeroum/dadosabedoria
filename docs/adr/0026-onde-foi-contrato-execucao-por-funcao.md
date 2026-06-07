@@ -30,14 +30,25 @@ ADR o eleva a decisão de produto, espelhada no backend.)
 ### 2. Supressão aditiva — `exe_estado` (mesmo padrão do ADR-0025/H-04; expand-and-contract, ADR-0003)
 Por função: `exe: number | null` + **campo irmão** `exe_estado: "valor" | "suprimido" |
 "sem_cobertura"`. Campo **separado** (não sobrecarrega o valor) e **aditivo** (não quebra consumidor):
-- `"valor"` — despesa liquidada divulgada → entra no numerador **e** no denominador;
-- `"suprimido"` — recebido conhecido, execução **retida/protegida** → só contexto, **fora** do %;
-- `"sem_cobertura"` — função sem dado de execução → **fora** do %.
+- `"valor"` — valor divulgado → entra no numerador **e** no denominador;
+- `"suprimido"` — valor **retido por sigilo** (proteção real, ex.: k-anon sobre PII) → só contexto, **fora** do %;
+- `"sem_cobertura"` — sem dado para a célula → **fora** do %.
+
+**Validade por indicador — fronteira semântica (refino 2026-06-07):** o primitivo `EstadoSupressao`
+mantém os **três** estados, mas **quais são válidos é por indicador**. `"suprimido"` é um **cadeado de
+privacidade**: só se aplica onde há PII por baixo e a fonte **realmente retém por sigilo, com a base
+legal nomeada**. Execução orçamentária por função é **agregado público sem PII** (São Paulo gastar em
+Saúde não protege ninguém): pôr o cadeado aí seria *honesty-theater* — sugerir uma proteção que não
+existe, o oposto do que o produto vende. **Hipótese forte do OndeFoi (confirmar no #0 como o SICONFI
+sinaliza função faltante e por quê): conjunto válido = `{valor, sem_cobertura}`, sem `"suprimido"`.**
+Regra de contrato: só renderizar o cadeado `"suprimido"` quando houver **base legal de sigilo
+nomeada**; senão, função faltante é `"sem_cobertura"`.
 
 **Padrão transversal (implementar uma vez, servir os dois):** o mesmo contrato `*_estado` resolve a
 supressão honesta do **IVM** — `/v1/ivm` ganha `v_saude_estado` distinguindo *null-por-supressão*
-(k-anon, ADR-0002) de *null-por-cobertura*. ADR-0025 já tornou `v_saude` aditivo; `v_saude_estado` é
-o complemento honesto, e o `EstadoSupressao` da tela é um componente só, compartilhado IVM↔OndeFoi.
+(k-anon sobre PII, ADR-0002 — aí `"suprimido"` é **legítimo**) de *null-por-cobertura*. ADR-0025 já
+tornou `v_saude` aditivo; `v_saude_estado` é o complemento honesto, e o `EstadoSupressao` da tela é um
+componente só (três estados), compartilhado IVM↔OndeFoi — muda só a **validade por indicador**.
 
 ### 3. Honestidade no contrato — executado ≠ virou serviço
 - `meta.metodologia`: **"execução orçamentária (empenho/liquidação), não serviço entregue."** A
@@ -58,9 +69,10 @@ o complemento honesto, e o `EstadoSupressao` da tela é um componente só, compa
   "recebido_total": 78900, "recebido_base": 54900, "recebido_fora_base": 24000,
   "executado": 41730, "pct": 76, "banda": "parcial",
   "funcoes": [
-    { "funcao": "Saúde", "recebido": 18200, "exe": 16930, "exe_estado": "valor",        "pct": 93 },
-    { "funcao": "Saneamento", "recebido": 3200, "exe": null, "exe_estado": "suprimido",   "pct": null },
-    { "funcao": "Cultura", "recebido": 1500, "exe": null, "exe_estado": "sem_cobertura", "pct": null }
+    { "funcao": "Saúde", "recebido": 18200, "exe": 16930, "exe_estado": "valor",         "pct": 93 },
+    { "funcao": "Saneamento", "recebido": 3200, "exe": null, "exe_estado": "sem_cobertura", "pct": null },
+    { "funcao": "Cultura", "recebido": 1500, "exe": null, "exe_estado": "sem_cobertura",  "pct": null }
+    // (orçamento público sem PII → sem "suprimido"; cadeado só com base legal de sigilo nomeada)
   ],
   "meta": {
     "metodologia": "Execução orçamentária (empenho/liquidação) por função, no exercício — NÃO serviço entregue.",
@@ -70,6 +82,18 @@ o complemento honesto, e o `EstadoSupressao` da tela é um componente só, compa
   }
 }
 ```
+
+## Modelagem de (a): função como dimensão — estrutura vs membros (refino 2026-06-07)
+Função orçamentária **recorre** no pilar de orçamento (TRANSP-03/04/05 + despesa futura) → a direção é
+**função como dimensão canônica no ouro** (reutilizável/navegável, no espírito `domínio→subdomínio→
+indicador`), não codificada só no indicador do OndeFoi. Fronteira de verdade dentro da dimensão:
+- **Estrutura = verdade-de-contrato (commitável já):** existe uma dimensão `função` e indicadores a
+  referenciam. Instanciada **mínima e promovível** sobre a fixture; *fallback* indicador-codificado se
+  nem a forma mínima couber numa fatia reset-safe (promove-se pós-#0).
+- **Membros = forma-verdade (só no #0):** a **lista de funções + a classificação** são provisórias
+  (seed do mock) e devem derivar da **classificação da própria fonte (SICONFI)** quando o #0 abrir —
+  nunca do mock (senão recria "fixture-como-verdade" no nível do **vocabulário**). Vocabulário
+  finalizado em expand-and-contract após a validação real.
 
 ## Consequências
 - A camada (a) e a tela (b) implementam **este** contrato; a tela monta sobre `SeloConfianca`,

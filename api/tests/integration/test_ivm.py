@@ -132,3 +132,22 @@ async def test_serie_municipio_sem_ivm_404(client) -> None:
     r = await client.get("/v1/ivm/0000000")
     assert r.status_code == 404
     assert r.json()["erro"] == "nao_encontrado"
+
+
+async def test_v_saude_estado_distingue_supressao_de_cobertura(client) -> None:
+    # Seed (ADR-0026, padrão *_estado): SP tem saúde não suprimida em 2026-04; Campinas tem célula
+    # k-anon suprimida (n=3<5) no mesmo período; em 2026-02 nenhum tem saúde. v_saude_estado
+    # distingue valor × suprimido × sem_cobertura — null-por-supressão ≠ null-por-cobertura.
+    por04 = {
+        d["codigo_ibge"]: d for d in (await client.get("/v1/ivm?periodo=2026-04")).json()["dados"]
+    }
+    assert por04["3550308"]["v_saude_estado"] == "valor"
+    assert por04["3550308"]["v_saude"] is not None
+    assert por04["3509502"]["v_saude_estado"] == "suprimido"  # cadeado legítimo (PII por baixo)
+    assert por04["3509502"]["v_saude"] is None  # null-por-supressão
+
+    por02 = {
+        d["codigo_ibge"]: d for d in (await client.get("/v1/ivm?periodo=2026-02")).json()["dados"]
+    }
+    assert por02["3550308"]["v_saude_estado"] == "sem_cobertura"
+    assert por02["3550308"]["v_saude"] is None  # null-por-cobertura

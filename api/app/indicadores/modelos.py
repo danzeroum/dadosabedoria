@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -104,6 +106,8 @@ class IVMItem(BaseModel):
     v_emprego: float
     v_financas: float
     v_saude: float | None = None  # subíndice de saúde (None onde não há dado não suprimido)
+    # padrão *_estado (ADR-0026): distingue null-por-supressão (k-anon) de null-por-cobertura.
+    v_saude_estado: Literal["valor", "suprimido", "sem_cobertura"] = "sem_cobertura"
 
 
 class RespostaIVM(BaseModel):

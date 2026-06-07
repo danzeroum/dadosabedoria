@@ -13,6 +13,7 @@ from app.core.config import get_settings
 from app.core.db import connect
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import AdaptadorCaged, FetcherCagedFTP
+from app.ingestao.adaptadores.datasus import AdaptadorDatasus, FetcherDatasusFTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
 from app.ingestao.adaptadores.inep import AdaptadorInep, FetcherInepHTTP
 from app.ingestao.adaptadores.pncp import AdaptadorPncp, FetcherPncpHTTP
@@ -21,6 +22,7 @@ from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
 from app.ingestao.pipeline import (
     executar_caged,
+    executar_datasus,
     executar_estban,
     executar_inep,
     executar_pncp,
@@ -86,6 +88,19 @@ async def _rodar_pncp(janela: Janela) -> None:  # pragma: no cover - rede/S3
         )
 
 
+async def _rodar_datasus(janela: Janela) -> None:  # pragma: no cover - rede/dbc
+    # DATASUS/SIH alimenta a SAÚDE, subíndice do IVM → refresca a MV após a carga (como CAGED).
+    from app.indicadores.ivm import refrescar_ivm
+
+    settings = get_settings()
+    adaptador = AdaptadorDatasus(FetcherDatasusFTP())
+    async with connect(settings.database_url) as conn:
+        await executar_datasus(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+    await refrescar_ivm()
+
+
 @dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
 def op_carregar_caged(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
     context.log.info(f"CAGED: carregando competência {config.competencia}")
@@ -116,6 +131,12 @@ def op_carregar_pncp(context: dg.OpExecutionContext, config: ConfigIngestao) -> 
     asyncio.run(_rodar_pncp(Janela.de_competencia(config.competencia)))  # pragma: no cover
 
 
+@dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
+def op_carregar_datasus(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
+    context.log.info(f"DATASUS: carregando competência {config.competencia}")
+    asyncio.run(_rodar_datasus(Janela.de_competencia(config.competencia)))  # pragma: no cover
+
+
 @dg.job
 def job_caged() -> None:
     op_carregar_caged()
@@ -139,6 +160,11 @@ def job_inep() -> None:
 @dg.job
 def job_pncp() -> None:
     op_carregar_pncp()
+
+
+@dg.job
+def job_datasus() -> None:
+    op_carregar_datasus()
 
 
 @dg.schedule(job=job_caged, cron_schedule="0 6 5 * *")  # dia 5, 06h UTC (lag CAGED ~40d)
@@ -190,13 +216,22 @@ def schedule_pncp_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
     )
 
 
+@dg.schedule(job=job_datasus, cron_schedule="0 7 12 * *")  # dia 12, 07h UTC (lag SIH ~90d)
+def schedule_datasus_mensal(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    comp = competencia_alvo(context.scheduled_execution_time.date(), defasagem_meses=4)
+    return dg.RunRequest(
+        run_config={"ops": {"op_carregar_datasus": {"config": {"competencia": comp}}}}
+    )
+
+
 defs = dg.Definitions(
-    jobs=[job_caged, job_estban, job_siconfi, job_inep, job_pncp],
+    jobs=[job_caged, job_estban, job_siconfi, job_inep, job_pncp, job_datasus],
     schedules=[
         schedule_caged_mensal,
         schedule_estban_mensal,
         schedule_siconfi_anual,
         schedule_inep_anual,
         schedule_pncp_anual,
+        schedule_datasus_mensal,
     ],
 )

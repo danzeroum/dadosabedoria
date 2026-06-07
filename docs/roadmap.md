@@ -58,8 +58,9 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [ ] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
   construídos "vivo-pronto" (esteira + schedule + fixture fiel-ao-contrato), mas a 1ª busca real só
   roda com o host liberado. Além de SICONFI/IBGE/BCB, liberar conforme cada conector entra:
-  **INEP** `download.inep.gov.br` (educacao) · **PNCP** `pncp.gov.br` (compras). _(DATASUS a seguir.)_
-  Cada um traz a marca **"confirmar na 1ª busca real"** — a forma (coluna/arquivo) vem da fonte, não do mock.
+  **INEP** `download.inep.gov.br` (educacao) · **PNCP** `pncp.gov.br` (compras) · **DATASUS**
+  `ftp.datasus.gov.br` (saude, FTP). Cada um traz a marca **"confirmar na 1ª busca real"** — a forma
+  (coluna/arquivo) vem da fonte, não do mock.
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
@@ -229,7 +230,11 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 **Fontes:** DATASUS SIA/SIH/CNES/SINAN/SINASC/SIM (PySUS/FTP DBC), INSS, BPS; clima (INMET/INPE).
 - [x] 🔵 **DATASUS/SIH — domínio `saude`** (1ª fonte sensível, ADR-0024): `AdaptadorDatasus` (conta
   AIH do grupo J por município = `n_amostra`) + contrato na borda bronze + `ModuloSaude` alimentando
-  `saude.resp.internacoes_j` pelo caminho ouro (k-anon). _Falta o pipeline robusto abaixo._
+  `saude.resp.internacoes_j` pelo caminho ouro (k-anon). **Pipeline VIVO-PRONTO:** `executar_datasus`
+  (a contagem É o `n_amostra` → **k-anon suprime ANTES de gravar** contagens <5; teste prova SP=3 e
+  Campinas=2 protegidas) + `run_datasus` + **Dagster** (`job_datasus` + `schedule_datasus_mensal`,
+  com `refrescar_ivm` — saúde é subíndice do IVM). _Falta: dado real (#0, `ftp.datasus.gov.br`),
+  DBC→Parquet robusto, produtos SAUDE com dupla face §17._
 - [ ] 🔵 Adaptador DATASUS **robusto** (DBC→Parquet, incremental/idempotente, mapa IBGE 6→7) +
   Dagster; demais sistemas (SIA/CNES/SINAN/SINASC/SIM) — o de maior atrito.
 - [ ] 🔵 SAUDE-04 Fila Visível; SAUDE-06 Receita Cidadã; SAUDE-05 Navegador de Acesso.

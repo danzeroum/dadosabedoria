@@ -73,6 +73,37 @@ class TerritorioOut(BaseModel):
     pai: TerritorioRef | None = None
 
 
+# ----------------------------------------- Panorama (todos os indicadores de um território)
+
+
+class IndicadorValorOut(BaseModel):
+    """Último valor de um indicador no território, com proveniência por indicador (multi-fonte)."""
+
+    codigo: str
+    nome: str
+    dominio: str
+    subdominio: str
+    unidade: str
+    polaridade: str
+    periodo: str  # YYYY-MM do último dado
+    valor: float | None  # None quando suprimido (a célula vira "protegido" na tela)
+    suprimido: bool = False
+    motivo_supressao: str | None = None
+    fonte: str
+    lag_tipico_dias: int | None = None
+    metodologia: str
+
+
+class PanoramaOut(BaseModel):
+    """O que sabemos do município: o último valor de cada indicador público, com proveniência."""
+
+    codigo_ibge: str
+    nome: str
+    nivel: str
+    uf: str | None = None
+    indicadores: list[IndicadorValorOut]
+
+
 class ErroOut(BaseModel):
     """Envelope de erro padronizado (§7)."""
 

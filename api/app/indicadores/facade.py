@@ -11,8 +11,10 @@ from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import (
     IndicadorOut,
+    IndicadorValorOut,
     MetaProveniencia,
     Paginacao,
+    PanoramaOut,
     RespostaIndicadores,
     RespostaValores,
     TerritorioOut,
@@ -111,6 +113,38 @@ class IndicadoresFacade:
             dados=dados,
             meta=_meta(meta_row),
             paginacao=Paginacao(pagina=pagina, por_pagina=por_pagina, total=total),
+        )
+
+    @cache_leitura("v1:panorama")
+    async def panorama(self, *, codigo_ibge: str) -> PanoramaOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+        linhas = await self._repo.panorama_municipio(self._s, codigo_ibge=codigo_ibge)
+        indicadores = [
+            IndicadorValorOut(
+                codigo=r["codigo"],
+                nome=r["nome"],
+                dominio=r["dominio"],
+                subdominio=r["subdominio"],
+                unidade=r["unidade"],
+                polaridade=r["polaridade"],
+                periodo=r["periodo"].strftime("%Y-%m"),
+                valor=float(r["valor"]) if r["valor"] is not None else None,
+                suprimido=r["suprimido"],
+                motivo_supressao=r["motivo_supressao"],
+                fonte=r["fonte_nome"],
+                lag_tipico_dias=r["fonte_lag"],
+                metodologia=r["metodologia"],
+            )
+            for r in linhas
+        ]
+        return PanoramaOut(
+            codigo_ibge=terr["codigo_ibge"],
+            nome=terr["nome"],
+            nivel=terr["nivel"],
+            uf=terr["uf"],
+            indicadores=indicadores,
         )
 
     @cache_leitura("v1:territorio")

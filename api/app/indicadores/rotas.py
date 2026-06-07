@@ -13,6 +13,7 @@ from app.indicadores.facade import IndicadoresFacade
 from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     IndicadorOut,
+    PanoramaOut,
     RespostaIndicadores,
     RespostaIVM,
     RespostaIVMSerie,
@@ -79,6 +80,18 @@ async def obter_territorio(
     codigo_ibge: str, session: AsyncSession = Depends(get_session)
 ) -> TerritorioOut:
     return await IndicadoresFacade(session).obter_territorio(codigo_ibge=codigo_ibge)
+
+
+@router.get("/territorios/{codigo_ibge}/panorama", response_model=PanoramaOut, tags=["panorama"])
+async def panorama_territorio(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> PanoramaOut:
+    """Panorama do município: o último valor de cada indicador público, com proveniência por fonte.
+
+    404 só se o território não existir; território sem dado retorna lista vazia (honesto: existe,
+    ainda sem indicadores). Célula suprimida aparece como protegida (valor nulo), nunca exposta.
+    """
+    return await IndicadoresFacade(session).panorama(codigo_ibge=codigo_ibge)
 
 
 @router.get("/ivm", response_model=RespostaIVM, tags=["ivm"])

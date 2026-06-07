@@ -20,8 +20,11 @@ class FuncaoOut(BaseModel):
 
 class FonteOut(BaseModel):
     sigla: str
+    nome: str
     orgao: str
+    dominio: str
     ate: str
+    atraso: str  # descrição do atraso por fonte (ex.: "~75 dias após o bimestre")
 
 
 class MetaOndeFoi(BaseModel):
@@ -30,6 +33,7 @@ class MetaOndeFoi(BaseModel):
     periodo: str
     periodo_rotulo: str  # "exercício X" — selo de frescor derivado daqui (não hardcoded)
     atraso_dias: int
+    licenca: str  # licença/atribuição da fonte (selo de confiança)
     fontes: list[FonteOut]
 
 

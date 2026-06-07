@@ -47,7 +47,9 @@ fonte nova**; feche o ciclo ponta-a-ponta: **(1) IVM completo → (2) mapa semaf
 
 ## Lista de desbloqueio (gates externos pendentes — para o dono resolver em bloco)
 
-_O agente acrescenta aqui ao bater num 🔴 e segue construindo o resto._
+_O agente acrescenta aqui ao bater num 🔴 e segue construindo o resto. Análise detalhada (o que é · o
+que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`docs/PENDENCIAS_DO_DONO.md`**
+— a fila de análise do dono no checkpoint de 36h (revisar junto com esta lista)._
 - [ ] **LLM real:** `LLM_BASE_URL`/`LLM_MODEL`/`LLM_API_KEY` (DeepSeek) ou subir Ollama. _(IA roda em
   template até lá — degradação graciosa, ADR-0015.)_
 - [ ] **OIDC:** provedor (gov.br/Keycloak) + client id/secret. _(login v1 por JWT segue até lá.)_

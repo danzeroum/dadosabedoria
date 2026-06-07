@@ -23,6 +23,7 @@ from app.core.registro import registro
 from app.core.seguranca import configurar_cors
 from app.ia.rotas import router as router_ia
 from app.indicadores.rotas import router as router_indicadores
+from app.produtos.rotas import router as router_produtos
 from app.profundo.rotas import router as router_profundo
 
 _log = get_logger("app")
@@ -70,6 +71,7 @@ def create_app() -> FastAPI:
     app.include_router(router_indicadores)
     app.include_router(router_ia)  # IA ancorada no monólito (extraível p/ o serviço `ai`)
     app.include_router(router_profundo)  # tier profundo (consultas-lote, chave de API)
+    app.include_router(router_produtos)  # produtos nomeados (OndeFoi/TRANSP-06)
 
     # Encaixe de plugins de domínio (nenhum nesta fatia; rotas futuras entram aqui).
     router_dominios = APIRouter(prefix="/v1")

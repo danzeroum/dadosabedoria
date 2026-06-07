@@ -114,11 +114,9 @@ components:
       type: object
     FuncaoOut:
       properties:
-        exe:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Exe
+        empenhado:
+          title: Empenhado
+          type: integer
         exe_estado:
           enum:
           - valor
@@ -129,18 +127,20 @@ components:
         funcao:
           title: Funcao
           type: string
+        liquidado:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Liquidado
         pct:
           anyOf:
           - type: integer
           - type: 'null'
           title: Pct
-        recebido:
-          title: Recebido
-          type: integer
       required:
       - funcao
-      - recebido
-      - exe
+      - empenhado
+      - liquidado
       - exe_estado
       - pct
       title: FuncaoOut
@@ -434,8 +434,8 @@ components:
       title: MetaProveniencia
       type: object
     OndeFoiOut:
-      description: Recebido × execução por função. % sobre a base divulgada; parcela
-        fora explícita.
+      description: Liquidado ÷ empenhado por função (ADR-0029); % sobre a base divulgada,
+        fora explícito.
       properties:
         banda:
           enum:
@@ -448,14 +448,23 @@ components:
         codigo_ibge:
           title: Codigo Ibge
           type: string
-        executado:
-          title: Executado
+        empenhado_base:
+          title: Empenhado Base
+          type: integer
+        empenhado_fora_base:
+          title: Empenhado Fora Base
+          type: integer
+        empenhado_total:
+          title: Empenhado Total
           type: integer
         funcoes:
           items:
             $ref: '#/components/schemas/FuncaoOut'
           title: Funcoes
           type: array
+        liquidado:
+          title: Liquidado
+          type: integer
         meta:
           $ref: '#/components/schemas/MetaOndeFoi'
         nome:
@@ -464,15 +473,6 @@ components:
         pct:
           title: Pct
           type: integer
-        recebido_base:
-          title: Recebido Base
-          type: integer
-        recebido_fora_base:
-          title: Recebido Fora Base
-          type: integer
-        recebido_total:
-          title: Recebido Total
-          type: integer
         uf:
           title: Uf
           type: string
@@ -480,10 +480,10 @@ components:
       - codigo_ibge
       - nome
       - uf
-      - recebido_total
-      - recebido_base
-      - recebido_fora_base
-      - executado
+      - empenhado_total
+      - empenhado_base
+      - empenhado_fora_base
+      - liquidado
       - pct
       - banda
       - funcoes
@@ -1182,15 +1182,15 @@ paths:
       - ivm
   /v1/onde-foi/{codigo_ibge}:
     get:
-      description: 'A transferência da União virou serviço? Recebido × execução por
-        função (ADR-0026).
+      description: 'Do que a prefeitura empenhou por função, quanto liquidou? (Liquidado÷Empenhado
+        — ADR-0029).
 
 
-        GRAU-DEMO até a esteira (SICONFI/DCA) + a 1ª validação real no #0 — serve
-        a fixture fiel ao
+        GRAU-DEMO até o go-live ler a fato `execucao_funcao` (esteira viva do #0).
+        ``meta.metodologia``
 
-        contrato. ``meta.metodologia`` enquadra: é execução **orçamentária**, NÃO
-        serviço entregue.'
+        enquadra: é execução **orçamentária** (empenhar≠liquidar≠serviço), NÃO serviço
+        entregue.'
       operationId: onde_foi_v1_onde_foi__codigo_ibge__get
       parameters:
       - in: path

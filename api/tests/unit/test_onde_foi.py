@@ -1,4 +1,8 @@
-"""Unidade do contrato do OndeFoi (ADR-0026): denominador base-única + banda + exe_estado. Puro."""
+"""Unidade do contrato do OndeFoi (ADR-0026/0029): base-única + banda + exe_estado. Puro.
+
+Re-ancorado em Liquidado÷Empenhado por função (ADR-0029); os números do DEMO seguem os mesmos, só
+relabelados (empenhado/liquidado). A base-única e a parcela-fora-explícita do ADR-0026 são mantidas.
+"""
 
 from __future__ import annotations
 
@@ -24,36 +28,36 @@ def test_banda_limiares() -> None:
 def test_denominador_base_unica_sp() -> None:
     # SP: todas as funções divulgadas → base = soma de todas; % sobre essa base.
     sp = _calc("3550308")
-    assert sp.recebido_base == 54200
-    assert sp.executado == 47800
+    assert sp.empenhado_base == 54200
+    assert sp.liquidado == 47800
     assert sp.pct == 88  # round(47800/54200*100)
-    assert sp.recebido_fora_base == 78900 - 54200  # 24700: não detalhado por função, explícito
+    assert sp.empenhado_fora_base == 78900 - 54200  # 24700: sem liquidação por função, explícito
     assert sp.banda == "alta"
 
 
 def test_sem_cobertura_fica_fora_da_base_e_explicita_rio() -> None:
     # Rio: Saneamento + Cultura sem cobertura → fora do numerador E do denominador.
     rio = _calc("3304557")
-    assert rio.recebido_base == 26000  # só as 4 funções divulgadas (9800+8600+2400+5200)
-    assert rio.executado == 19780  # 8120+7310+1490+2860
+    assert rio.empenhado_base == 26000  # só as 4 funções divulgadas (9800+8600+2400+5200)
+    assert rio.liquidado == 19780  # 8120+7310+1490+2860
     assert rio.pct == 76  # round(19780/26000*100)
     # parcela fora = total − base (sem cobertura + não detalhado), NUNCA silenciosamente fora do %.
-    assert rio.recebido_fora_base == 41200 - 26000  # 15200
+    assert rio.empenhado_fora_base == 41200 - 26000  # 15200
     assert rio.banda == "parcial"
     sem = [f for f in rio.funcoes if f.exe_estado == "sem_cobertura"]
     assert {f.funcao for f in sem} == {"Saneamento", "Cultura"}
-    assert all(f.exe is None and f.pct is None for f in sem)
+    assert all(f.liquidado is None and f.pct is None for f in sem)
 
 
-def test_recebido_total_nunca_e_o_denominador() -> None:
-    # A armadilha que o ADR-0026 trava: o % usa recebido_base, não o total exibido.
+def test_empenhado_total_nunca_e_o_denominador() -> None:
+    # A armadilha que o ADR-0026 trava: o % usa empenhado_base, não o total exibido.
     rio = _calc("3304557")
-    assert rio.pct == round(rio.executado / rio.recebido_base * 100)
-    assert rio.recebido_base < rio.recebido_total  # base é subconjunto do total
+    assert rio.pct == round(rio.liquidado / rio.empenhado_base * 100)
+    assert rio.empenhado_base < rio.empenhado_total  # base é subconjunto do total
 
 
 def test_baixa_execucao_merece_a_pergunta() -> None:
-    rn = _calc("3154606")  # Ribeirão das Neves — executor baixo
+    rn = _calc("3154606")  # Ribeirão das Neves — liquidação baixa sobre o empenhado
     assert rn.pct == 50  # round(730/1470*100)
     assert rn.banda == "baixa"
 

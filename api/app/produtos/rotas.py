@@ -18,10 +18,10 @@ router = APIRouter(prefix="/v1", tags=["produtos"])
 
 @router.get("/onde-foi/{codigo_ibge}", response_model=OndeFoiOut)
 async def onde_foi(codigo_ibge: str) -> OndeFoiOut:
-    """A transferência da União virou serviço? Recebido × execução por função (ADR-0026).
+    """Do que a prefeitura empenhou por função, quanto liquidou? (Liquidado÷Empenhado — ADR-0029).
 
-    GRAU-DEMO até a esteira (SICONFI/DCA) + a 1ª validação real no #0 — serve a fixture fiel ao
-    contrato. ``meta.metodologia`` enquadra: é execução **orçamentária**, NÃO serviço entregue.
+    GRAU-DEMO até o go-live ler a fato `execucao_funcao` (esteira viva do #0). ``meta.metodologia``
+    enquadra: é execução **orçamentária** (empenhar≠liquidar≠serviço), NÃO serviço entregue.
     """
     reg = next((d for d in DEMO_MUNICIPIOS if d[0] == codigo_ibge), None)
     if reg is None:
@@ -32,17 +32,17 @@ async def onde_foi(codigo_ibge: str) -> OndeFoiOut:
         codigo_ibge=r.codigo_ibge,
         nome=r.nome,
         uf=r.uf,
-        recebido_total=r.recebido_total,
-        recebido_base=r.recebido_base,
-        recebido_fora_base=r.recebido_fora_base,
-        executado=r.executado,
+        empenhado_total=r.empenhado_total,
+        empenhado_base=r.empenhado_base,
+        empenhado_fora_base=r.empenhado_fora_base,
+        liquidado=r.liquidado,
         pct=r.pct,
         banda=r.banda,
         funcoes=[
             FuncaoOut(
                 funcao=f.funcao,
-                recebido=f.recebido,
-                exe=f.exe,
+                empenhado=f.empenhado,
+                liquidado=f.liquidado,
                 exe_estado=f.exe_estado,
                 pct=f.pct,
             )

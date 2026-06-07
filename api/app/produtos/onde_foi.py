@@ -1,12 +1,17 @@
-"""OndeFoi (TRANSP-06) — contrato do indicador de execução por função (ADR-0026).
+"""OndeFoi (TRANSP-06) — execução por função, re-ancorado em **Liquidado ÷ Empenhado** (ADR-0029).
 
 Lógica **pura** do denominador e da banda — o número que sustenta o produto, sem rede/DB. A
-camada de API e a tela consomem isto; a esteira e a validação real no #0 alimentam os dados.
+camada de API e a tela consomem isto; a esteira (`execucao_funcao`) alimenta os dados reais.
 
-HONESTIDADE (ADR-0026): execução orçamentária (empenho/liquidação), **não** serviço entregue. O
-conjunto de estados válido do OndeFoi é ``{"valor", "sem_cobertura"}`` — orçamento por função é
-agregado público **sem PII**: ``"suprimido"`` (cadeado de privacidade) só vale com base legal de
-sigilo nomeada; senão, função faltante é ``"sem_cobertura"`` (não se finge proteção que não há).
+RE-ANCORAGEM (ADR-0029, default MODO DEV — aguarda referendo do dono): o #0 (ADR-0028) provou que
+"recebido por função" **não existe** na fonte; o SICONFI classifica **despesa** por função (Anexo
+I-E: Empenhado→Liquidado→Pago). Então o número é **liquidado/empenhado** por função: *"do que a
+prefeitura empenhou (comprometeu) em cada área, quanto liquidou (virou despesa de fato)?"*.
+
+HONESTIDADE (ADR-0026 mantido): **empenhar ≠ liquidar ≠ serviço entregue** — a banda é sinal de
+**atenção** ("merece a pergunta"), nunca veredito. O conjunto de estados válido é
+``{"valor", "sem_cobertura"}`` — orçamento por função é agregado público **sem PII**: o cadeado
+``"suprimido"`` só vale com base legal de sigilo nomeada; senão é ``"sem_cobertura"``.
 """
 
 from __future__ import annotations
@@ -26,44 +31,44 @@ def banda(pct: int | None) -> Banda:
     if pct is None:
         return "indef"
     if pct >= 80:
-        return "alta"  # executou quase tudo — confira se virou serviço
+        return "alta"  # liquidou quase tudo que empenhou — confira se virou serviço
     if pct >= 55:
         return "parcial"
-    return "baixa"  # executou pouco do que recebeu — merece a pergunta
+    return "baixa"  # liquidou pouco do que empenhou — merece a pergunta
 
 
 @dataclass(frozen=True)
 class FuncaoBruta:
-    """Entrada por função: recebido + execução (número divulgado, ou um estado sem valor)."""
+    """Entrada por função: empenhado + liquidado (número divulgado, ou um estado sem valor)."""
 
     funcao: str
-    recebido: int  # recurso da função
-    exe: int | EstadoSemValor  # número = despesa liquidada divulgada; senão o estado
+    empenhado: int  # despesa empenhada (comprometida) da função
+    liquidado: int | EstadoSemValor  # número = despesa liquidada divulgada; senão o estado
 
 
 @dataclass(frozen=True)
 class FuncaoExecucao:
-    """Recebido × executado de uma função, já com estado e razão resolvidos."""
+    """Empenhado × liquidado de uma função, já com estado e razão resolvidos."""
 
     funcao: str
-    recebido: int
-    exe: int | None  # None onde ``exe_estado != "valor"``
+    empenhado: int
+    liquidado: int | None  # None onde ``exe_estado != "valor"``
     exe_estado: ExeEstado
-    pct: int | None  # exe/recebido (None onde não há valor)
+    pct: int | None  # liquidado/empenhado (None onde não há valor)
 
 
 @dataclass(frozen=True)
 class ExecucaoMunicipio:
-    """Resultado do contrato (ADR-0026): % sobre a base divulgada, parcela fora **explícita**."""
+    """Resultado (ADR-0026/0029): % sobre a base divulgada, parcela fora **explícita**."""
 
     codigo_ibge: str
     nome: str
     uf: str
-    recebido_total: int  # contexto — **nunca** o denominador
-    recebido_base: int  # denominador do % (só funções divulgadas)
-    recebido_fora_base: int  # explícito: total − base (protegido/sem cobertura/não detalhado)
-    executado: int  # numerador
-    pct: int  # executado / recebido_base
+    empenhado_total: int  # contexto — **nunca** o denominador
+    empenhado_base: int  # denominador do % (só funções com liquidação divulgada)
+    empenhado_fora_base: int  # explícito: total − base (sem cobertura / não detalhado por função)
+    liquidado: int  # numerador
+    pct: int  # liquidado / empenhado_base
     banda: Banda
     funcoes: tuple[FuncaoExecucao, ...]
 
@@ -72,49 +77,49 @@ def calcular(
     codigo_ibge: str,
     nome: str,
     uf: str,
-    recebido_total: int,
+    empenhado_total: int,
     funcoes_brutas: list[FuncaoBruta],
 ) -> ExecucaoMunicipio:
-    """Denominador do ADR-0026: o ``%`` e o ``recebido`` exibido usam a MESMA base divulgada.
+    """Denominador do ADR-0026/0029: o ``%`` e o ``empenhado`` exibido usam a MESMA base divulgada.
 
-    Numerador e denominador somam só as funções com valor divulgado (``exe`` numérico); a parcela
-    fora dessa base é exposta em ``recebido_fora_base`` (= total − base), nunca tirada em silêncio.
+    Numerador e denominador somam só as funções com liquidação divulgada (``liquidado`` numérico); a
+    parcela fora dessa base sai em ``empenhado_fora_base`` (= total − base), nunca em silêncio.
     """
     funcoes: list[FuncaoExecucao] = []
-    executado = 0
-    recebido_base = 0
+    liquidado = 0
+    empenhado_base = 0
     for fb in funcoes_brutas:
-        if isinstance(fb.exe, int):
-            executado += fb.exe
-            recebido_base += fb.recebido  # só funções divulgadas entram na base
+        if isinstance(fb.liquidado, int):
+            liquidado += fb.liquidado
+            empenhado_base += fb.empenhado  # só funções divulgadas entram na base
             funcoes.append(
                 FuncaoExecucao(
                     funcao=fb.funcao,
-                    recebido=fb.recebido,
-                    exe=fb.exe,
+                    empenhado=fb.empenhado,
+                    liquidado=fb.liquidado,
                     exe_estado="valor",
-                    pct=round(fb.exe / fb.recebido * 100) if fb.recebido else None,
+                    pct=round(fb.liquidado / fb.empenhado * 100) if fb.empenhado else None,
                 )
             )
         else:
             funcoes.append(
                 FuncaoExecucao(
                     funcao=fb.funcao,
-                    recebido=fb.recebido,
-                    exe=None,
-                    exe_estado=fb.exe,
+                    empenhado=fb.empenhado,
+                    liquidado=None,
+                    exe_estado=fb.liquidado,
                     pct=None,
                 )
             )
-    pct = round(executado / recebido_base * 100) if recebido_base else 0
+    pct = round(liquidado / empenhado_base * 100) if empenhado_base else 0
     return ExecucaoMunicipio(
         codigo_ibge=codigo_ibge,
         nome=nome,
         uf=uf,
-        recebido_total=recebido_total,
-        recebido_base=recebido_base,
-        recebido_fora_base=recebido_total - recebido_base,
-        executado=executado,
+        empenhado_total=empenhado_total,
+        empenhado_base=empenhado_base,
+        empenhado_fora_base=empenhado_total - empenhado_base,
+        liquidado=liquidado,
         pct=pct,
         banda=banda(pct),
         funcoes=tuple(funcoes),

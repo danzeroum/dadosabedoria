@@ -84,8 +84,8 @@ export type Banda = "alta" | "parcial" | "baixa" | "indef";
 
 export interface FuncaoOut {
   funcao: string;
-  recebido: number;
-  exe: number | null; // null onde exe_estado != "valor"
+  empenhado: number;
+  liquidado: number | null; // null onde exe_estado != "valor"
   exe_estado: ExeEstado; // no OndeFoi: "valor" | "sem_cobertura" (orçamento público, sem cadeado)
   pct: number | null;
 }
@@ -119,10 +119,10 @@ export interface OndeFoiProduto {
   codigo_ibge: string;
   nome: string;
   uf: string;
-  recebido_total: number; // contexto — nunca o denominador
-  recebido_base: number; // denominador do %
-  recebido_fora_base: number; // explícito: total − base
-  executado: number;
+  empenhado_total: number; // contexto — nunca o denominador
+  empenhado_base: number; // denominador do %
+  empenhado_fora_base: number; // explícito: total − base
+  liquidado: number;
   pct: number;
   banda: Banda;
   funcoes: FuncaoOut[];

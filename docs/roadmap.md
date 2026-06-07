@@ -161,6 +161,10 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 - [x] 🔵 **Porta de entrada dos produtos** (`/`): cada produto como uma PERGUNTA com sua tela —
   IVM, Pulso Produtivo (TRAB-01) e OndeFoi (TRANSP-06, grau-demo); navegação no topo; o pitch de
   confiança (privacidade/proveniência/qualidade). Acessível, DS atual (ADR-0009).
+- [x] 🔵 **Panorama do município** (`/municipio/{ibge}` ← `GET /v1/territorios/{ibge}/panorama`):
+  o último valor de **cada** indicador público do acervo (todos os domínios, não só os do IVM), com
+  proveniência por fonte; a célula suprimida vira **protegido** (reusa `EstadoSupressao`). Uma
+  consulta sem N+1 (DISTINCT ON). Cross-link do drill-down do IVM e da porta de entrada.
 - [x] 🟡 **Tokens/componentes do design system** (WCAG) — tokens centralizados (`lib/semaforo.ts`:
   `ESTADOS`, `CORES`, `COR_SEM_DADO`; CSS vars em `globals.css`), componente `Legenda` reutilizável,
   semáforo acessível (cor redundante com texto + `sr-only` + `:focus-visible`; coropleta com

@@ -119,6 +119,32 @@ export interface OndeFoiProduto {
   meta: MetaOndeFoi;
 }
 
+// ----------------------------------------------------------------- Panorama do município
+
+export interface IndicadorValor {
+  codigo: string;
+  nome: string;
+  dominio: string;
+  subdominio: string;
+  unidade: string;
+  polaridade: string;
+  periodo: string; // YYYY-MM
+  valor: number | null; // null quando suprimido
+  suprimido: boolean;
+  motivo_supressao: string | null;
+  fonte: string;
+  lag_tipico_dias: number | null;
+  metodologia: string;
+}
+
+export interface Panorama {
+  codigo_ibge: string;
+  nome: string;
+  nivel: string;
+  uf: string | null;
+  indicadores: IndicadorValor[];
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

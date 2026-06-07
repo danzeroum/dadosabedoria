@@ -638,3 +638,33 @@ section h2 {
   margin-top: 24px;
   max-width: 720px;
 }
+
+/* Panorama do município */
+.indicador-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.indicador-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 12px 14px;
+}
+.indicador-nome {
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+.indicador-valor {
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.indicador-meta {
+  font-size: 0.75rem;
+  color: var(--cor-texto-suave);
+}

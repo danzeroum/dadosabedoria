@@ -1,6 +1,7 @@
 import type {
   FeatureCollectionIVM,
   OndeFoiProduto,
+  Panorama,
   PulsoProduto,
   RespostaIVM,
   RespostaIVMSerie,
@@ -71,6 +72,19 @@ export async function buscarOndeFoi(codigoIbge: string): Promise<OndeFoiProduto 
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o OndeFoi (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarPanorama(codigoIbge: string): Promise<Panorama | null> {
+  const resp = await fetch(new URL(`/v1/territorios/${codigoIbge}/panorama`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar o panorama (${resp.status})`);
   }
   return resp.json();
 }

@@ -43,6 +43,15 @@ const PRODUTOS: {
     cta: "Ver exemplo (Rio de Janeiro)",
     selo: "demonstração",
   },
+  {
+    titulo: "Panorama do município",
+    pergunta: "O que sabemos sobre o meu município?",
+    descricao:
+      "Todos os indicadores do acervo num só lugar — emprego, crédito, saúde, finanças, educação, compras — com a fonte de cada número. O protegido aparece como protegido.",
+    href: "/municipio/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
 ];
 
 export default function Home() {

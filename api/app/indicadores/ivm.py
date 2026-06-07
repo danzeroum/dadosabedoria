@@ -37,7 +37,7 @@ _CACHE_PREFIXO = "v1:ivm"
 
 _SELECT_BASE = """
     SELECT t.codigo_ibge, t.nome, m.periodo, m.ivm, m.semaforo,
-           m.v_emprego, m.v_financas, m.v_saude
+           m.v_emprego, m.v_financas, m.v_saude, m.v_saude_estado
     FROM ivm_municipio m JOIN territorio t ON t.id = m.territorio_id
 """
 
@@ -76,6 +76,7 @@ def _item(r: RowMapping) -> IVMItem:
         v_emprego=float(r["v_emprego"]),
         v_financas=float(r["v_financas"]),
         v_saude=float(r["v_saude"]) if r["v_saude"] is not None else None,
+        v_saude_estado=r["v_saude_estado"],
     )
 
 
@@ -133,7 +134,7 @@ class RepositorioIVM:
                   'codigo_ibge', t.codigo_ibge, 'nome', t.nome,
                   'ivm', m.ivm, 'semaforo', m.semaforo,
                   'v_emprego', m.v_emprego, 'v_financas', m.v_financas,
-                  'v_saude', m.v_saude)
+                  'v_saude', m.v_saude, 'v_saude_estado', m.v_saude_estado)
               ) AS f
               FROM territorio t
               LEFT JOIN ivm_municipio m ON m.territorio_id = t.id AND m.periodo = :periodo

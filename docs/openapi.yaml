@@ -120,6 +120,14 @@ components:
           - type: number
           - type: 'null'
           title: V Saude
+        v_saude_estado:
+          default: sem_cobertura
+          enum:
+          - valor
+          - suprimido
+          - sem_cobertura
+          title: V Saude Estado
+          type: string
       required:
       - codigo_ibge
       - nome

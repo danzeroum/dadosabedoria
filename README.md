@@ -35,11 +35,28 @@ consentimento casa o evento (IVM público) com os assinantes e grava uma notific
 `APP_FIELD_KEY`; agendamento do consumo após o REFRESH do IVM; OIDC real do cidadão. Veja também
 `docs/adr/` e o documento técnico.
 
+## Produtos à tela (por valor)
+
+Sobre o backbone, os produtos são puxados **até a tela** — cada um é uma pergunta, com proveniência
+e supressão honesta (o protegido aparece como protegido). Tudo numa **porta de entrada** em `/`;
+telas **acessíveis** (WCAG, ADR-0009 — a cor nunca comunica sozinha), cada uma certificada por um
+**screenshot no CI**.
+
+- **IVM** (`/ivm`) — *"quão vulnerável é o meu município?"*: painel semafórico + drill-down.
+- **Pulso Produtivo** (`/pulso/{ibge}` ← `GET /v1/pulso-produtivo/{ibge}`) — *"como está o emprego
+  formal?"*: saldo do Novo CAGED mês a mês, com nível (a batida) + tendência honestos (ADR-0027).
+- **OndeFoi** (`/onde-foi/{ibge}` ← `GET /v1/onde-foi/{ibge}`) — *"a transferência virou serviço?"*:
+  recebido × executado por função (ADR-0026; **grau-demo** até o dado vivo do Tesouro/SICONFI no #0).
+- **Panorama do município** (`/municipio/{ibge}` ← `GET /v1/territorios/{ibge}/panorama`) — *"o que
+  sabemos sobre o meu município?"*: o último valor de **cada** indicador do acervo, com a fonte.
+- **Pergunte aos dados** (`/perguntar` ← `POST /v1/ia/perguntar`) — a IA ancorada responde **só** com
+  o que recupera, **com citação**; sem dado, **abstém-se** (e narra em modo *template* sem chave de LLM).
+
 ## Invariantes inegociáveis
 
 1. Privacidade estrutural — grão território×período; sem chave de pessoa; supressão antes de gravar.
 2. Isolamento de PII — dado pessoal só no schema `app`; role analítica não o acessa (testado).
-3. IA ancorada — só afirma o recuperado, com citação (fatia futura).
+3. IA ancorada — só afirma o recuperado, com citação; sem dado, abstém-se; nunca inventa número.
 4. Não quebrar o passado — API aditiva; migração expand-and-contract.
 5. Proveniência sempre — todo valor/resposta carrega fonte, método e lag.
 6. Economia de recurso — pré-computar/cachear/incremental; medir antes de otimizar.

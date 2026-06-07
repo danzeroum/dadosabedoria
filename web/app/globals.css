@@ -393,11 +393,13 @@ section h2 {
   font-size: 0.85rem;
   color: var(--cor-texto-suave);
 }
+/* Tons escurecidos para passar o contraste AA (>=4.5:1) sobre o fundo claro (axe/WCAG, ADR-0009):
+   #16a34a dava só 3.15:1 e #dc2626 4.62:1. A seta + o rótulo textual garantem que não é só cor. */
 .tendencia-melhorando {
-  color: #16a34a;
+  color: #15803d; /* 4.79:1 sobre o fundo #f8fafc */
 }
 .tendencia-piorando {
-  color: #dc2626;
+  color: #b91c1c; /* 6.18:1 sobre o fundo #f8fafc */
 }
 
 .serie-saldo {

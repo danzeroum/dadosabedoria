@@ -70,8 +70,7 @@ export default async function IVMPage({
       <h2>Municípios</h2>
       <MapaSemaforico itens={dados} />
       <p className="nota">
-        A coropleta usa as malhas do IBGE (carregue com <code>run_ibge &lt;UF&gt;</code>). Município sem
-        IVM fica cinza. ADR-0010.
+        O mapa usa as malhas territoriais do IBGE; municípios sem IVM no período aparecem em cinza.
       </p>
     </main>
   );

@@ -66,9 +66,17 @@ async def test_valores_mes_invalido(client) -> None:
 
 
 async def test_celula_suprimida_visivel_sem_valor(client) -> None:
+    # Recorta o período da semente (2026-04): a esteira DATASUS/SIH pode gravar outras competências
+    # de saúde de Campinas (também suprimidas) no banco compartilhado — afirma o invariante, não a
+    # contagem total.
     r = await client.get(
         "/v1/valores",
-        params={"indicador": "saude.resp.internacoes_j", "territorio": "3509502"},
+        params={
+            "indicador": "saude.resp.internacoes_j",
+            "territorio": "3509502",
+            "de": "2026-04",
+            "ate": "2026-04",
+        },
     )
     body = r.json()
     assert len(body["dados"]) == 1

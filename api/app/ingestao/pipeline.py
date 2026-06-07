@@ -19,6 +19,9 @@ from app.core.observabilidade import get_logger
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import CODIGO_INDICADOR as CODIGO_CAGED
 from app.ingestao.adaptadores.caged import AdaptadorCaged
+from app.ingestao.adaptadores.datasus import CODIGO_INDICADOR as CODIGO_DATASUS
+from app.ingestao.adaptadores.datasus import CONTRATO as CONTRATO_DATASUS
+from app.ingestao.adaptadores.datasus import AdaptadorDatasus
 from app.ingestao.adaptadores.estban import CODIGO_INDICADOR as CODIGO_ESTBAN
 from app.ingestao.adaptadores.estban import AdaptadorEstban
 from app.ingestao.adaptadores.inep import CODIGO_INDICADOR as CODIGO_INEP
@@ -374,6 +377,67 @@ async def executar_pncp(
         janela,
         fonte_codigo="pncp",
         transformacoes=f"pncp {janela.ano}: bronze->prata->ouro (valor de contratos públicos)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_datasus(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorDatasus,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira DATASUS/SIH de uma competência (mensal). Requer ``conn`` numa transação aberta.
+
+    **Origem SENSÍVEL (saúde, ADR-0024).** A contagem de AIH **é** o ``n_amostra`` → a regra única
+    de k-anonimato no caminho ouro **suprime antes de gravar** a célula abaixo do piso (n_minimo=5):
+    contagem pequena nunca vira número exposto. Subíndice do **IVM**. **Vivo-pronto, NÃO validado:**
+    a forma (``MUNIC_RES``/``DIAG_PRINC``, DBC→tabular, nome do arquivo) **confirmar na 1ª busca
+    real** do SIH (#0) — ``CONTRATO_DATASUS.validar`` é a borda bronze.
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"datasus/{janela.competencia}.csv", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_DATASUS.validar(df)  # borda bronze: falha claro se o layout do SIH-RD mudar
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind = await _carregar_indicador(conn, CODIGO_DATASUS)
+    mapa6 = {k[:6]: v for k, v in (await _mapa_municipios(conn)).items()}  # SIH usa IBGE 6 díg.
+
+    celulas = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa6.get(str(row["cod_munres"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        contagem = int(row["internacoes"])
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="mensal",
+                valor=Decimal(contagem),
+                n_amostra=contagem,  # a contagem É o n_amostra → k-anon protege contagens pequenas
+                confiabilidade=4,
+                fonte_id=ind.fonte_id,
+            )
+        )
+    return await _gravar_celulas(
+        conn,
+        ind,
+        celulas,
+        janela,
+        fonte_codigo="datasus_sih",
+        transformacoes=(
+            f"datasus {janela.competencia}: bronze->prata->ouro (internações resp. grupo J)"
+        ),
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

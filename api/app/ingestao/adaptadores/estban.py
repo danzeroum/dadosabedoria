@@ -91,7 +91,10 @@ class AdaptadorEstban:
 class FetcherEstbanHTTP:  # pragma: no cover - rede/zip
     """Fetcher real: baixa o ZIP do ESTBAN municipal do BCB e extrai o CSV.
 
-    O padrão de URL deve ser confirmado contra o portal do BCB (ADR-0007 / próxima iteração).
+    **#0 (2026-06-07, ADR-0028):** o host ``www4.bcb.gov.br`` está **aberto**, mas este padrão de
+    URL dá **404** (o BCB migrou o portal do ESTBAN; o ``estban.asp`` antigo cai em página de erro).
+    A **nova URL de download fica a confirmar** (anota-e-segue; ver Lista de desbloqueio).
+    Parse/agregação seguem cobertos por fixture.
     """
 
     BASE = "https://www4.bcb.gov.br/fis/cosif/estban"

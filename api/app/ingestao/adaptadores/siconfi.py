@@ -1,16 +1,23 @@
 """Adaptador do SICONFI/STN (Tesouro) — finanças municipais (DCA), domínio ``financas``.
 
 Bronze (parse): lê o JSON da API do SICONFI (lista ``items``) num DataFrame Polars. Prata: filtra a
-conta-alvo (Transferências Correntes), normaliza ``cod_ibge`` e o valor. Ouro: soma por município.
+conta-alvo (Transferências Correntes orçamentárias, pela ``coluna`` realizada) e normaliza
+``cod_ibge`` e o valor. Ouro: soma por município.
 
-Contrato de dados (ASSUNÇÕES a confirmar contra a API real do SICONFI): a DCA (Declaração de Contas
-Anuais) é **anual** por exercício; ``cod_ibge`` é o IBGE de 7 dígitos.
-Fonte aberta, sem credencial. A carga em ``valor`` é feita pelo ``pipeline`` via ``escrever_ouro``.
+**Forma confirmada no #0 (2026-06-07, ADR-0028)** contra a API real — corrige o mock antigo:
+- ``cod_ibge`` é **int** e ``valor`` é **numérico** (o mock usava strings);
+- cada conta vem em **três colunas** (``Receitas Brutas Realizadas`` + duas deduções) → somar só a
+  realizada, senão dobra/contamina o valor;
+- a conta real é **prefixada por código** (``1.7.0.0.00.0.0 - Transferências Correntes``) e há uma
+  homônima **intra**-orçamentária (``7.7...``) → casar por ``cod_conta`` (``RO1.7.0.0.00.0.0``), não
+  pelo texto.
+A DCA é **anual** por exercício; ``cod_ibge`` é o IBGE de 7 dígitos. Fonte aberta, sem credencial.
 """
 
 from __future__ import annotations
 
 import json
+import re
 
 import polars as pl
 
@@ -23,13 +30,70 @@ CODIGO_INDICADOR = "financas.transferencias.correntes"
 COL_IBGE = "cod_ibge"
 COL_VALOR = "valor"
 COL_CONTA = "conta"
-CONTA_ALVO = "Transferências Correntes"  # conta da DCA (receita) — "OndeFoi" (TRANSP-06)
+COL_COLUNA = "coluna"
+COL_COD_CONTA = "cod_conta"
 
-#: Contrato do bruto SICONFI: a lista de itens precisa do município, do valor e da conta.
+#: Conta-alvo por **código** (não pelo texto): Transferências Correntes ORÇAMENTÁRIAS (Anexo I-C).
+#: A homônima intra-orçamentária é ``RI7.7.0.0.00.0.0`` — fora do alvo (confirmado no #0).
+CONTA_ALVO_COD = "RO1.7.0.0.00.0.0"
+#: Coluna do valor efetivamente arrecadado — as outras (``Deduções - FUNDEB`` etc.) ficam de fora.
+COLUNA_REALIZADA = "Receitas Brutas Realizadas"
+
+#: Contrato do bruto SICONFI: itens precisam de município, valor, conta, e — confirmado no #0 — das
+#: dimensões ``coluna`` e ``cod_conta`` (sem elas o filtro dobraria/contaminaria o valor).
 CONTRATO = ContratoFonte(
     fonte="siconfi",
-    colunas_obrigatorias=frozenset({COL_IBGE, COL_VALOR, COL_CONTA}),
+    colunas_obrigatorias=frozenset({COL_IBGE, COL_VALOR, COL_CONTA, COL_COLUNA, COL_COD_CONTA}),
 )
+
+# --- Função orçamentária (Anexo I-E) — vocabulário PROMOVIDO DA FONTE no #0 -----------------------
+# A classificação funcional é a Portaria MOG 42/1999, como o SICONFI a rotula. No Anexo I-E a função
+# vive no TEXTO ``conta`` ("NN - Nome"); ``cod_conta`` é constante ("TotalDespesas"). Subfunção é
+# "NN.NNN - ..."; agregados ("Total Geral...", "Despesas Intraorçamentárias") não casam o padrão.
+# `código → nome` exatamente como a fonte devolve (28 funções; 24 observadas nas capturas do #0).
+FUNCOES_SICONFI: dict[str, str] = {
+    "01": "Legislativa",
+    "02": "Judiciária",
+    "03": "Essencial à Justiça",
+    "04": "Administração",
+    "05": "Defesa Nacional",
+    "06": "Segurança Pública",
+    "07": "Relações Exteriores",
+    "08": "Assistência Social",
+    "09": "Previdência Social",
+    "10": "Saúde",
+    "11": "Trabalho",
+    "12": "Educação",
+    "13": "Cultura",
+    "14": "Direitos da Cidadania",
+    "15": "Urbanismo",
+    "16": "Habitação",
+    "17": "Saneamento",
+    "18": "Gestão Ambiental",
+    "19": "Ciência e Tecnologia",
+    "20": "Agricultura",
+    "21": "Organização Agrária",
+    "22": "Indústria",
+    "23": "Comércio e Serviços",
+    "24": "Comunicações",
+    "25": "Energia",
+    "26": "Transporte",
+    "27": "Desporto e Lazer",
+    "28": "Encargos Especiais",
+}
+
+_RE_FUNCAO = re.compile(r"^(\d{2}) - (.+)$")  # função de 1º nível; subfunção ("NN.NNN - ") não casa
+
+
+def parse_funcao(conta: str) -> tuple[str, str] | None:
+    """``"10 - Saúde"`` → ``("10", "Saúde")``; subfunção/total/agregado → ``None`` (Anexo I-E)."""
+    m = _RE_FUNCAO.match(conta.strip())
+    return (m.group(1), m.group(2).strip()) if m else None
+
+
+def e_funcao(conta: str) -> bool:
+    """True só para FUNÇÃO de 1º nível ("NN - Nome") — ignora subfunção, total e agregados."""
+    return _RE_FUNCAO.match(conta.strip()) is not None
 
 
 class AdaptadorSiconfi:
@@ -48,7 +112,9 @@ class AdaptadorSiconfi:
         # prata via cast). Resposta vazia → DataFrame vazio com as colunas do contrato.
         itens = json.loads(bruto).get("items", [])
         if not itens:
-            return pl.DataFrame({COL_IBGE: [], COL_VALOR: [], COL_CONTA: []})
+            return pl.DataFrame(
+                {COL_IBGE: [], COL_VALOR: [], COL_CONTA: [], COL_COLUNA: [], COL_COD_CONTA: []}
+            )
         return pl.DataFrame(itens)
 
     def extrair(self, janela: Janela) -> pl.DataFrame:
@@ -59,7 +125,10 @@ class AdaptadorSiconfi:
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
         return (
-            df.filter(pl.col(COL_CONTA).cast(pl.Utf8).str.strip_chars() == CONTA_ALVO)
+            df.filter(
+                (pl.col(COL_COD_CONTA).cast(pl.Utf8).str.strip_chars() == CONTA_ALVO_COD)
+                & (pl.col(COL_COLUNA).cast(pl.Utf8).str.strip_chars() == COLUNA_REALIZADA)
+            )
             .select(
                 pl.col(COL_IBGE).cast(pl.Utf8).str.strip_chars().alias("cod_ibge"),
                 pl.col(COL_VALOR).cast(pl.Float64, strict=False).alias("valor"),
@@ -79,15 +148,23 @@ class AdaptadorSiconfi:
 class FetcherSiconfiHTTP:
     """Fetcher real: baixa a DCA do exercício na API do SICONFI (aberta, sem credencial).
 
-    Não exercitado em teste (rede); parse/transformação são cobertos por fixture.
+    Não exercitado em teste (rede); parse/transformação são cobertos por fixture. URL/params
+    confirmados no #0 (ADR-0028): ``an_exercicio`` + ``no_anexo`` (espaços codificados). Sem
+    ``id_ente`` a API devolve todos os entes do exercício, **paginada** (``offset``/``hasMore``) —
+    a paginação nacional fica para a fatia da esteira viva.
     """
 
     BASE = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/dca"
+    ANEXO = (
+        "DCA-Anexo I-C"  # receitas (Transferências Correntes); I-E = despesas por função (OndeFoi)
+    )
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+        import urllib.parse
         import urllib.request
 
-        # an_exercicio = ano da janela (DCA é anual). URL/params a confirmar contra a API real.
-        url = f"{self.BASE}?an_exercicio={janela.ano}&no_anexo=DCA-Anexo I-C"
+        # an_exercicio = ano da janela (DCA é anual). Espaços do nome do anexo → codificados.
+        query = urllib.parse.urlencode({"an_exercicio": janela.ano, "no_anexo": self.ANEXO})
+        url = f"{self.BASE}?{query}"
         with urllib.request.urlopen(url, timeout=60) as resp:  # noqa: S310  # nosec B310 - URL fixa https
             return resp.read(), url

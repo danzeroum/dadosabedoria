@@ -68,7 +68,10 @@ class AdaptadorIbge:
 
 
 class FetcherIbgeHTTP:  # pragma: no cover - rede
-    """Fetcher real (servicodados.ibge.gov.br). URLs a confirmar/ajustar (ADR-0010)."""
+    """Fetcher real (servicodados.ibge.gov.br). URLs **confirmadas no #0** (2026-06-07, ADR-0028):
+    ``v1/localidades/municipios`` (5571 itens: ``id``+``nome``+hierarquia micro/meso/UF, e também
+    ``regiao-imediata``) e ``v3/malhas/estados/{uf}`` (FeatureCollection, ``properties.codarea``,
+    geometria Polygon) respondem na forma que o parse espera — fixture já fiel-à-forma."""
 
     BASE = "https://servicodados.ibge.gov.br/api"
 

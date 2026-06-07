@@ -4,39 +4,42 @@
 Open-Core Cívico). O ativo é a **confiança** — privacidade, proveniência e qualidade comprovada a
 cada commit.
 
-## ⚠️ SESSÃO NOVA — PRIMEIRA tarefa (antes de pegar o próximo item do roadmap): validar o #0 do OndeFoi
-O dono **liberou o egress** do SICONFI (`apidatalake.tesouro.gov.br` + IBGE/BCB, modo **Custom**). Pela
-plataforma isso **só vale em sessão NOVA** (não em *resume* — resume herda a política antiga e dá falso
-negativo). Como a sessão nova começa **sem o contexto da conversa anterior**, este bilhete é o que a
-manda **furar a fila**: antes da próxima fatia do roadmap, **valide o OndeFoi contra a fonte real**.
-1. **Sonda do #0** (só confiável em sessão nova):
+## ⚠️ SESSÃO NOVA — PRIMEIRA tarefa: re-sondar o #0 e validar os conectores ABERTOS
+**SICONFI #0 = VALIDADO** (2026-06-07, sessão nova → **ADR-0028**): a DCA real foi exercida, as 3
+incógnitas de forma confirmadas (campos reais; vocabulário de função = Portaria 42 da fonte;
+`exe_estado` válido = `{valor, sem_cobertura}`) e a fixture promovida a **fiel-à-forma**. O egress
+(modo **Custom**) **só vale em sessão NOVA** (resume herda a política antiga e dá falso negativo) — por
+isso o #0 vive aqui. Última sonda: **abertos** `apidatalake.tesouro.gov.br` (SICONFI ✅), IBGE
+`servicodados.ibge.gov.br` e BCB `www4.bcb.gov.br`; **403** INEP/PNCP/DATASUS. Antes da próxima fatia,
+**fure a fila** pelo #0 que ainda rende:
+1. **Sonda** (só confiável em sessão nova) — SICONFI + os ainda-bloqueados:
    ```bash
-   curl -sS -D - -o /dev/null --max-time 15 https://apidatalake.tesouro.gov.br/ \
-     | grep -iE "^HTTP/|x-deny-reason"
+   for h in apidatalake.tesouro.gov.br download.inep.gov.br pncp.gov.br ftp.datasus.gov.br; do
+     echo "== $h =="; curl -sS -D - -o /dev/null --max-time 15 "https://$h/" | grep -iE "^HTTP/|x-deny-reason"
+   done
    ```
-   `x-deny-reason: host_not_allowed` → **bloqueado** (passo 4). Linha `HTTP/...` **sem** `x-deny-reason`
-   → **aberto** (passo 2).
-2. **Se aberto — a validação real (payoff de várias rodadas), UMA vez:** rode `run_siconfi`/fetcher real
-   contra o DCA ao vivo e confirme as **três incógnitas de forma** marcadas no ADR-0026: (a) **nomes de
-   campo** reais (vs. os do mock); (b) **classificação de função** = os *membros* da dimensão — promova
-   o vocabulário **da fonte**, nunca do mock; (c) como o SICONFI sinaliza função **ausente vs. retida** →
-   confirme a hipótese **válido = `{valor, sem_cobertura}`, sem `suprimido`**. Promova a fixture de
-   **fiel-ao-contrato → fiel-à-forma** (capture um fixture real). Des-arrisca todas as esteiras de uma vez.
-3. **Feche o loop NO PAPEL:** grave a **forma confirmada no ADR-0026** (ou ADR-filho) — as marcas
-   "confirmar no #0" viram "confirmado: X". Senão a validação vira evento perdido no próximo reset.
-4. **Se bloqueado mesmo em sessão nova:** a config não pegou — peça ao dono conferir no editor do
-   ambiente (claude.ai/code): Network = **Custom** (não só "Trusted"), **"include default list of common
-   package managers"** marcada, e **salvo**. Contorno só pra validar: Network = **Full**, voltando ao Custom.
+   `HTTP/...` **sem** `x-deny-reason` → aberto; `x-deny-reason: host_not_allowed` → bloqueado.
+2. **Conectores abertos ainda NÃO exercidos (IBGE/CAGED/ESTBAN):** rode o fetcher real UMA vez,
+   confirme a forma (campos/colunas) vs. a fixture, **feche o loop no papel** (ADR) e promova a fixture
+   a fiel-à-forma — mesmo padrão do SICONFI/ADR-0028. **Não refazer SICONFI** (já validado).
+3. **Quando INEP/PNCP/DATASUS abrirem:** idem — 1ª busca real, confirme a forma (a marca "confirmar na
+   1ª busca real" de cada), grave no ADR, promova a fixture. _Senão a validação vira evento perdido no
+   próximo reset._
+4. **Se ainda 403 em sessão nova:** a config não pegou — peça ao dono no editor do ambiente
+   (claude.ai/code): Network = **Custom** (não só "Trusted"), **"include default list of common package
+   managers"** marcada, e **salvo**. Contorno só pra validar: Network = **Full**, voltando ao Custom.
 
 **Estado dos produtos à TELA (maratona 2026-06-07):** o backbone foi puxado até a tela por valor —
 **Pulso Produtivo (TRAB-01)**: `/v1/pulso-produtivo/{ibge}` + tela `/pulso/{ibge}` sobre o saldo CAGED
 real (ADR-0027); **OndeFoi (TRANSP-06)**: contrato (ADR-0026) + `/v1/onde-foi/{ibge}` + tela
 `/onde-foi/{ibge}` em **grau-demo** (DS atual — o handoff de design sumiu num reset, ver Lista de
 desbloqueio); **Panorama do município**: `/v1/territorios/{ibge}/panorama` + tela `/municipio/{ibge}`
-(todos os indicadores, supressão honesta); **porta de entrada** em `/`. **Falta no OndeFoi:** a esteira
-de despesa **por função** (codifica o vocabulário de funções = forma-verdade) — adiada pro **pós-#0**,
-que a validação acima destrava. Os demais produtos seguem por valor (roadmap), telas na **DS atual**
-(ADR-0009, acessível) até o handoff voltar.
+(todos os indicadores, supressão honesta); **porta de entrada** em `/`. **OndeFoi pós-#0:** a forma já
+está presa (ADR-0028); falta a **esteira viva de despesa por função** (Anexo I-E → função como
+dimensão → `run_siconfi`/Dagster) **e** o **🟡 do dono** — o #0 revelou que "recebido por função" não
+existe na fonte, então a re-ancoragem é **Liquidado/Empenhado** (ADR-0028 §5); a tela segue grau-demo
+até referendar. Os demais produtos seguem por valor (roadmap), telas na **DS atual** (ADR-0009,
+acessível) até o handoff voltar.
 
 ## O plano vive no repo
 - **`docs/roadmap.md` é a fonte única do plano.** No início da sessão, leia-o e **execute o próximo

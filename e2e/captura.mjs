@@ -10,6 +10,7 @@ const OUT = process.env.OUT_DIR ?? "capturas";
 const paginas = [
   { nome: "ivm-mapa", url: `${BASE}/ivm` }, // cartões semafóricos + subíndices
   { nome: "ivm-municipio-sp", url: `${BASE}/ivm/3550308` }, // drill-down: série + proveniência
+  { nome: "pulso-sp", url: `${BASE}/pulso/3550308` }, // TRAB-01: saldo de emprego formal
 ];
 
 await mkdir(OUT, { recursive: true });

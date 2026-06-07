@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Handoff de UX — DadoSabedoria IVM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="handoff.css" />
+</head>
+<body>
+<header class="topo">
+  <div class="topo-in">
+    <span class="topo-marca"><span class="topo-logo" aria-hidden="true">DS</span> DadoSabedoria · Handoff</span>
+    <nav class="topo-nav" aria-label="Seções">
+      <a href="#p0">P0 defeitos</a>
+      <a href="#feito">Desenhado</a>
+      <a href="#construir">A construir</a>
+      <a href="#primitivos">Primitivos</a>
+      <a href="#wcag">WCAG</a>
+      <a href="#teste">Teste</a>
+    </nav>
+  </div>
+</header>
+
+<div class="shell">
+
+  <div class="capa">
+    <div class="eyebrow">Entrega de design → engenharia · Onda 1</div>
+    <h1>Tela do IVM — Handoff de UX</h1>
+    <p class="lead">Backlog implementável da tela do Índice de Vulnerabilidade Municipal, separando <b>o que já está desenhado e validável</b> do <b>que ainda é a-construir</b>. Cada item carrega a hipótese e a métrica que o justificam — para virar trabalho testável, não lista de desejos.</p>
+    <div class="meta-linha">
+      <span><b>Rotas:</b> <span class="mono">/ivm</span> · <span class="mono">/ivm/[codigo]</span></span>
+      <span><b>Stack:</b> Next.js SSR · sem segredo no cliente</span>
+      <span><b>Regra do semáforo:</b> <span class="mono">lib/semaforo.ts</span> (espelha o backend)</span>
+      <span><b>Base:</b> ADR-0008/0009/0010</span>
+    </div>
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="linkbtn" href="../IVM.html" target="_blank" rel="noopener">▶ Abrir o protótipo navegável</a>
+      <a class="linkbtn" href="#primitivos" style="background:var(--surface); color:var(--marca-escura); border:1px solid var(--border-strong);">Ver specs dos primitivos</a>
+    </div>
+
+    <div class="callout" style="margin-top:24px;">
+      <span class="ic" aria-hidden="true">✓</span>
+      <div>
+        <h4>A certificação final é a tela renderizada — não este arquivo, nem a descrição.</h4>
+        <p>O protótipo foi auditado <b>ao vivo</b> (busca filtrando, as quatro ações abrindo com citação ABNT, ouvidoria e discurso de consentimento). Na esteira, a verdade passa a ser o <b>screenshot do CI a cada PR</b>: é nele que cada item abaixo se confirma “feito”.</p>
+      </div>
+    </div>
+
+    <nav class="toc" aria-label="Índice">
+      <a href="#p0"><span class="n">01</span> P0 — defeitos vivos (ship já)</a>
+      <a href="#feito"><span class="n">02</span> Desenhado no protótipo</a>
+      <a href="#construir"><span class="n">03</span> A-construir: dados & endpoints</a>
+      <a href="#primitivos"><span class="n">04</span> Primitivos reutilizáveis</a>
+      <a href="#wcag"><span class="n">05</span> Checklist WCAG AA (gate)</a>
+      <a href="#teste"><span class="n">06</span> Roteiro de teste por persona</a>
+    </nav>
+    <div class="legenda-tags">
+      <span class="tag t-p0">P0 defeito</span> <span class="tag t-feito">desenhado</span>
+      <span class="tag t-construir">a-construir</span> <span class="tag t-dep">dep. de dado</span>
+      <span class="tag t-gate">gate</span>
+    </div>
+  </div>
+
+  <!-- ============ 01 P0 ============ -->
+  <section id="p0">
+    <div class="sec-num">01</div>
+    <h2>P0 — defeitos vivos em produção</h2>
+    <p class="sub">Estes não são polimento de redesenho: são <b>bugs na UI pública hoje</b>. Mande como um PR pequeno, gate-free, <b>antes</b> do resto — o usuário não pode continuar vendo instrução de desenvolvedor.</p>
+
+    <div class="itens">
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-01</span>
+          <span class="tit">Estado vazio mostra mensagem de dev<small>“Sem dados… Rode a ingestão (CAGED + ESTBAN) e o refresh do IVM.” — em <span class="mono">components/MapaSemaforico.tsx</span></small></span>
+          <span class="tags"><span class="tag t-p0">Sev 4</span><span class="tag t-p0">P0</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Correção</span><span class="val">Texto orientado ao usuário: “Ainda não há dados deste período para esta região.” + CTA “ver período mais recente” / “avisar quando houver dado”.</span></div>
+          <div class="campo"><span class="rot">Esforço</span><span class="val">Baixo — troca de string + 1 componente de estado vazio.</span></div>
+          <div class="campo full"><span class="rot">Risco se ficar</span><span class="val">Quebra de confiança no primeiro contato; usuário não “roda ingestão”.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-02</span>
+          <span class="tit">Comando técnico na nota pública<small>“A coropleta usa as malhas do IBGE (carregue com <span class="mono">run_ibge &lt;UF&gt;</span>).” — em <span class="mono">app/ivm/page.tsx</span></small></span>
+          <span class="tags"><span class="tag t-p0">Sev 3</span><span class="tag t-p0">P0</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Correção</span><span class="val">Remover qualquer <span class="mono">run_*</span> da UI. Nota em linguagem comum sobre o cartograma/coropleta.</span></div>
+          <div class="campo"><span class="rot">Esforço</span><span class="val">Baixo — edição de copy.</span></div>
+          <div class="campo full"><span class="rot">Hipótese / métrica</span><span class="val">H3 (parcial) — leitura correta de “sem dado” ≥ 90% em teste moderado.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 DESENHADO ============ -->
+  <section id="feito">
+    <div class="sec-num">02</div>
+    <h2>Desenhado no protótipo — pronto para implementar</h2>
+    <p class="sub">Resolvido em design e validável no protótipo navegável. Cada item traz a <b>hipótese + métrica</b> (H1–H5 do brief) e a <b>dependência de dado</b> que a engenharia precisa ligar. “Desenhado” ≠ “em produção”: só vira feito no screenshot do CI.</p>
+
+    <div class="itens">
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-04</span>
+          <span class="tit">Honestidade da supressão<small>Suprimido (privacidade) ≠ 0 ≠ sem cobertura — três estados visualmente distintos</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span><span class="tag t-dep">dep. de dado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Célula 🔒 “protegido — privacidade” (roxo, hachura) vs “sem cobertura” (cinza, hachura) vs valor 0 (barra zerada). Legenda e série marcam pontos suprimidos, nunca omitem.</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val">Distinguir <span class="k">null por supressão</span> de <span class="k">null por ausência de cobertura</span>. <b>Aditivo — não quebrar o passado:</b> manter <span class="mono">v_saude: number | null</span> e acrescentar campo irmão <span class="mono">v_saude_estado: "valor" | "suprimido" | "sem_cobertura"</span>.</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">H3 — usuário interpreta “sem dado” corretamente.</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">Teste moderado: ≥ 90% acertam o significado.</span></div>
+          <div class="campo full"><span class="rot">Invariante</span><span class="val">Migração <b>expand-and-contract</b>: o campo de estado é aditivo; nenhum cliente existente quebra por não conhecê-lo.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-03/08</span>
+          <span class="tit">Selo de confiança + frescor explícito<small>Fonte + “dado até MM/AAAA · atraso ~N dias · metodologia v1.1”, expansível por fonte</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span><span class="tag t-dep">dep. de dado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Selo no topo e no drill; ponto de frescor verde/âmbar; expande para fontes (órgão, até, atraso, licença).</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val"><b>Crítico:</b> frescor/atraso vêm do <span class="mono">meta</span> da resposta (fonte, lag, período), <b>nunca hardcoded</b>. Selo lê <span class="mono">/v1/ivm → meta</span>.</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">H1 — selo + explicador elevam o drill-down na 1ª sessão.</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">Drill-down na 1ª sessão <b>+20%</b> vs controle.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-07</span>
+          <span class="tit">“O que é o IVM?” no ponto de uso<small>Popover com linguagem comum, fórmula e “o que vermelho significa pra mim”</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Botão “?” no topo e no drill; faixas com significado acionável por cor.</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val">Nenhuma — copy estática + faixas de <span class="mono">lib/semaforo.ts</span>.</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">H1 (com o selo).</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">Drill-down na 1ª sessão +20%.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-06</span>
+          <span class="tit">Busca + UF dinâmica + período<small>Campo por nome/código IBGE com sugestões; UF vinda do dado, não fixa</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span><span class="tag t-dep">dep. de dado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Autocomplete com semáforo na sugestão; filtro de UF e período; contagem viva; “nenhum resultado” com saída.</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val">Lista de UFs derivada do payload; busca client-side no conjunto carregado (ou endpoint de busca quando o nº de municípios crescer).</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">H4 — usuário acha a própria cidade.</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">% que encontra a cidade <b>&lt; 15 s ≥ 90%</b>.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-05</span>
+          <span class="tit">Cartograma de tiles (ponte honesta)<small>Cada quadro = município (posição aproximada); cartões como alternativa acessível</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Alterna Mapa↔Cartões. Tile traz nome + IVM + ícone de supressão; rótulo textual sempre (não só cor).</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val">Posição de tile por UF (tabela leve). Coropleta geográfica real é item à parte (§03).</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">Reduz quebra de expectativa de “mapa” + “achar minha cidade”.</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">Sustenta H4; sem regressão de tempo-até-1º-insight.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">CMP</span>
+          <span class="tit">Comparar com cidade parecida<small>No drill: mesma UF, IVM próximo, lado a lado</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Seletor de cidade parecida; comparação de IVM + subíndices.</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val">Critério de “parecida” (porte/UF) — definir regra; hoje usa UF + proximidade de IVM.</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">H2 — comparar amplia engajamento.</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">Comparações/sessão e duração: aumento sig. vs controle.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">H-11</span>
+          <span class="tit">Superfície de agir (maior vazamento do funil)<small>Compartilhar · A quem cobrar · Exportar c/ citação · Avise-me</small></span>
+          <span class="tags"><span class="tag t-feito">desenhado</span><span class="tag t-dep">dep. de dado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">Desenho</span><span class="val">Card cívico compartilhável; export CSV/JSON/embed com <b>citação ABNT</b>; modal de alerta com discurso de consentimento.</span></div>
+          <div class="campo"><span class="rot">Dep. de dado</span><span class="val">Ver §03: alerta→runtime de consentimento (auth=gate); “a quem cobrar”→fonte de representantes/ouvidoria (dep. nova).</span></div>
+          <div class="campo"><span class="rot">Hipótese</span><span class="val">H5 — superfície de ação eleva o north-star.</span></div>
+          <div class="campo"><span class="rot">Métrica / meta</span><span class="val">Consumos qualificados/sessão <b>+30%</b>.</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 03 A CONSTRUIR ============ -->
+  <section id="construir">
+    <div class="sec-num">03</div>
+    <h2>A-construir — dependências de dado e endpoint</h2>
+    <p class="sub">O que o protótipo <b>não resolve sozinho</b>. Marcado com origem própria para o backlog. Sinalize 🔴 onde há gate (auth) e 🟣 onde a dependência é um dado/endpoint novo.</p>
+
+    <div class="itens">
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">D-1</span>
+          <span class="tit">Frescor vindo do <span class="mono">meta</span>, não hardcoded<small>“dado até / atraso típico” por indicador</small></span>
+          <span class="tags"><span class="tag t-dep">dep. de dado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">O que falta</span><span class="val">Campos de fonte/lag/período no envelope <span class="mono">meta</span> de <span class="mono">/v1/ivm</span> e <span class="mono">/v1/ivm/{cod}</span> (já há proveniência; expor frescor calculado).</span></div>
+          <div class="campo"><span class="rot">Origem</span><span class="val">Backend de indicadores (Onda 1).</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">D-2</span>
+          <span class="tit">Assinar alerta → runtime de consentimento<small>“Avise-me quando ficar vermelho”</small></span>
+          <span class="tags"><span class="tag t-dep">dep. de dado</span><span class="tag t-gate">🔴 gate: auth</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">O que falta</span><span class="val">Gravar contato no schema <span class="mono">app</span> isolado (§8.1) via <span class="mono">role_consentimento</span>, cifrado; auth do cidadão (JWT/OIDC) é <b>pré-requisito</b>.</span></div>
+          <div class="campo"><span class="rot">Preparado</span><span class="val">UI já desenhada com o discurso de privacidade; “preparar o lugar, não bloquear o resto”.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">D-3</span>
+          <span class="tit">“A quem cobrar” → fonte de representantes/ouvidoria<small>Link cívico por município</small></span>
+          <span class="tags"><span class="tag t-dep">🟣 dep. nova</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">O que falta</span><span class="val">Dataset de ouvidoria/representantes por código IBGE (origem própria — não existe na Onda 1). Marcar P1/P2.</span></div>
+          <div class="campo"><span class="rot">Fallback</span><span class="val">Enquanto não houver, link genérico por UF + compartilhamento.</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-cabeca">
+          <span class="id">D-4</span>
+          <span class="tit">Coropleta geográfica real (P2)<small>Quando as malhas do IBGE entrarem</small></span>
+          <span class="tags"><span class="tag t-construir">P2</span><span class="tag t-dep">dep. de dado</span></span>
+        </div>
+        <div class="item-corpo">
+          <div class="campo"><span class="rot">O que falta</span><span class="val">GeoJSON por UF (<span class="mono">/v1/mapa/ivm</span>). Manter <b>cartograma + cartões como fallback acessível</b>.</span></div>
+          <div class="campo"><span class="rot">Origem</span><span class="val">Ingestão IBGE (malhas).</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 PRIMITIVOS ============ -->
+  <section id="primitivos">
+    <div class="sec-num">04</div>
+    <h2>Primitivos reutilizáveis — specs de componente</h2>
+    <p class="sub">Extraídos de instâncias reais (IVM). O <b>OndeFoi deve nascer nestes</b>, não retrofitado depois. Props e estados abaixo são o contrato mínimo.</p>
+
+    <div class="spec">
+      <h3>SeloConfianca <span class="reuso">reutilizável</span></h3>
+      <p class="sub" style="margin:0 0 4px;">A alavanca central de confiança: fonte + frescor + metodologia, expansível.</p>
+      <dl>
+        <dt>Props</dt><dd><span class="k">meta</span> { fontes[], periodo, atraso_dias, versao_metodologia, licenca }</dd>
+        <dt>Estados</dt><dd>colapsado · expandido · frescor <span class="k">fresco</span>/<span class="k">atenção</span> (limiar de lag configurável)</dd>
+        <dt>Regra</dt><dd>nunca hardcode de data; sempre derivado do <span class="k">meta</span> (D-1)</dd>
+        <dt>A11y</dt><dd><span class="k">aria-expanded</span>; ponto de frescor é decorativo (<span class="k">aria-hidden</span>), o texto carrega o estado</dd>
+        <dt>Reuso</dt><dd>topo de qualquer painel de domínio (ar/saúde, OndeFoi)</dd>
+      </dl>
+    </div>
+
+    <div class="spec">
+      <h3>EstadoSupressao <span class="reuso">reutilizável</span></h3>
+      <p class="sub" style="margin:0 0 4px;">Trata o trio honesto em qualquer célula/barra/ponto.</p>
+      <dl>
+        <dt>Entrada</dt><dd><span class="k">number</span> · <span class="k">"suprimido"</span> · <span class="k">"sem_cobertura"</span></dd>
+        <dt>Saída</dt><dd>barra com valor · pílula 🔒 roxa (privacidade) · pílula cinza (sem cobertura)</dd>
+        <dt>Regra</dt><dd>suprimido ≠ 0 ≠ vazio; em série, ponto suprimido é <b>marcado</b>, nunca omitido</dd>
+        <dt>A11y</dt><dd>rótulo textual + padrão (hachura), não só cor; <span class="k">aria-label</span> explícito</dd>
+        <dt>Reuso</dt><dd>todo indicador com risco de k-anonimato</dd>
+      </dl>
+    </div>
+
+    <div class="spec">
+      <h3>Cartograma / fallback Cartões <span class="reuso">reutilizável</span></h3>
+      <dl>
+        <dt>Props</dt><dd><span class="k">itens[]</span> (código, nome, valor, semáforo, col/lin, uf) · <span class="k">modo</span> tile|cartoes</dd>
+        <dt>Estados</dt><dd>tile · cartão · vazio (estado humano) · nenhum-resultado</dd>
+        <dt>Regra</dt><dd>cartões são a alternativa acessível permanente, mesmo com coropleta real</dd>
+        <dt>A11y</dt><dd>cada tile é <span class="k">button</span> com aria-label = nome + valor + faixa; navegável por teclado</dd>
+        <dt>Reuso</dt><dd>qualquer índice território×período</dd>
+      </dl>
+    </div>
+
+    <div class="spec">
+      <h3>SuperficieAgir <span class="reuso">reutilizável</span></h3>
+      <dl>
+        <dt>Ações</dt><dd>Compartilhar (card cívico) · Exportar (CSV/JSON/embed + citação ABNT) · Avise-me (consentimento) · A quem cobrar</dd>
+        <dt>Props</dt><dd><span class="k">item</span> · <span class="k">meta</span> · handlers por ação</dd>
+        <dt>Gate</dt><dd>Avise-me depende de auth (D-2); “a quem cobrar” depende de D-3 — degradam graciosamente</dd>
+        <dt>Regra</dt><dd>export sempre com proveniência embutida; nunca expor granularidade que reidentifique</dd>
+        <dt>Reuso</dt><dd>fecho de funil de <b>todo</b> produto (IVM, OndeFoi, domínios)</dd>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ============ 05 WCAG ============ -->
+  <section id="wcag">
+    <div class="sec-num">05</div>
+    <h2>Checklist WCAG 2.1 AA — gate antes de subir</h2>
+    <div class="callout privacidade" style="margin-bottom:18px;">
+      <span class="ic" aria-hidden="true">!</span>
+      <div>
+        <h4>“Segue a regra cor+ícone+texto+aria” ≠ WCAG AA verificado.</h4>
+        <p>Rodar <b>axe</b> + auditoria de <b>teclado</b> + <b>leitor de tela</b> é item de gate, não opinião. Abaixo o checklist do handoff.</p>
+      </div>
+    </div>
+    <ul class="check">
+      <li><span class="box" aria-hidden="true"></span><div><b>Contraste AA</b> — texto 4,5:1; estados/ícones 3:1. <small>Testar as três cores do semáforo sobre os tints (âmbar #b45309 já escolhido p/ AA).</small></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Estado nunca só por cor</b> — cor + ícone + texto + <span class="mono">aria-label</span> em semáforo, supressão e tiles.</div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Teclado</b> — foco visível, ordem de tabulação lógica, todos os tiles/ações operáveis; alvos de toque ≥ 44px.</div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Leitor de tela</b> — títulos hierárquicos; cartograma com <b>descrição textual equivalente</b> (lista acessível dos mesmos dados); tabelas/listas rotuladas.</div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Reflow 320px / zoom 200%</b> sem perda; mobile-first; conteúdo essencial sem depender de JS pesado.</div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Linguagem comum</b> — nome do indicador, não código técnico; <span class="mono">lang="pt-BR"</span>.</div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>axe-core no DOM vivo</b> — o job de screenshot já carrega a página no Chromium (Playwright); rodar axe <b>na página renderizada ali</b> (não no PNG). <small>Gate: 0 violação crítica para merge.</small></div></li>
+    </ul>
+  </section>
+
+  <!-- ============ 06 TESTE ============ -->
+  <section id="teste">
+    <div class="sec-num">06</div>
+    <h2>Roteiro de teste de usabilidade — por persona</h2>
+    <p class="sub">≥ 1 usuário real de cada persona-âncora + <b>1 usuário de leitor de tela</b>. Cada tarefa amarra a uma hipótese mensurável.</p>
+
+    <div class="grid2">
+      <div class="persona">
+        <h4>Cidadão</h4>
+        <div class="papel">morador · literacia de dados variável</div>
+        <ol>
+          <li class="tarefa">Ache sua cidade e diga se pode confiar no número.</li>
+          <li>Observe: usa busca? acha o selo? entende “vermelho”?</li>
+          <li class="tarefa">O que você faria com isso?</li>
+        </ol>
+        <div class="kpi">H4 (achar &lt;15s ≥90%) · H1 (drill 1ª sessão) · H5 (ação)</div>
+      </div>
+
+      <div class="persona">
+        <h4>Gestor / Empresa</h4>
+        <div class="papel">secretaria · analista · operadora</div>
+        <ol>
+          <li class="tarefa">Compare sua cidade com uma parecida e exporte um dado citável.</li>
+          <li>Observe: confia na recência? acha a citação? trilha p/ API?</li>
+        </ol>
+        <div class="kpi">H2 (comparações/sessão) · H5 (export/citação)</div>
+      </div>
+
+      <div class="persona">
+        <h4>ONG / Jornalista</h4>
+        <div class="papel">advocacy · controle social · pauta</div>
+        <ol>
+          <li class="tarefa">Encontre a “história local” e gere um embed/citação para a matéria.</li>
+          <li>Observe: prova robusta? recorte territorial? anomalia?</li>
+        </ol>
+        <div class="kpi">H5 (consumos qualificados/north-star)</div>
+      </div>
+
+      <div class="persona">
+        <h4>Leitor de tela (transversal)</h4>
+        <div class="papel">NVDA/VoiceOver · só teclado</div>
+        <ol>
+          <li class="tarefa">Navegue o mapa, abra um município e entenda a supressão — sem mouse, sem ver cor.</li>
+          <li>Observe: a lista equivalente do cartograma funciona? o estado “protegido” é anunciado?</li>
+        </ol>
+        <div class="kpi">H3 (interpretar “sem dado” ≥90%) · gate WCAG</div>
+      </div>
+    </div>
+
+    <div class="callout privacidade" style="margin:18px 0 0;">
+      <span class="ic" aria-hidden="true">?</span>
+      <div>
+        <h4>Hipótese H6 — a ressalva vence a cor?</h4>
+        <p>Teste moderado, transversal a IVM e OndeFoi: o usuário lê “vermelho / executou pouco” como <b>“merece a pergunta”</b> ou como <b>“roubaram / cidade ruim”</b>? Toda a aposta de honestidade depende de a ressalva textual vencer o sinal de cor. <b>Meta:</b> ≥ 80% verbalizam a leitura de “pergunta/atenção”, não de juízo/acusação. Se falhar, reforçar copy e reduzir a carga semântica da cor.</p>
+      </div>
+    </div>
+
+    <h3>Fluxo do funil a instrumentar (clickstream, sem PII)</h3>
+    <div class="fluxo">
+      <div class="passo"><div class="n">OBSERVAR</div><div class="t">Ativação</div><div class="d">% que vê ≥1 indicador · tempo até 1º insight</div></div>
+      <div class="passo"><div class="n">INTERESSAR</div><div class="t">Aprofundar</div><div class="d">drill-downs/sessão · comparações · % que vê proveniência</div></div>
+      <div class="passo"><div class="n">CONSUMIR</div><div class="t">North-star</div><div class="d">exports · API · embeds · alertas · compartilhamentos</div></div>
+      <div class="passo"><div class="n">CONFIANÇA</div><div class="t">Qualidade</div><div class="d">frescor vs lag · % suprimido · contestações · uptime</div></div>
+    </div>
+  </section>
+
+  <p class="rodape">
+    DadoSabedoria · Handoff de UX da tela do IVM · privacidade por desenho (LGPD) · a verdade é a tela renderizada (screenshot do CI).
+    Restrições: Next.js SSR, sem segredo no cliente, regra do semáforo em <span class="mono">lib/semaforo.ts</span> espelhando o backend.
+  </p>
+</div>
+</body>
+</html>

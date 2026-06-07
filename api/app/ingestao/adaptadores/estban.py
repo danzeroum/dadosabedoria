@@ -91,10 +91,11 @@ class AdaptadorEstban:
 class FetcherEstbanHTTP:  # pragma: no cover - rede/zip
     """Fetcher real: baixa o ZIP do ESTBAN municipal do BCB e extrai o CSV.
 
-    **#0 (2026-06-07, ADR-0028):** o host ``www4.bcb.gov.br`` está **aberto**, mas este padrão de
-    URL dá **404** (o BCB migrou o portal do ESTBAN; o ``estban.asp`` antigo cai em página de erro).
-    A **nova URL de download fica a confirmar** (anota-e-segue; ver Lista de desbloqueio).
-    Parse/agregação seguem cobertos por fixture.
+    **#0 (2026-06-07):** o host ``www4.bcb.gov.br`` está **aberto**, mas este padrão de URL dá
+    **404** — o BCB **migrou o portal do ESTBAN** para ``www.bcb.gov.br`` /
+    ``dadosabertos.bcb.gov.br``, **ambos 403 (host_not_allowed)** no ambiente. Logo a validação do
+    ESTBAN precisa que o dono **libere um desses hosts** no allowlist (gate) — não só "achar a URL".
+    Parse/agregação seguem cobertos por fixture (anota-e-segue).
     """
 
     BASE = "https://www4.bcb.gov.br/fis/cosif/estban"

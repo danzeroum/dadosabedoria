@@ -52,3 +52,22 @@ def test_schedule_siconfi_usa_exercicio_anterior() -> None:
     )
     cfg = schedule_siconfi_anual(ctx).run_config["ops"]["op_carregar_siconfi"]["config"]
     assert cfg["competencia"] == "202501"  # DCA anual → exercício anterior
+
+
+def test_definitions_incluem_siconfi_funcoes() -> None:
+    from app.orquestracao.definitions import job_siconfi_funcoes, schedule_siconfi_funcoes_anual
+
+    assert job_siconfi_funcoes.name == "job_siconfi_funcoes"
+    assert schedule_siconfi_funcoes_anual.name == "schedule_siconfi_funcoes_anual"
+
+
+def test_schedule_siconfi_funcoes_usa_exercicio_anterior() -> None:
+    from app.orquestracao.definitions import schedule_siconfi_funcoes_anual
+
+    ctx = dagster.build_schedule_context(
+        scheduled_execution_time=datetime(2026, 6, 1, 9, 0, tzinfo=UTC)
+    )
+    cfg = schedule_siconfi_funcoes_anual(ctx).run_config["ops"]["op_carregar_siconfi_funcoes"][
+        "config"
+    ]
+    assert cfg["competencia"] == "202501"  # DCA anual (Anexo I-E) → exercício anterior

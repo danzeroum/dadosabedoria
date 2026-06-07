@@ -21,6 +21,9 @@ from app.ingestao.adaptadores.caged import CODIGO_INDICADOR as CODIGO_CAGED
 from app.ingestao.adaptadores.caged import AdaptadorCaged
 from app.ingestao.adaptadores.estban import CODIGO_INDICADOR as CODIGO_ESTBAN
 from app.ingestao.adaptadores.estban import AdaptadorEstban
+from app.ingestao.adaptadores.inep import CODIGO_INDICADOR as CODIGO_INEP
+from app.ingestao.adaptadores.inep import CONTRATO as CONTRATO_INEP
+from app.ingestao.adaptadores.inep import AdaptadorInep
 from app.ingestao.adaptadores.siconfi import CODIGO_INDICADOR as CODIGO_SICONFI
 from app.ingestao.adaptadores.siconfi import CONTRATO as CONTRATO_SICONFI
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi
@@ -254,6 +257,63 @@ async def executar_siconfi(
         janela,
         fonte_codigo="siconfi",
         transformacoes=f"siconfi {janela.ano}: bronze->prata->ouro (transferências correntes DCA)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_inep(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorInep,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira INEP/Censo Escolar de um ano (anual). Requer ``conn`` numa transação aberta.
+
+    Indicador DESCRITIVO (``educacao.matriculas.fundamental``), fora do índice de vulnerabilidade →
+    sem ``refrescar_ivm``. **Vivo-pronto, NÃO validado:** o contrato é fiel ao layout assumido; os
+    nomes de coluna reais (CO_MUNICIPIO/QT_MAT_FUND) e o nome do CSV no ZIP **confirmar na 1ª busca
+    real** do INEP (#0) — ``CONTRATO_INEP.validar`` falha claro se o layout divergir.
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"inep/{janela.ano}.csv", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_INEP.validar(df)  # borda bronze: falha claro se o layout do Censo Escolar mudar
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind = await _carregar_indicador(conn, CODIGO_INEP)
+    mapa7 = await _mapa_municipios(conn)  # INEP usa CO_MUNICIPIO IBGE de 7 dígitos
+
+    celulas = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(int(row["matriculas"])),
+                n_amostra=None,  # contagem agregada pública → n_minimo=0, sem supressão
+                confiabilidade=4,
+                fonte_id=ind.fonte_id,
+            )
+        )
+    return await _gravar_celulas(
+        conn,
+        ind,
+        celulas,
+        janela,
+        fonte_codigo="inep",
+        transformacoes=f"inep {janela.ano}: bronze->prata->ouro (matrículas fundamental)",
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

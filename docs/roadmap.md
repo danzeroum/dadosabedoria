@@ -55,6 +55,11 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [ ] **OIDC:** provedor (gov.br/Keycloak) + client id/secret. _(login v1 por JWT segue até lá.)_
 - [ ] **Domínio + `ACME_EMAIL`:** para TLS de produção no Traefik. _(dev-mode até lá.)_
 - [ ] **DataJud (e outras fontes com auth):** credencial/chave. _(fontes abertas seguem sem isso.)_
+- [ ] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
+  construídos "vivo-pronto" (esteira + schedule + fixture fiel-ao-contrato), mas a 1ª busca real só
+  roda com o host liberado. Além de SICONFI/IBGE/BCB, liberar conforme cada conector entra:
+  **INEP** `download.inep.gov.br` (educacao). _(PNCP/DATASUS a seguir nesta maratona.)_ Cada um traz
+  a marca **"confirmar na 1ª busca real"** — a forma (nomes de coluna/arquivo) vem da fonte, não do mock.
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
@@ -198,7 +203,10 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [x] 🔵 **INEP/Censo Escolar — domínio `educacao`** (2ª fonte 2A, ADR-0022): `AdaptadorInep` (CSV
   latin-1 via `utf8-lossy`) + contrato na borda bronze + `ModuloEducacao` (plugin) + indicador
   `educacao.matriculas.fundamental` semeado pelo caminho ouro e **servido pela API genérica**.
-  _Falta: pipeline live (`run_inep` + Dagster), produtos EDU-01/EDU-02 (telas), subíndice no IVM._
+  **Pipeline VIVO-PRONTO:** `executar_inep` (bronze→prata→ouro + linhagem) + `run_inep` (CLI) +
+  **Dagster** (`job_inep` + `schedule_inep_anual`); fetcher real exercitado no CI por fake (fixture
+  fiel-ao-contrato) — **forma a confirmar na 1ª busca real** (#0, host `download.inep.gov.br`).
+  _Falta: dado real (#0), produtos EDU-01/EDU-02 (telas)._
 - [x] 🔵 **PNCP/Contratações — domínio `compras`** (3ª fonte 2A, ADR-0023): `AdaptadorPncp` (JSON
   aninhado/Struct: `unidadeOrgao.codigoIbge`) + contrato na borda bronze + `ModuloCompras` (plugin) +
   indicador `compras.contratos.valor_total` semeado pelo caminho ouro e **servido pela API genérica**.

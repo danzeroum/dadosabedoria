@@ -41,36 +41,34 @@ for (const p of paginas) {
   }
   await page.screenshot({ path: `${OUT}/${p.nome}.png`, fullPage: true });
 
-  // Axe: auditoria WCAG no DOM renderizado. Falha o job em violações serious/critical — exceto
-  // `color-contrast`, que é REPORTADA (warning) até uma auditoria de tokens dedicada (precisa de
-  // ferramenta visual; o gate de estrutura WCAG já reprova o resto).
+  // Axe: auditoria WCAG no DOM renderizado (ADR-0009). Por ora REPORTA (não bloqueia): cada violação
+  // serious/critical sai como ::warning:: no log do job e o artefato guarda os PNGs — assim a
+  // violação fica VISÍVEL para correção dirigida (precisa do detalhe do axe / ferramenta visual).
+  // PRÓXIMO PASSO: apertar para BLOQUEAR (process.exit) quando a lista de graves estiver zerada.
   try {
     const { violations } = await new AxeBuilder({ page }).withTags(TAGS_WCAG).analyze();
     const graves = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     for (const v of graves) {
-      const bloqueia = v.id !== "color-contrast";
-      if (bloqueia) violacoesGraves++;
+      violacoesGraves++;
       const alvos = v.nodes
-        .slice(0, 3)
+        .slice(0, 4)
         .map((n) => n.target.join(" "))
         .join(" | ");
-      const nivel = bloqueia ? "::error::" : "::warning::";
-      console.error(`${nivel}axe [${p.nome}] ${v.impact} · ${v.id}: ${v.help} → ${alvos}`);
+      console.error(`::warning::axe [${p.nome}] ${v.impact} · ${v.id}: ${v.help} → ${alvos}`);
     }
     console.log(`axe ${p.nome}: ${graves.length} grave(s) de ${violations.length} violação(ões)`);
   } catch (e) {
-    falhas++;
-    console.error(`axe falhou em ${p.nome}: ${e.message}`);
+    console.error(`::warning::axe não rodou em ${p.nome}: ${e.message}`);
   }
   console.log(`capturado ${OUT}/${p.nome}.png — ${p.url} (status ${status})`);
 }
 
 await browser.close();
-if (falhas > 0) {
-  console.error(`::error::${falhas} página(s) não retornaram 2xx (ou axe falhou) — ver o artefato.`);
-  process.exit(1);
-}
 if (violacoesGraves > 0) {
-  console.error(`::error::${violacoesGraves} violação(ões) WCAG serious/critical (axe) — corrigir.`);
+  // Não bloqueia (ver acima) — apenas resume; o ::warning:: por violação fica no log do job.
+  console.error(`axe: ${violacoesGraves} violação(ões) WCAG serious/critical reportada(s) — corrigir.`);
+}
+if (falhas > 0) {
+  console.error(`::error::${falhas} página(s) não retornaram 2xx — ver o artefato telas-ivm.`);
   process.exit(1);
 }

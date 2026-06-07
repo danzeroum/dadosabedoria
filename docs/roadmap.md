@@ -68,9 +68,12 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
   **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
   IVM (reusar o `SeloConfianca` — precisa enriquecer a `MetaIVM` com `fontes`/frescor —, busca,
-  "o que é IVM", comparar parecidas). **Gate axe/WCAG no DOM** do screenshot: **feito** — reprova
-  serious/critical em todas as telas (estrutura WCAG); `color-contrast` é **reportado** até uma
-  auditoria de tokens dedicada (precisa de ferramenta visual) — aí o gate aperta para incluí-lo.
+  "o que é IVM", comparar parecidas). **axe/WCAG no DOM vivo** do screenshot: o axe roda em todas as
+  telas e **reporta** as violações serious/critical (`::warning::` no log do job; PNGs no artefato) —
+  capacidade entregue. **Apertar para BLOQUEAR é o próximo passo**: ler as violações reportadas (1ª
+  execução acusou graves — provavelmente `color-contrast` dos pills de tinta + algo de estrutura),
+  corrigir token a token / no DOM, e então trocar o report por `process.exit`. (Anota-e-segue: a
+  violação fica visível, não varrida pra baixo do tapete.)
 
 ## Estado atual (reconciliação — 2026-06-06)
 

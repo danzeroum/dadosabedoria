@@ -14,10 +14,16 @@ from app.core.db import connect
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import AdaptadorCaged, FetcherCagedFTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
+from app.ingestao.adaptadores.inep import AdaptadorInep, FetcherInepHTTP
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi, FetcherSiconfiHTTP
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
-from app.ingestao.pipeline import executar_caged, executar_estban, executar_siconfi
+from app.ingestao.pipeline import (
+    executar_caged,
+    executar_estban,
+    executar_inep,
+    executar_siconfi,
+)
 
 
 class ConfigIngestao(dg.Config):
@@ -58,6 +64,16 @@ async def _rodar_siconfi(janela: Janela) -> None:  # pragma: no cover - rede/S3
         )
 
 
+async def _rodar_inep(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    # INEP alimenta um indicador DESCRITIVO (educacao), fora do IVM → sem refrescar_ivm.
+    settings = get_settings()
+    adaptador = AdaptadorInep(FetcherInepHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_inep(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
 @dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
 def op_carregar_caged(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
     context.log.info(f"CAGED: carregando competência {config.competencia}")
@@ -76,6 +92,12 @@ def op_carregar_siconfi(context: dg.OpExecutionContext, config: ConfigIngestao) 
     asyncio.run(_rodar_siconfi(Janela.de_competencia(config.competencia)))  # pragma: no cover
 
 
+@dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
+def op_carregar_inep(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
+    context.log.info(f"INEP: carregando ano {config.competencia}")
+    asyncio.run(_rodar_inep(Janela.de_competencia(config.competencia)))  # pragma: no cover
+
+
 @dg.job
 def job_caged() -> None:
     op_carregar_caged()
@@ -89,6 +111,11 @@ def job_estban() -> None:
 @dg.job
 def job_siconfi() -> None:
     op_carregar_siconfi()
+
+
+@dg.job
+def job_inep() -> None:
+    op_carregar_inep()
 
 
 @dg.schedule(job=job_caged, cron_schedule="0 6 5 * *")  # dia 5, 06h UTC (lag CAGED ~40d)
@@ -118,7 +145,23 @@ def schedule_siconfi_anual(context: dg.ScheduleEvaluationContext) -> dg.RunReque
     )
 
 
+@dg.schedule(
+    job=job_inep, cron_schedule="0 9 1 11 *"
+)  # 1º nov, 09h UTC — Censo Escolar do ano anterior (microdados saem ~out)
+def schedule_inep_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    # Microdados do Censo Escolar saem no ano seguinte → ingere o ano anterior.
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(
+        run_config={"ops": {"op_carregar_inep": {"config": {"competencia": f"{ano:04d}01"}}}}
+    )
+
+
 defs = dg.Definitions(
-    jobs=[job_caged, job_estban, job_siconfi],
-    schedules=[schedule_caged_mensal, schedule_estban_mensal, schedule_siconfi_anual],
+    jobs=[job_caged, job_estban, job_siconfi, job_inep],
+    schedules=[
+        schedule_caged_mensal,
+        schedule_estban_mensal,
+        schedule_siconfi_anual,
+        schedule_inep_anual,
+    ],
 )

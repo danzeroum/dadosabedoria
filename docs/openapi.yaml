@@ -343,7 +343,7 @@ components:
       type: object
     OndeFoiOut:
       description: Recebido × execução por função. % sobre a base divulgada; parcela
-        fora explícita (ADR-0026).
+        fora explícita.
       properties:
         banda:
           enum:

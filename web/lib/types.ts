@@ -90,19 +90,29 @@ export interface FuncaoOut {
   pct: number | null;
 }
 
-export interface FonteOut {
+// Contrato do selo de confiança (primitivo compartilhado OndeFoi ↔ IVM).
+export interface SeloFonte {
   sigla: string;
+  nome: string;
   orgao: string;
+  dominio: string;
   ate: string;
+  atraso: string;
 }
 
-export interface MetaOndeFoi {
-  metodologia: string; // "execução orçamentária, NÃO serviço entregue"
-  versao_metodologia: string;
-  periodo: string;
-  periodo_rotulo: string; // "exercício 2025" — selo de frescor
+export interface SeloMeta {
+  fontes: SeloFonte[];
+  periodo_rotulo: string;
   atraso_dias: number;
-  fontes: FonteOut[];
+  versao_metodologia: string;
+  licenca: string;
+}
+
+export type FonteOut = SeloFonte;
+
+export interface MetaOndeFoi extends SeloMeta {
+  metodologia: string; // "execução orçamentária, NÃO serviço entregue"
+  periodo: string;
 }
 
 export interface OndeFoiProduto {

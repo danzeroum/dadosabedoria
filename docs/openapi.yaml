@@ -88,6 +88,15 @@ components:
         ate:
           title: Ate
           type: string
+        atraso:
+          title: Atraso
+          type: string
+        dominio:
+          title: Dominio
+          type: string
+        nome:
+          title: Nome
+          type: string
         orgao:
           title: Orgao
           type: string
@@ -96,8 +105,11 @@ components:
           type: string
       required:
       - sigla
+      - nome
       - orgao
+      - dominio
       - ate
+      - atraso
       title: FonteOut
       type: object
     FuncaoOut:
@@ -365,6 +377,9 @@ components:
             $ref: '#/components/schemas/FonteOut'
           title: Fontes
           type: array
+        licenca:
+          title: Licenca
+          type: string
         metodologia:
           title: Metodologia
           type: string
@@ -383,6 +398,7 @@ components:
       - periodo
       - periodo_rotulo
       - atraso_dias
+      - licenca
       - fontes
       title: MetaOndeFoi
       type: object

@@ -23,6 +23,11 @@ async def test_onde_foi_contrato_sp(client) -> None:
     # honestidade: execução orçamentária, não serviço entregue.
     assert "serviço entregue" in b["meta"]["metodologia"]
     assert b["meta"]["periodo_rotulo"] == "exercício 2025"
+    # selo de confiança: proveniência rica por fonte + licença/atribuição.
+    assert "Licença aberta" in b["meta"]["licenca"]
+    fonte = b["meta"]["fontes"][0]
+    assert fonte["sigla"] == "SICONFI"
+    assert {"nome", "orgao", "dominio", "ate", "atraso"} <= set(fonte)
     # sem cadeado de privacidade em orçamento público (refino do ADR-0026).
     assert {f["exe_estado"] for f in b["funcoes"]} <= {"valor", "sem_cobertura"}
 

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { Donut } from "../../../components/Donut";
 import { ExecucaoFuncoes } from "../../../components/ExecucaoFuncoes";
+import { SeloConfianca } from "../../../components/SeloConfianca";
 import { buscarOndeFoi } from "../../../lib/api";
 import { formatarMilhoes, mensagemBanda } from "../../../lib/onde-foi";
 
@@ -89,11 +90,13 @@ export default async function OndeFoiPage({ params }: { params: { codigo: string
         <ExecucaoFuncoes funcoes={d.funcoes} />
       </section>
 
-      <p className="metodologia">
-        {d.meta.metodologia} · Fontes:{" "}
-        {d.meta.fontes.map((f) => `${f.sigla} (${f.orgao}, ${f.ate})`).join("; ")} · atraso típico ~
-        {d.meta.atraso_dias} dias · grau-demo até a 1ª busca real no SICONFI.
-      </p>
+      <section className="of-proveniencia">
+        <h2>De onde vem este número</h2>
+        <SeloConfianca meta={d.meta} />
+        <p className="metodologia">
+          {d.meta.metodologia} · grau-demo até a 1ª busca real no SICONFI/DCA (#0).
+        </p>
+      </section>
     </main>
   );
 }

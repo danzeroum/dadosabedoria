@@ -109,5 +109,15 @@ META_DEMO: dict = {
     "periodo": "2025-01-01",
     "periodo_rotulo": "exercício 2025",
     "atraso_dias": 75,
-    "fontes": [{"sigla": "SICONFI", "orgao": "Tesouro Nacional/STN", "ate": "2025 (anual)"}],
+    "licenca": "Dados públicos (SICONFI) · Licença aberta · Atribuição: DadoSabedoria.",
+    "fontes": [
+        {
+            "sigla": "SICONFI",
+            "nome": "Sistema de Informações Contábeis e Fiscais — DCA",
+            "orgao": "Tesouro Nacional / STN",
+            "dominio": "Finanças públicas",
+            "ate": "2025 (anual)",
+            "atraso": "~75 dias após o fechamento do exercício",
+        }
+    ],
 }

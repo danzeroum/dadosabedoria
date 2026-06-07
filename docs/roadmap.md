@@ -59,10 +59,11 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
   primitivos compartilhados, sem forkar): OndeFoi **enquadramento honesto** (donut + enquadra +
-  callout "atenção honesta" + trilha por função + "o que é execução") feito. Faltam: OndeFoi
-  **selo de confiança** + **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar,
-  gates degradando); IVM (selo, frescor do `meta`, busca, "o que é IVM", comparar parecidas);
-  **gate axe/WCAG no DOM** do job de screenshot.
+  callout + trilha + "o que é execução") **e o selo de confiança** (`SeloConfianca` compartilhado,
+  `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
+  **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
+  IVM (reusar o `SeloConfianca` — precisa enriquecer a `MetaIVM` com `fontes`/frescor —, busca,
+  "o que é IVM", comparar parecidas); **gate axe/WCAG no DOM** do job de screenshot.
 
 ## Estado atual (reconciliação — 2026-06-06)
 

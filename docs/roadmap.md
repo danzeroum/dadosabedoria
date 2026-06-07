@@ -96,12 +96,13 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
   **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
   IVM (reusar o `SeloConfianca` — precisa enriquecer a `MetaIVM` com `fontes`/frescor —, busca,
-  "o que é IVM", comparar parecidas). **axe/WCAG no DOM vivo** do screenshot: o axe roda em todas as
-  telas e **reporta** as violações serious/critical (`::warning::` no log do job; PNGs no artefato) —
-  capacidade entregue. **Apertar para BLOQUEAR é o próximo passo**: ler as violações reportadas (1ª
-  execução acusou graves — provavelmente `color-contrast` dos pills de tinta + algo de estrutura),
-  corrigir token a token / no DOM, e então trocar o report por `process.exit`. (Anota-e-segue: a
-  violação fica visível, não varrida pra baixo do tapete.)
+  "o que é IVM", comparar parecidas). **axe/WCAG no DOM vivo** do screenshot: ⚠️ **achado
+  2026-06-07** — o axe **nunca rodava** (falso-verde): o `captura.mjs` usava `browser.newPage()`, que o
+  `@axe-core/playwright` rejeita (`"Please use browser.newContext()"`) → a auditoria era **pulada em
+  silêncio** e `violacoesGraves` ficava 0 por isso, não por estar limpo. **Corrigido** (PR axe-gate:
+  `browser.newContext()`), ainda **report-only** para a 1ª rodada **real** surgir as violações no log
+  sem quebrar a CI. **Próximo:** ler as violações REAIS (agora que o axe roda) → corrigir
+  contraste/estrutura → trocar report por `process.exit` (bloquear serious/critical).
 
 ## Estado atual (reconciliação — 2026-06-06)
 

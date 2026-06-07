@@ -25,7 +25,11 @@ const paginas = [
 
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1280, height: 1800 } });
+// @axe-core/playwright exige uma página de um BrowserContext explícito (não o default de
+// browser.newPage()) — senão lança "Please use browser.newContext()" e a auditoria era PULADA em
+// silêncio (falso-verde). Criar o contexto aqui faz o axe REALMENTE rodar (gate WCAG — ADR-0009).
+const context = await browser.newContext({ viewport: { width: 1280, height: 1800 } });
+const page = await context.newPage();
 
 let falhas = 0;
 let violacoesGraves = 0;

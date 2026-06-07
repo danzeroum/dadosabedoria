@@ -82,6 +82,10 @@ FUNCOES_SICONFI: dict[str, str] = {
     "28": "Encargos Especiais",
 }
 
+#: Colunas de execução do Anexo I-E (a base do OndeFoi re-ancorado — ADR-0029).
+COLUNA_EMPENHADO = "Despesas Empenhadas"
+COLUNA_LIQUIDADO = "Despesas Liquidadas"
+
 _RE_FUNCAO = re.compile(r"^(\d{2}) - (.+)$")  # função de 1º nível; subfunção ("NN.NNN - ") não casa
 
 
@@ -144,6 +148,53 @@ class AdaptadorSiconfi:
             .sort("cod_ibge")
         )
 
+    # --- Anexo I-E: execução por função (OndeFoi/TRANSP-06, re-ancorado — ADR-0029) -------------
+    def transformar_prata_funcoes(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Anexo I-E → linhas por (município, função de 1º nível, coluna), só Empenhado/Liquidado.
+
+        Extrai ``funcao_cod``/``funcao_nome`` do texto ``conta`` (``"NN - Nome"``); subfunção
+        (``"NN.NNN - "``), totais e agregados não casam o padrão e caem fora.
+        """
+        conta = pl.col(COL_CONTA).cast(pl.Utf8).str.strip_chars()
+        return (
+            df.filter(
+                pl.col(COL_COLUNA)
+                .cast(pl.Utf8)
+                .str.strip_chars()
+                .is_in([COLUNA_EMPENHADO, COLUNA_LIQUIDADO])
+            )
+            .with_columns(
+                conta.str.extract(_RE_FUNCAO.pattern, 1).alias("funcao_cod"),
+                conta.str.extract(_RE_FUNCAO.pattern, 2).str.strip_chars().alias("funcao_nome"),
+            )
+            .filter(pl.col("funcao_cod").is_not_null())  # só função de 1º nível
+            .select(
+                pl.col(COL_IBGE).cast(pl.Utf8).str.strip_chars().alias("cod_ibge"),
+                "funcao_cod",
+                "funcao_nome",
+                pl.col(COL_COLUNA).cast(pl.Utf8).str.strip_chars().alias("coluna"),
+                pl.col(COL_VALOR).cast(pl.Float64, strict=False).alias("valor"),
+            )
+            .filter(pl.col("cod_ibge").is_not_null() & pl.col("valor").is_not_null())
+        )
+
+    def agregar_funcoes(self, df_prata: pl.DataFrame) -> pl.DataFrame:
+        """Empenhado + Liquidado por (município, função) — a base do OndeFoi (ADR-0029)."""
+        return (
+            df_prata.group_by(["cod_ibge", "funcao_cod", "funcao_nome"])
+            .agg(
+                pl.col("valor")
+                .filter(pl.col("coluna") == COLUNA_EMPENHADO)
+                .sum()
+                .alias("empenhado"),
+                pl.col("valor")
+                .filter(pl.col("coluna") == COLUNA_LIQUIDADO)
+                .sum()
+                .alias("liquidado"),
+            )
+            .sort(["cod_ibge", "funcao_cod"])
+        )
+
 
 class FetcherSiconfiHTTP:
     """Fetcher real: baixa a DCA do exercício na API do SICONFI (aberta, sem credencial).
@@ -168,3 +219,10 @@ class FetcherSiconfiHTTP:
         url = f"{self.BASE}?{query}"
         with urllib.request.urlopen(url, timeout=60) as resp:  # noqa: S310  # nosec B310 - URL fixa https
             return resp.read(), url
+
+
+class FetcherSiconfiFuncoesHTTP(FetcherSiconfiHTTP):  # pragma: no cover - rede
+    """Fetcher real do **Anexo I-E** (despesas por função) — OndeFoi (ADR-0029). Mesmo endpoint,
+    troca só o ``no_anexo``; paginação nacional fica para a fatia da esteira viva (ADR-0028)."""
+
+    ANEXO = "DCA-Anexo I-E"

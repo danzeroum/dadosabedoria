@@ -8,14 +8,17 @@ carga é compartilhado entre as fontes; só a extração/transformação muda po
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
-from sqlalchemy import text
+from sqlalchemy import insert, text
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core import metricas
 from app.core.observabilidade import get_logger
+from app.core.tables import execucao_funcao as t_execucao_funcao
+from app.core.tables import linhagem as t_linhagem
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import CODIGO_INDICADOR as CODIGO_CAGED
 from app.ingestao.adaptadores.caged import AdaptadorCaged
@@ -268,6 +271,92 @@ async def executar_siconfi(
         responsavel=responsavel,
         ignorados=ignorados,
     )
+
+
+def _dec(v: float | None) -> Decimal | None:
+    return Decimal(str(round(float(v), 2))) if v is not None else None
+
+
+async def executar_siconfi_funcoes(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorSiconfi,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira SICONFI/DCA **Anexo I-E**: execução por função (Empenhado/Liquidado) → ouro dedicado.
+
+    OndeFoi (TRANSP-06), re-ancorado em **Liquidado/Empenhado** (ADR-0029). É agregado **público sem
+    PII** (ADR-0028) → grava na fato dedicada ``execucao_funcao`` (não a ``valor``; **sem**
+    supressão k-anon, pois não há PII por baixo). A função é **dimensão** (coluna), não codificada.
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"siconfi/funcoes/{janela.ano}.json", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_SICONFI.validar(df)  # borda bronze: mesma forma do DCA (campos confirmados no #0)
+    agregado = adaptador.agregar_funcoes(adaptador.transformar_prata_funcoes(df))
+
+    ind = await _carregar_indicador(conn, CODIGO_SICONFI)  # reaproveita o fonte_id do SICONFI
+    mapa7 = await _mapa_municipios(conn)
+
+    agora = datetime.now(UTC)
+    linhas: list[dict[str, object]] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        linhas.append(
+            {
+                "territorio_id": territorio_id,
+                "periodo": janela.periodo,
+                "funcao_cod": row["funcao_cod"],
+                "funcao_nome": row["funcao_nome"],
+                "empenhado": _dec(row["empenhado"]),
+                "liquidado": _dec(row["liquidado"]),
+                "fonte_id": ind.fonte_id,
+                "carregado_em": agora,
+            }
+        )
+
+    if linhas:
+        stmt = pg_insert(t_execucao_funcao).values(linhas)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["territorio_id", "periodo", "funcao_cod"],
+            set_={
+                "funcao_nome": stmt.excluded.funcao_nome,
+                "empenhado": stmt.excluded.empenhado,
+                "liquidado": stmt.excluded.liquidado,
+                "fonte_id": stmt.excluded.fonte_id,
+                "carregado_em": stmt.excluded.carregado_em,
+            },
+        )
+        await conn.execute(stmt)
+
+    await conn.execute(
+        insert(t_linhagem).values(
+            fonte_id=ind.fonte_id,
+            indicador_id=None,  # fato por função é dedicada (não há indicador na `valor`)
+            executado_em=agora,
+            url_extracao=url,
+            hash_origem=hash_origem,
+            transformacoes=f"siconfi {janela.ano}: Anexo I-E -> execucao_funcao (emp/liq)",
+            registros_carregados=len(linhas),
+            responsavel=responsavel,
+        )
+    )
+    metricas.frescor_dias.labels(fonte="siconfi_funcoes").set((date.today() - janela.periodo).days)
+    _log.info(
+        "ingestao_carregada",
+        fonte="siconfi_funcoes",
+        competencia=janela.competencia,
+        municipios=len(linhas),
+        ignorados=ignorados,
+        registros=len(linhas),
+    )
+    return ResumoCarga(registros_carregados=len(linhas), suprimidos=0)
 
 
 async def executar_inep(

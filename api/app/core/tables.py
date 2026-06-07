@@ -168,5 +168,21 @@ linhagem = Table(
     Column("responsavel", Text),
 )
 
+# Execução orçamentária por função (OndeFoi/TRANSP-06) — fato dedicado, função como dimensão.
+# Agregado público sem PII (ADR-0028) → não é a fato `valor` nem passa pela supressão (ADR-0029).
+execucao_funcao = Table(
+    "execucao_funcao",
+    metadata,
+    Column("id", BigInt, primary_key=True),
+    Column("territorio_id", BigInt, nullable=False),
+    Column("periodo", Date, nullable=False),
+    Column("funcao_cod", Text, nullable=False),
+    Column("funcao_nome", Text, nullable=False),
+    Column("empenhado", Numeric),
+    Column("liquidado", Numeric),
+    Column("fonte_id", BigInt, nullable=False),
+    Column("carregado_em", TS(timezone=True), nullable=False),
+)
+
 # Tabelas analíticas (schema public) cujas colunas o drift test confere contra o banco.
-TABELAS_ANALITICAS = [base_legal, fonte, territorio, indicador, valor, linhagem]
+TABELAS_ANALITICAS = [base_legal, fonte, territorio, indicador, valor, linhagem, execucao_funcao]

@@ -21,6 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Link href="/ivm">IVM</Link>
             <Link href="/pulso/3550308">Pulso</Link>
             <Link href="/onde-foi/3304557">OndeFoi</Link>
+            <Link href="/perguntar">Perguntar</Link>
           </nav>
         </header>
         <div className="conteudo">{children}</div>

@@ -2,7 +2,9 @@ import type {
   FeatureCollectionIVM,
   OndeFoiProduto,
   Panorama,
+  PerguntaInput,
   PulsoProduto,
+  RespostaIA,
   RespostaIVM,
   RespostaIVMSerie,
 } from "./types";
@@ -85,6 +87,20 @@ export async function buscarPanorama(codigoIbge: string): Promise<Panorama | nul
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o panorama (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function perguntarIA(corpo: PerguntaInput): Promise<RespostaIA> {
+  // POST server-side (a IA recupera no banco e ancora a resposta). Sem cache: cada pergunta é única.
+  const resp = await fetch(new URL("/v1/ia/perguntar", BASE), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(corpo),
+    cache: "no-store",
+  });
+  if (!resp.ok) {
+    throw new Error(`Falha ao perguntar à IA (${resp.status})`);
   }
   return resp.json();
 }

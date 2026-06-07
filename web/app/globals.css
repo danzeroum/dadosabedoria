@@ -668,3 +668,83 @@ section h2 {
   font-size: 0.75rem;
   color: var(--cor-texto-suave);
 }
+
+/* IA ancorada — Pergunte aos dados */
+.ia-exemplos {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ia-exemplos a {
+  color: var(--cor-marca);
+  text-decoration: none;
+  font-weight: 600;
+}
+.ia-exemplos a:hover {
+  text-decoration: underline;
+}
+.ia-resposta {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-left: 3px solid var(--cor-marca);
+  border-radius: var(--raio);
+  padding: 16px;
+  max-width: 680px;
+}
+.ia-abstencao {
+  border-left-color: #b45309;
+}
+.ia-topo {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.ia-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cor-texto-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.ia-badge-aviso {
+  color: #b45309;
+  border-color: #f59e0b;
+}
+.ia-texto {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 4px 0 12px;
+}
+.ia-citacoes h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cor-texto-suave);
+  margin: 12px 0 6px;
+}
+.ia-citacao {
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  background: var(--cor-fundo);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ia-metodologia {
+  color: var(--cor-texto-suave);
+  font-size: 0.82rem;
+}
+.ia-ressalvas {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin: 12px 0 0;
+  padding-left: 18px;
+}

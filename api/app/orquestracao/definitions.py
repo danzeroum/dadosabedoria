@@ -15,6 +15,7 @@ from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import AdaptadorCaged, FetcherCagedFTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
 from app.ingestao.adaptadores.inep import AdaptadorInep, FetcherInepHTTP
+from app.ingestao.adaptadores.pncp import AdaptadorPncp, FetcherPncpHTTP
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi, FetcherSiconfiHTTP
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
@@ -22,6 +23,7 @@ from app.ingestao.pipeline import (
     executar_caged,
     executar_estban,
     executar_inep,
+    executar_pncp,
     executar_siconfi,
 )
 
@@ -74,6 +76,16 @@ async def _rodar_inep(janela: Janela) -> None:  # pragma: no cover - rede/S3
         )
 
 
+async def _rodar_pncp(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    # PNCP alimenta um indicador DESCRITIVO (compras), fora do IVM → sem refrescar_ivm.
+    settings = get_settings()
+    adaptador = AdaptadorPncp(FetcherPncpHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_pncp(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
 @dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
 def op_carregar_caged(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
     context.log.info(f"CAGED: carregando competência {config.competencia}")
@@ -98,6 +110,12 @@ def op_carregar_inep(context: dg.OpExecutionContext, config: ConfigIngestao) -> 
     asyncio.run(_rodar_inep(Janela.de_competencia(config.competencia)))  # pragma: no cover
 
 
+@dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
+def op_carregar_pncp(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
+    context.log.info(f"PNCP: carregando ano {config.competencia}")
+    asyncio.run(_rodar_pncp(Janela.de_competencia(config.competencia)))  # pragma: no cover
+
+
 @dg.job
 def job_caged() -> None:
     op_carregar_caged()
@@ -116,6 +134,11 @@ def job_siconfi() -> None:
 @dg.job
 def job_inep() -> None:
     op_carregar_inep()
+
+
+@dg.job
+def job_pncp() -> None:
+    op_carregar_pncp()
 
 
 @dg.schedule(job=job_caged, cron_schedule="0 6 5 * *")  # dia 5, 06h UTC (lag CAGED ~40d)
@@ -156,12 +179,24 @@ def schedule_inep_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
     )
 
 
+@dg.schedule(
+    job=job_pncp, cron_schedule="0 8 15 1 *"
+)  # 15 jan, 08h UTC — contratos do ano anterior (consolidado)
+def schedule_pncp_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    # Consolida os contratos do ano anterior já fechado.
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(
+        run_config={"ops": {"op_carregar_pncp": {"config": {"competencia": f"{ano:04d}01"}}}}
+    )
+
+
 defs = dg.Definitions(
-    jobs=[job_caged, job_estban, job_siconfi, job_inep],
+    jobs=[job_caged, job_estban, job_siconfi, job_inep, job_pncp],
     schedules=[
         schedule_caged_mensal,
         schedule_estban_mensal,
         schedule_siconfi_anual,
         schedule_inep_anual,
+        schedule_pncp_anual,
     ],
 )

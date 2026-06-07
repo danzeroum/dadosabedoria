@@ -74,7 +74,7 @@ default.
 
 | # | Decisão | Default que o dev seguirá se você não opinar |
 |---|---|---|
-| #5 | Ordem fina dos produtos | valor de produto **dentro** das fontes já desbloqueadas (próximos: TRAB-01, depois redesenho do IVM, depois tornar vivas INEP/PNCP/DATASUS) |
+| #5 | Ordem fina dos produtos | valor de produto **dentro** das fontes já desbloqueadas. _Feito nesta maratona: **TRAB-01 Pulso Produtivo** (endpoint + tela, dado real) e **OndeFoi** (tela grau-demo) — ambos "até a tela", com porta de entrada em `/`. Próximos: mais produtos sobre indicadores já no ar + **tornar vivas** INEP/PNCP/SICONFI/DATASUS quando o #0 abrir._ |
 | #6 | Metas de north-star | direcionais; calibrar com dado real (não fixar número agora) |
 | #7 | Foco de canal / parcerias B2G | priorizar transparência e saneamento (pull legal) |
 | #8 | Alvo de VPS/nuvem | Docker na VPS 4 vCPU/16 GB; migrar só por gatilho numérico (§1.1) |

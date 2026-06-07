@@ -203,6 +203,25 @@ a {
   color: var(--cor-texto-suave);
 }
 
+/* EstadoSupressao — chip honesto (suprimido por privacidade × sem cobertura). Cor não carrega
+   sentido sozinha (o texto diz), conforme o padrão do Semáforo. */
+.estado-supressao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.estado-suprimido {
+  border-color: #f59e0b;
+}
+.estado-icone {
+  font-size: 0.85em;
+}
+
 /* Drill-down */
 .destaque {
   display: flex;

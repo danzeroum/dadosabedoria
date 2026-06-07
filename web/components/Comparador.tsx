@@ -1,3 +1,6 @@
+import { EstadoSupressao } from "./EstadoSupressao";
+import type { ExeEstado } from "../lib/types";
+
 function Barra({ rotulo, valor }: { rotulo: string; valor: number }) {
   const pct = Math.max(0, Math.min(100, valor));
   return (
@@ -17,16 +20,22 @@ export function Comparador({
   vEmprego,
   vFinancas,
   vSaude,
+  vSaudeEstado,
 }: {
   vEmprego: number;
   vFinancas: number;
   vSaude?: number | null;
+  vSaudeEstado?: ExeEstado;
 }) {
   return (
     <div className="comparador" role="group" aria-label="Subíndices de vulnerabilidade">
       <Barra rotulo="Emprego" valor={vEmprego} />
       <Barra rotulo="Finanças" valor={vFinancas} />
-      {vSaude != null ? <Barra rotulo="Saúde" valor={vSaude} /> : null}
+      {vSaudeEstado === "valor" && vSaude != null ? (
+        <Barra rotulo="Saúde" valor={vSaude} />
+      ) : vSaudeEstado && vSaudeEstado !== "valor" ? (
+        <EstadoSupressao estado={vSaudeEstado} rotulo="Saúde" />
+      ) : null}
     </div>
   );
 }

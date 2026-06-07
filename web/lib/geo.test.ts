@@ -27,6 +27,7 @@ function quadrado(cod: string, lon: number, lat: number, ivm: number | null) {
       v_emprego: null,
       v_financas: null,
       v_saude: null,
+      v_saude_estado: "sem_cobertura" as const,
     },
   };
 }

@@ -177,8 +177,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 **Fontes:** DataJud, INEP (anual), Portal da Transparência, SICONFI/STN, PNCP/COMPRASNET, OSM, INMET/INPE/OpenAQ.
 - [x] 🔵 **SICONFI/STN — domínio `financas`** (1ª fonte 2A, ADR-0021): `AdaptadorSiconfi` + contrato
   na borda bronze + `ModuloFinancas` (plugin) + indicador `financas.transferencias.correntes`
-  semeado pelo caminho ouro e **servido pela API genérica**. _Falta: pipeline live (`run_siconfi` +
-  Dagster), produto OndeFoi (tela), subíndice no IVM completo._
+  semeado pelo caminho ouro e **servido pela API genérica**. **OndeFoi (TRANSP-06)** entregue
+  ponta-a-ponta em **grau-demo**: contrato (ADR-0026) → endpoint `/v1/onde-foi/{ibge}` → **tela**
+  `/onde-foi/{ibge}` (recebido×executado por função, banda de atenção, `EstadoSupressao` reusado p/
+  "sem cobertura", honestidade "executar≠entregar"; screenshot de CI). _Falta: pipeline live
+  (`run_siconfi` + Dagster) e a 1ª validação real no #0 p/ promover a fixture a forma-verdade;
+  subíndice no IVM completo._
 - [x] 🔵 **INEP/Censo Escolar — domínio `educacao`** (2ª fonte 2A, ADR-0022): `AdaptadorInep` (CSV
   latin-1 via `utf8-lossy`) + contrato na borda bronze + `ModuloEducacao` (plugin) + indicador
   `educacao.matriculas.fundamental` semeado pelo caminho ouro e **servido pela API genérica**.
@@ -190,8 +194,9 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [ ] 🔵 Demais adaptadores 2A (DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
   e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
 - [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.
-- [ ] 🔵 TRANSP-06 OndeFoi (SICONFI); TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud);
-  TRANSP-05 ObraViva (PNCP/SIOP/SIAFI+CAGED+OSM).
+- [ ] 🔵 TRANSP-06 OndeFoi (SICONFI) — **tela no ar em grau-demo** (ver 2A acima); falta só o dado
+  vivo (#0) para fechar. TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud); TRANSP-05
+  ObraViva (PNCP/SIOP/SIAFI+CAGED+OSM).
 - [x] 🟢 IVM **completo** (multidomínio) — incorpora o subíndice de **saúde** (SIH) a emprego+finanças
   (`versao_metodologia=v1.1`, min-max; z-score=v2 ao atingir cobertura nacional) — ADR-0025. Os
   indicadores **neutros** (matrículas, transferências, contratos) seguem descritivos (fora do índice

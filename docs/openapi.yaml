@@ -83,6 +83,56 @@ components:
       - consultas
       title: ConsultaLoteIn
       type: object
+    FonteOut:
+      properties:
+        ate:
+          title: Ate
+          type: string
+        orgao:
+          title: Orgao
+          type: string
+        sigla:
+          title: Sigla
+          type: string
+      required:
+      - sigla
+      - orgao
+      - ate
+      title: FonteOut
+      type: object
+    FuncaoOut:
+      properties:
+        exe:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Exe
+        exe_estado:
+          enum:
+          - valor
+          - suprimido
+          - sem_cobertura
+          title: Exe Estado
+          type: string
+        funcao:
+          title: Funcao
+          type: string
+        pct:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Pct
+        recebido:
+          title: Recebido
+          type: integer
+      required:
+      - funcao
+      - recebido
+      - exe
+      - exe_estado
+      - pct
+      title: FuncaoOut
+      type: object
     HTTPValidationError:
       properties:
         detail:
@@ -229,6 +279,37 @@ components:
       - semaforo
       title: MetaIVM
       type: object
+    MetaOndeFoi:
+      properties:
+        atraso_dias:
+          title: Atraso Dias
+          type: integer
+        fontes:
+          items:
+            $ref: '#/components/schemas/FonteOut'
+          title: Fontes
+          type: array
+        metodologia:
+          title: Metodologia
+          type: string
+        periodo:
+          title: Periodo
+          type: string
+        periodo_rotulo:
+          title: Periodo Rotulo
+          type: string
+        versao_metodologia:
+          title: Versao Metodologia
+          type: string
+      required:
+      - metodologia
+      - versao_metodologia
+      - periodo
+      - periodo_rotulo
+      - atraso_dias
+      - fontes
+      title: MetaOndeFoi
+      type: object
     MetaProveniencia:
       description: Proveniência exigida em toda resposta (invariante 5).
       properties:
@@ -259,6 +340,63 @@ components:
       - metodologia
       - licenca
       title: MetaProveniencia
+      type: object
+    OndeFoiOut:
+      description: Recebido × execução por função. % sobre a base divulgada; parcela
+        fora explícita (ADR-0026).
+      properties:
+        banda:
+          enum:
+          - alta
+          - parcial
+          - baixa
+          - indef
+          title: Banda
+          type: string
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        executado:
+          title: Executado
+          type: integer
+        funcoes:
+          items:
+            $ref: '#/components/schemas/FuncaoOut'
+          title: Funcoes
+          type: array
+        meta:
+          $ref: '#/components/schemas/MetaOndeFoi'
+        nome:
+          title: Nome
+          type: string
+        pct:
+          title: Pct
+          type: integer
+        recebido_base:
+          title: Recebido Base
+          type: integer
+        recebido_fora_base:
+          title: Recebido Fora Base
+          type: integer
+        recebido_total:
+          title: Recebido Total
+          type: integer
+        uf:
+          title: Uf
+          type: string
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - recebido_total
+      - recebido_base
+      - recebido_fora_base
+      - executado
+      - pct
+      - banda
+      - funcoes
+      - meta
+      title: OndeFoiOut
       type: object
     Paginacao:
       properties:
@@ -848,6 +986,41 @@ paths:
       tags:
       - indicadores
       - ivm
+  /v1/onde-foi/{codigo_ibge}:
+    get:
+      description: 'A transferência da União virou serviço? Recebido × execução por
+        função (ADR-0026).
+
+
+        GRAU-DEMO até a esteira (SICONFI/DCA) + a 1ª validação real no #0 — serve
+        a fixture fiel ao
+
+        contrato. ``meta.metodologia`` enquadra: é execução **orçamentária**, NÃO
+        serviço entregue.'
+      operationId: onde_foi_v1_onde_foi__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OndeFoiOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Onde Foi
+      tags:
+      - produtos
   /v1/territorios/{codigo_ibge}:
     get:
       operationId: obter_territorio_v1_territorios__codigo_ibge__get

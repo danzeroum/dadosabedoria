@@ -5,11 +5,7 @@ import type { FeatureCollectionIVM } from "../lib/types";
 // Mapa coroplético (SVG). Município com IVM é clicável (→ drill-down); sem dado fica cinza.
 export function Coropleta({ malha, uf }: { malha: FeatureCollectionIVM; uf: string }) {
   if (malha.features.length === 0) {
-    return (
-      <p className="vazio">
-        Sem geometrias para {uf}. Carregue com <code>python -m app.ingestao.run_ibge {uf}</code>.
-      </p>
-    );
+    return <p className="vazio">Mapa de {uf} ainda não disponível.</p>;
   }
   const { viewBox, formas } = projetar(malha);
   return (

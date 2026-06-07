@@ -1,7 +1,15 @@
 # ADR-0026 — OndeFoi (TRANSP-06): contrato do indicador de execução por função (denominador, exe_estado, honestidade)
 
-- **Status:** aceito
+- **Status:** aceito · **forma confirmada no #0** → ver **ADR-0028** (2026-06-07)
 - **Data:** 2026-06-07
+
+> **Atualização 2026-06-07 (#0 — ADR-0028):** as três marcas "confirmar no #0" deste ADR estão
+> **confirmadas** contra a DCA real: (a) campos reais (`cod_ibge` int, `valor` num, dimensão
+> `coluna`); (b) vocabulário de função = **Portaria 42 da fonte** (Anexo I-E, função no texto
+> `conta`); (c) **válido = `{valor, sem_cobertura}`, sem `suprimido`** (não há campo de sigilo).
+> **Ressalva de produto (ADR-0028 §5, 🟡 do dono):** "recebido por função" **não existe na fonte** —
+> a re-ancoragem source-grounded é **Liquidado/Empenhado por função**; a camada pura (`calcular`,
+> denominador de base única, banda) permanece, muda o **significado das colunas**.
 
 ## Contexto
 O OndeFoi responde "a transferência da União virou serviço no meu município?" cruzando **recebido ×

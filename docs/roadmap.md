@@ -6,6 +6,15 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
+> **FIM DE SESSÃO (2026-06-07):** parei em **#0 SICONFI VALIDADO** — egress aberto nesta sessão nova
+> (SICONFI 200 · IBGE 301 · BCB 302; INEP/PNCP/DATASUS ainda 403). Furei a fila: rodei a DCA real,
+> confirmei as 3 incógnitas de forma e gravei a forma-verdade no **ADR-0028**; fixture promovida a
+> **fiel-à-forma**; bugs de forma do indicador `financas` corrigidos. **Próxima fatia =** esteira viva
+> de **despesa por função** (SICONFI Anexo I-E → função como dimensão → `run_siconfi`/Dagster) — mas
+> antes, **🟡 do dono**: referendar a re-ancoragem do OndeFoi (recebido→empenhado, ADR-0028 §5), pois
+> "recebido por função" não existe na fonte. **Estado = verde** (ruff/mypy/bandit/pytest 179✔ cov 93% ·
+> OpenAPI sem diff). _Pausa, não bloqueio._
+
 ## Como usar (legenda)
 
 - `[ ]` item executável; `[x]` concluído.
@@ -55,12 +64,23 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [ ] **OIDC:** provedor (gov.br/Keycloak) + client id/secret. _(login v1 por JWT segue até lá.)_
 - [ ] **Domínio + `ACME_EMAIL`:** para TLS de produção no Traefik. _(dev-mode até lá.)_
 - [ ] **DataJud (e outras fontes com auth):** credencial/chave. _(fontes abertas seguem sem isso.)_
-- [ ] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
-  construídos "vivo-pronto" (esteira + schedule + fixture fiel-ao-contrato), mas a 1ª busca real só
-  roda com o host liberado. Além de SICONFI/IBGE/BCB, liberar conforme cada conector entra:
-  **INEP** `download.inep.gov.br` (educacao) · **PNCP** `pncp.gov.br` (compras) · **DATASUS**
-  `ftp.datasus.gov.br` (saude, FTP). Cada um traz a marca **"confirmar na 1ª busca real"** — a forma
-  (coluna/arquivo) vem da fonte, não do mock.
+- [~] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
+  construídos "vivo-pronto" (esteira + schedule + fixture), mas a 1ª busca real só roda com o host
+  liberado. **#0 parcialmente aberto (sondado 2026-06-07, sessão nova):**
+  - ✅ **SICONFI** `apidatalake.tesouro.gov.br` (200) — **VALIDADO** (forma real gravada, ADR-0028;
+    fixture promovida a **fiel-à-forma**). · ✅ **IBGE** `servicodados.ibge.gov.br` (301) e **BCB**
+    `www4.bcb.gov.br` (302) **abertos** — _falta exercer/validar os conectores IBGE/CAGED/ESTBAN
+    contra a fonte real (próxima fatia da pauta b)._
+  - ❌ ainda **bloqueados** (403 `host_not_allowed`): **INEP** `download.inep.gov.br` · **PNCP**
+    `pncp.gov.br` · **DATASUS** `ftp.datasus.gov.br`. _(Dono: adicionar ao allowlist Custom; cada um
+    traz a marca "confirmar na 1ª busca real" — a forma vem da fonte, não do mock.)_
+- [ ] **🟡 OndeFoi — re-ancoragem do número (decisão de produto, ADR-0028 §5):** o #0 mostrou que
+  **"recebido por função" NÃO existe na fonte** (transferências [I-C] não são classificadas por
+  função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). Default proposto
+  (source-grounded, pré-autorizado #5): medir **Liquidado/Empenhado por função** ("empenhar≠liquidar").
+  A camada pura (`onde_foi.calcular`) e a honestidade ficam; muda o **significado das colunas** e a
+  moldura do selo. **Tela segue em grau-demo** até o dono referendar. _(Fiz: forma/vocabulário presos
+  no #0; ADR-0028. Falta dono: referendar a moldura → então tela demo→vivo.)_
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
@@ -204,9 +224,13 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   semeado pelo caminho ouro e **servido pela API genérica**. **OndeFoi (TRANSP-06)** entregue
   ponta-a-ponta em **grau-demo**: contrato (ADR-0026) → endpoint `/v1/onde-foi/{ibge}` → **tela**
   `/onde-foi/{ibge}` (recebido×executado por função, banda de atenção, `EstadoSupressao` reusado p/
-  "sem cobertura", honestidade "executar≠entregar"; screenshot de CI). _Falta: pipeline live
-  (`run_siconfi` + Dagster) e a 1ª validação real no #0 p/ promover a fixture a forma-verdade;
-  subíndice no IVM completo._
+  "sem cobertura", honestidade "executar≠entregar"; screenshot de CI). **#0 VALIDADO (2026-06-07,
+  ADR-0028):** forma real do DCA confirmada (campos `cod_ibge` int/`valor` num/dimensão `coluna`),
+  **vocabulário de função promovido da fonte** (Portaria 42, Anexo I-E), `exe_estado` válido =
+  `{valor, sem_cobertura}` (sem `suprimido`); fixture **fiel-à-forma**; bugs de forma do indicador
+  `financas` corrigidos (filtro por `cod_conta`+`coluna`). _Falta: esteira viva de **despesa por
+  função** (Anexo I-E → função como dimensão → `run_siconfi`/Dagster, paginação nacional) e o **🟡
+  do dono** (re-ancoragem recebido→empenhado, ADR-0028 §5) p/ migrar a tela demo→vivo; subíndice IVM._
 - [x] 🔵 **INEP/Censo Escolar — domínio `educacao`** (2ª fonte 2A, ADR-0022): `AdaptadorInep` (CSV
   latin-1 via `utf8-lossy`) + contrato na borda bronze + `ModuloEducacao` (plugin) + indicador
   `educacao.matriculas.fundamental` semeado pelo caminho ouro e **servido pela API genérica**.

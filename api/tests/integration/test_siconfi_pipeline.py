@@ -33,7 +33,7 @@ async def test_pipeline_grava_transferencias_via_ouro(db_pronto: None) -> None:
     async with connect(get_settings().database_url) as conn:
         resumo = await executar_siconfi(Janela(2025, 1), conn, adaptador, store, responsavel="test")
 
-        # SP + Campinas (ambos no cadastro do seed); a linha fora da conta-alvo cai na prata.
+        # SP + outro município (ambos no cadastro do seed); deduções/intra/off-target caem na prata.
         assert resumo.registros_carregados == 2
         assert resumo.suprimidos == 0
 
@@ -41,7 +41,8 @@ async def test_pipeline_grava_transferencias_via_ouro(db_pronto: None) -> None:
         assert row is not None
         assert row["suprimido"] is False
         assert row["atualizacao"] == "anual"
-        assert float(row["valor"]) == 1_500_000.0  # 1.000.000 + 500.000 (soma da conta-alvo, SP)
+        # Forma real (#0): só a Transferência Corrente orçamentária realizada — sem dedução/intra.
+        assert float(row["valor"]) == 1_000_000.0
     assert store.ler("siconfi/2025.json") == AMOSTRA
 
 

@@ -24,6 +24,9 @@ from app.ingestao.adaptadores.estban import AdaptadorEstban
 from app.ingestao.adaptadores.inep import CODIGO_INDICADOR as CODIGO_INEP
 from app.ingestao.adaptadores.inep import CONTRATO as CONTRATO_INEP
 from app.ingestao.adaptadores.inep import AdaptadorInep
+from app.ingestao.adaptadores.pncp import CODIGO_INDICADOR as CODIGO_PNCP
+from app.ingestao.adaptadores.pncp import CONTRATO as CONTRATO_PNCP
+from app.ingestao.adaptadores.pncp import AdaptadorPncp
 from app.ingestao.adaptadores.siconfi import CODIGO_INDICADOR as CODIGO_SICONFI
 from app.ingestao.adaptadores.siconfi import CONTRATO as CONTRATO_SICONFI
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi
@@ -314,6 +317,63 @@ async def executar_inep(
         janela,
         fonte_codigo="inep",
         transformacoes=f"inep {janela.ano}: bronze->prata->ouro (matrículas fundamental)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_pncp(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorPncp,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira PNCP/contratos de um ano (anual). Requer ``conn`` numa transação aberta.
+
+    Indicador DESCRITIVO (``compras.contratos.valor_total``), fora do IVM → sem ``refrescar_ivm``.
+    **Vivo-pronto, NÃO validado:** a forma (lista ``data``, ``valorGlobal``, ``unidadeOrgao.
+    codigoIbge``, paginação) **confirmar na 1ª busca real** do PNCP (#0) — ``CONTRATO_PNCP.validar``
+    é a borda bronze.
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"pncp/{janela.ano}.json", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_PNCP.validar(df)  # borda bronze: falha claro se o layout do PNCP mudar
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind = await _carregar_indicador(conn, CODIGO_PNCP)
+    mapa7 = await _mapa_municipios(conn)  # PNCP usa unidadeOrgao.codigoIbge IBGE de 7 dígitos
+
+    celulas = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["valor_contratos"]), 2))),
+                n_amostra=None,  # soma de valores públicos → n_minimo=0, sem supressão
+                confiabilidade=4,
+                fonte_id=ind.fonte_id,
+            )
+        )
+    return await _gravar_celulas(
+        conn,
+        ind,
+        celulas,
+        janela,
+        fonte_codigo="pncp",
+        transformacoes=f"pncp {janela.ano}: bronze->prata->ouro (valor de contratos públicos)",
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

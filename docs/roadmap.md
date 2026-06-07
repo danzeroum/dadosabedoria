@@ -58,8 +58,8 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [ ] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
   construídos "vivo-pronto" (esteira + schedule + fixture fiel-ao-contrato), mas a 1ª busca real só
   roda com o host liberado. Além de SICONFI/IBGE/BCB, liberar conforme cada conector entra:
-  **INEP** `download.inep.gov.br` (educacao). _(PNCP/DATASUS a seguir nesta maratona.)_ Cada um traz
-  a marca **"confirmar na 1ª busca real"** — a forma (nomes de coluna/arquivo) vem da fonte, não do mock.
+  **INEP** `download.inep.gov.br` (educacao) · **PNCP** `pncp.gov.br` (compras). _(DATASUS a seguir.)_
+  Cada um traz a marca **"confirmar na 1ª busca real"** — a forma (coluna/arquivo) vem da fonte, não do mock.
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
@@ -211,7 +211,9 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [x] 🔵 **PNCP/Contratações — domínio `compras`** (3ª fonte 2A, ADR-0023): `AdaptadorPncp` (JSON
   aninhado/Struct: `unidadeOrgao.codigoIbge`) + contrato na borda bronze + `ModuloCompras` (plugin) +
   indicador `compras.contratos.valor_total` semeado pelo caminho ouro e **servido pela API genérica**.
-  _Falta: pipeline live (`run_pncp` + Dagster), produtos TRANSP-03/05 (telas, dupla face §17)._
+  **Pipeline VIVO-PRONTO:** `executar_pncp` + `run_pncp` + **Dagster** (`job_pncp` + `schedule_pncp_anual`);
+  fetcher real exercitado no CI por fake — **forma a confirmar na 1ª busca real** (#0, host `pncp.gov.br`).
+  _Falta: dado real (#0), produtos TRANSP-03/05 (telas, dupla face §17)._
 - [ ] 🔵 Demais adaptadores 2A (DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
   e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
 - [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.

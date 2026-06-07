@@ -95,6 +95,22 @@ disparará mais por **município/área** com baixa liquidação do que como regr
   `no_anexo` (o URL com espaço cru quebrava o `urlopen`), mas a **paginação nacional** fica para a
   fatia da esteira viva (`run_siconfi` por função).
 
+## Outros conectores das fontes abertas (mesma sonda do #0, 2026-06-07)
+Aproveitando a janela de rede aberta, exerci os conectores dos demais hosts liberados (o bilhete pede
+"o mesmo para os hosts já liberados"):
+- ✅ **IBGE** (`servicodados.ibge.gov.br`, aberto): `v1/localidades/municipios` devolve **5571**
+  municípios na forma `{id, nome, microrregiao→mesorregiao→UF, regiao-imediata→…→UF}`; `v3/malhas/
+  estados/{uf}` devolve `FeatureCollection` com `properties.codarea` e geometria `Polygon`. **O
+  `AdaptadorIbge` já casa exatamente** (tolera as duas hierarquias de UF; lê `codarea`/`CD_MUN`) e a
+  **fixture já é fiel-à-forma** — connector **validado, sem mudança de código** (só o comentário
+  "URLs a confirmar" da ADR-0010 vira "confirmadas no #0").
+- ⚠️ **ESTBAN** (`www4.bcb.gov.br`, host **aberto**): o padrão de URL do `FetcherEstbanHTTP`
+  (`/fis/cosif/estban/{ano}/ESTBAN_MUNICIPIO_{YYYYMM}.ZIP`) retorna **404** em todos os meses
+  testados — o **BCB migrou o portal do ESTBAN** (o `estban.asp` cai na página de erro). Host liberado,
+  **download a reconfirmar** → Lista de desbloqueio (anota-e-segue; parse/agregação seguem por fixture).
+- ❌ **CAGED** (`ftp.mtps.gov.br`): **403 `host_not_allowed`** — o conector usa o FTP do MTPS, **fora**
+  do allowlist (que tem BCB, não MTPS). Adicionar `ftp.mtps.gov.br` ao allowlist para validar o CAGED.
+
 ## Consequências
 - **ADR-0026 atualizado de fato:** as três marcas "confirmar no #0" estão **confirmadas** aqui
   (a/b/c). O conjunto `{valor, sem_cobertura}` é definitivo; o vocabulário de função é o da fonte.

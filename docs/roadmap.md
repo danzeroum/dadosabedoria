@@ -6,14 +6,16 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO (2026-06-07):** parei em **#0 SICONFI VALIDADO** — egress aberto nesta sessão nova
-> (SICONFI 200 · IBGE 301 · BCB 302; INEP/PNCP/DATASUS ainda 403). Furei a fila: rodei a DCA real,
-> confirmei as 3 incógnitas de forma e gravei a forma-verdade no **ADR-0028**; fixture promovida a
-> **fiel-à-forma**; bugs de forma do indicador `financas` corrigidos. **Próxima fatia =** esteira viva
-> de **despesa por função** (SICONFI Anexo I-E → função como dimensão → `run_siconfi`/Dagster) — mas
-> antes, **🟡 do dono**: referendar a re-ancoragem do OndeFoi (recebido→empenhado, ADR-0028 §5), pois
-> "recebido por função" não existe na fonte. **Estado = verde** (ruff/mypy/bandit/pytest 179✔ cov 93% ·
-> OpenAPI sem diff). _Pausa, não bloqueio._
+> **FIM DE SESSÃO (2026-06-07):** parei em **#0 das fontes ABERTAS validado** — egress aberto nesta
+> sessão nova. Furei a fila e exerci os hosts liberados (ADR-0028): **SICONFI** ✅ validado (DCA real:
+> 3 incógnitas de forma confirmadas, forma-verdade gravada, fixture → **fiel-à-forma**, bugs de forma
+> do indicador `financas` corrigidos); **IBGE** ✅ validado (localidades+malhas casam, sem mudança de
+> código); **ESTBAN/BCB** ⚠️ host aberto mas URL de download dá 404 (BCB migrou o portal); **CAGED**
+> `ftp.mtps.gov.br` ❌ 403 (fora do allowlist); **INEP/PNCP/DATASUS** ❌ ainda 403. **Próxima fatia =**
+> esteira viva de **despesa por função** (SICONFI Anexo I-E → função como dimensão →
+> `run_siconfi`/Dagster) — mas antes, **🟡 do dono**: referendar a re-ancoragem do OndeFoi
+> (recebido→empenhado, ADR-0028 §5), pois "recebido por função" não existe na fonte. **Estado = verde**
+> (ruff/mypy/bandit/pytest 179✔ cov 93% · OpenAPI sem diff). _Pausa, não bloqueio._
 
 ## Como usar (legenda)
 
@@ -68,9 +70,13 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   construídos "vivo-pronto" (esteira + schedule + fixture), mas a 1ª busca real só roda com o host
   liberado. **#0 parcialmente aberto (sondado 2026-06-07, sessão nova):**
   - ✅ **SICONFI** `apidatalake.tesouro.gov.br` (200) — **VALIDADO** (forma real gravada, ADR-0028;
-    fixture promovida a **fiel-à-forma**). · ✅ **IBGE** `servicodados.ibge.gov.br` (301) e **BCB**
-    `www4.bcb.gov.br` (302) **abertos** — _falta exercer/validar os conectores IBGE/CAGED/ESTBAN
-    contra a fonte real (próxima fatia da pauta b)._
+    fixture promovida a **fiel-à-forma**).
+  - ✅ **IBGE** `servicodados.ibge.gov.br` (aberto) — **VALIDADO** no #0: `localidades/municipios`
+    (5571) + `v3/malhas` casam o `AdaptadorIbge`; fixture já fiel-à-forma, **sem mudança de código**.
+  - ⚠️ **ESTBAN/BCB** `www4.bcb.gov.br` (host aberto) — a URL de download do `FetcherEstbanHTTP` dá
+    **404** (BCB migrou o portal do ESTBAN). _(Dono/próxima fatia: confirmar a nova URL de download.)_
+  - ❌ **CAGED** `ftp.mtps.gov.br` (FTP do MTPS) — **403**: host **fora** do allowlist (que tem BCB,
+    não MTPS). _(Dono: adicionar `ftp.mtps.gov.br`.)_
   - ❌ ainda **bloqueados** (403 `host_not_allowed`): **INEP** `download.inep.gov.br` · **PNCP**
     `pncp.gov.br` · **DATASUS** `ftp.datasus.gov.br`. _(Dono: adicionar ao allowlist Custom; cada um
     traz a marca "confirmar na 1ª busca real" — a forma vem da fonte, não do mock.)_

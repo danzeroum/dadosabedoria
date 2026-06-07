@@ -26,8 +26,10 @@ destrava · impacto se não fizer · prioridade.
 - **Ainda 403 — adicionar ao allowlist** (Custom + "include default list" + salvar) p/ validar e tornar
   vivos os conectores restantes: `download.inep.gov.br` (INEP) · `pncp.gov.br` (PNCP) ·
   `ftp.datasus.gov.br` (DATASUS) · `ftp.mtps.gov.br` (CAGED — FTP do MTPS, host à parte do BCB).
-- **ESTBAN:** host BCB aberto, mas a **URL de download mudou** (BCB migrou o portal). O dev tenta achar
-  a nova navegando no portal; só vira sua pendência se ele registrar que não achou.
+- **ESTBAN — vira gate de host (sondado 2026-06-07):** `www4.bcb.gov.br` está aberto, mas o BCB
+  **migrou o portal** do ESTBAN para `www.bcb.gov.br` / `dadosabertos.bcb.gov.br` — **ambos 403** no
+  ambiente. Para validar/tornar vivo o ESTBAN, **libere um desses dois hosts** no allowlist (não é mais
+  "achar a URL"; o dev já sondou e não há caminho aberto).
 - **Destrava:** tornar vivos INEP/PNCP/DATASUS/CAGED (já estão "vivo-pronto", só falta o dado real).
 
 ### 🔴 OIDC do cidadão — *login real* — **PRIORIDADE ALTA**

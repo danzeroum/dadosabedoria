@@ -17,7 +17,11 @@ from app.ingestao.adaptadores.datasus import AdaptadorDatasus, FetcherDatasusFTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
 from app.ingestao.adaptadores.inep import AdaptadorInep, FetcherInepHTTP
 from app.ingestao.adaptadores.pncp import AdaptadorPncp, FetcherPncpHTTP
-from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi, FetcherSiconfiHTTP
+from app.ingestao.adaptadores.siconfi import (
+    AdaptadorSiconfi,
+    FetcherSiconfiFuncoesHTTP,
+    FetcherSiconfiHTTP,
+)
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
 from app.ingestao.pipeline import (
@@ -27,6 +31,7 @@ from app.ingestao.pipeline import (
     executar_inep,
     executar_pncp,
     executar_siconfi,
+    executar_siconfi_funcoes,
 )
 
 
@@ -64,6 +69,16 @@ async def _rodar_siconfi(janela: Janela) -> None:  # pragma: no cover - rede/S3
     adaptador = AdaptadorSiconfi(FetcherSiconfiHTTP())
     async with connect(settings.database_url) as conn:
         await executar_siconfi(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
+async def _rodar_siconfi_funcoes(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    # OndeFoi (execução por função, Anexo I-E) — fato dedicada `execucao_funcao`, fora do IVM.
+    settings = get_settings()
+    adaptador = AdaptadorSiconfi(FetcherSiconfiFuncoesHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_siconfi_funcoes(
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
 
@@ -120,6 +135,14 @@ def op_carregar_siconfi(context: dg.OpExecutionContext, config: ConfigIngestao) 
 
 
 @dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
+def op_carregar_siconfi_funcoes(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
+    context.log.info(f"SICONFI funções: carregando exercício {config.competencia}")
+    asyncio.run(
+        _rodar_siconfi_funcoes(Janela.de_competencia(config.competencia))
+    )  # pragma: no cover
+
+
+@dg.op(retry_policy=dg.RetryPolicy(max_retries=3, delay=30))
 def op_carregar_inep(context: dg.OpExecutionContext, config: ConfigIngestao) -> None:
     context.log.info(f"INEP: carregando ano {config.competencia}")
     asyncio.run(_rodar_inep(Janela.de_competencia(config.competencia)))  # pragma: no cover
@@ -150,6 +173,11 @@ def job_estban() -> None:
 @dg.job
 def job_siconfi() -> None:
     op_carregar_siconfi()
+
+
+@dg.job
+def job_siconfi_funcoes() -> None:
+    op_carregar_siconfi_funcoes()
 
 
 @dg.job
@@ -195,6 +223,18 @@ def schedule_siconfi_anual(context: dg.ScheduleEvaluationContext) -> dg.RunReque
 
 
 @dg.schedule(
+    job=job_siconfi_funcoes, cron_schedule="0 9 1 6 *"
+)  # 1º jun, 09h UTC — DCA Anexo I-E (execução por função), exercício anterior
+def schedule_siconfi_funcoes_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(
+        run_config={
+            "ops": {"op_carregar_siconfi_funcoes": {"config": {"competencia": f"{ano:04d}01"}}}
+        }
+    )
+
+
+@dg.schedule(
     job=job_inep, cron_schedule="0 9 1 11 *"
 )  # 1º nov, 09h UTC — Censo Escolar do ano anterior (microdados saem ~out)
 def schedule_inep_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
@@ -225,11 +265,20 @@ def schedule_datasus_mensal(context: dg.ScheduleEvaluationContext) -> dg.RunRequ
 
 
 defs = dg.Definitions(
-    jobs=[job_caged, job_estban, job_siconfi, job_inep, job_pncp, job_datasus],
+    jobs=[
+        job_caged,
+        job_estban,
+        job_siconfi,
+        job_siconfi_funcoes,
+        job_inep,
+        job_pncp,
+        job_datasus,
+    ],
     schedules=[
         schedule_caged_mensal,
         schedule_estban_mensal,
         schedule_siconfi_anual,
+        schedule_siconfi_funcoes_anual,
         schedule_inep_anual,
         schedule_pncp_anual,
         schedule_datasus_mensal,

@@ -7,12 +7,13 @@ decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: b
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
 > **MODO DEV — em andamento (2026-06-07):** autonomia ampliada (dev abre PR + mergeia no verde). #0
-> das fontes abertas **validado** (ADR-0028: SICONFI ✅ + IBGE ✅; ESTBAN ⚠️ URL 404; CAGED/INEP/PNCP/
-> DATASUS ❌ 403). **PR #55 mergeado** (verde). Em curso: **esteira viva do OndeFoi re-ancorado**
-> (Liquidado÷Empenhado por função — ADR-0029, default MODO DEV; "recebido por função" não existe na
-> fonte): **data-layer feito** (Anexo I-E → fato `execucao_funcao` → `executar_siconfi_funcoes`,
-> migração 0017). **Próximas fatias:** `run_siconfi_funcoes`+Dagster → endpoint/tela viva (sai do
-> grau-demo após referendo do dono) → reconciliar telas (OndeFoi/IVM) → apertar gate axe → ESTBAN URL.
+> das fontes abertas **validado** (ADR-0028: SICONFI ✅ + IBGE ✅; ESTBAN ⚠️ host da nova URL **403**;
+> CAGED/INEP/PNCP/DATASUS ❌ 403). **PRs #55, #56 mergeados** (verde). **OndeFoi re-ancorado**
+> (Liquidado÷Empenhado por função — ADR-0029, default MODO DEV): **esteira viva COMPLETA** — Anexo I-E
+> → fato `execucao_funcao` (migração 0017) → `executar_siconfi_funcoes` → `run_siconfi_funcoes` (CLI) +
+> **Dagster** (`job_siconfi_funcoes` + `schedule_siconfi_funcoes_anual`, exercício anterior). Falta só o
+> **endpoint/tela viva** (sai do grau-demo após referendo do dono). **Próximas fatias:** endpoint
+> `/v1/onde-foi` lendo a fato → reconciliar telas (OndeFoi/IVM) → apertar gate axe (serious/critical).
 
 ## Como usar (legenda)
 
@@ -70,8 +71,9 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
     fixture promovida a **fiel-à-forma**).
   - ✅ **IBGE** `servicodados.ibge.gov.br` (aberto) — **VALIDADO** no #0: `localidades/municipios`
     (5571) + `v3/malhas` casam o `AdaptadorIbge`; fixture já fiel-à-forma, **sem mudança de código**.
-  - ⚠️ **ESTBAN/BCB** `www4.bcb.gov.br` (host aberto) — a URL de download do `FetcherEstbanHTTP` dá
-    **404** (BCB migrou o portal do ESTBAN). _(Dono/próxima fatia: confirmar a nova URL de download.)_
+  - ⚠️ **ESTBAN/BCB** — `www4.bcb.gov.br` aberto mas a URL antiga dá **404**: o BCB migrou o portal
+    para `www.bcb.gov.br` / `dadosabertos.bcb.gov.br`, **ambos 403** no ambiente. _(Dono: liberar um
+    desses hosts no allowlist — virou **gate de host**, não "achar a URL". Sondei o portal, 2026-06-07.)_
   - ❌ **CAGED** `ftp.mtps.gov.br` (FTP do MTPS) — **403**: host **fora** do allowlist (que tem BCB,
     não MTPS). _(Dono: adicionar `ftp.mtps.gov.br`.)_
   - ❌ ainda **bloqueados** (403 `host_not_allowed`): **INEP** `download.inep.gov.br` · **PNCP**
@@ -82,9 +84,10 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). **Em MODO DEV o dev
   segue no default** (source-grounded): **Liquidado÷Empenhado por função** ("empenhar≠liquidar"). A
   camada pura (`onde_foi.calcular`) e a honestidade ficam; muda o significado das colunas e a
-  pergunta-título. **Fiz:** forma/vocabulário presos (#0/ADR-0028) **+ esteira de dado construída**
-  (ADR-0029: fato `execucao_funcao`, migração 0017, `executar_siconfi_funcoes`). **Tela segue
-  grau-demo** até o dono referendar. _(Falta dono: referendar a moldura → então tela demo→vivo.)_
+  pergunta-título. **Fiz:** forma/vocabulário presos (#0/ADR-0028) **+ esteira VIVA completa**
+  (ADR-0029: fato `execucao_funcao`/migração 0017, `executar_siconfi_funcoes`, `run_siconfi_funcoes`,
+  Dagster `job_siconfi_funcoes`+`schedule_siconfi_funcoes_anual`). **Tela segue grau-demo** até o dono
+  referendar. _(Falta dono: referendar a moldura → então endpoint/tela demo→vivo.)_
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos

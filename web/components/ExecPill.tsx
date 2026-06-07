@@ -6,8 +6,8 @@ import type { Banda } from "../lib/types";
 export function ExecPill({ banda, pct }: { banda: Banda; pct: number | null }) {
   return (
     <span className={`exec-pill exec-${banda}`}>
-      <span>{pct != null ? `executou ${pct}%` : "—"}</span>
-      <span className="sr-only"> — {rotuloBanda(banda)} do que recebeu</span>
+      <span>{pct != null ? `liquidou ${pct}%` : "—"}</span>
+      <span className="sr-only"> — {rotuloBanda(banda)} do que empenhou</span>
     </span>
   );
 }

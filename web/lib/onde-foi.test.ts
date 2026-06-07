@@ -29,9 +29,9 @@ describe("formatarPct", () => {
 
 describe("tokens da banda", () => {
   it("o rótulo nunca é só cor — cada banda tem texto honesto (atenção, não veredito)", () => {
-    expect(rotuloBanda("alta")).toBe("executou quase tudo");
-    expect(rotuloBanda("baixa")).toBe("executou pouco");
-    expect(rotuloBanda("indef")).toBe("sem execução divulgada");
+    expect(rotuloBanda("alta")).toBe("liquidou quase tudo");
+    expect(rotuloBanda("baixa")).toBe("liquidou pouco");
+    expect(rotuloBanda("indef")).toBe("sem liquidação divulgada");
   });
 
   it("a cor vem de um único lugar (paleta do semáforo)", () => {

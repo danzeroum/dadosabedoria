@@ -17,11 +17,13 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 > 3. **Gate axe/WCAG consertado** (era **falso-verde** — nunca rodava): agora roda, achou e **corrigi** a
 >    única violação (contraste de `.tendencia`) e o gate **BLOQUEIA** serious/critical + "axe não rodou".
 >
-> **Próxima fatia = (a)** OndeFoi product go-live: endpoint `/v1/onde-foi` lendo a fato `execucao_funcao`
-> + reconciliar copy/pergunta-título da tela (sai do grau-demo — **🟡 dono referenda** a ancoragem; ver
-> PENDENCIAS §B); **(b)** reconciliar telas do IVM (reusar `SeloConfianca`+frescor na `MetaIVM`, busca,
-> "o que é IVM", comparar parecidas). **Bloqueios humanos** (Lista de desbloqueio): allowlist
-> INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) + ESTBAN(`www.bcb.gov.br`/`dadosabertos.bcb.gov.br`).
+> **Copy do OndeFoi reconciliada** (PR ondefoi-reancoragem): contrato + tela + demo re-ancorados em
+> **Liquidado÷Empenhado** (campos `empenhado*`/`liquidado`, ADR-0029); ainda grau-demo. **Próxima
+> fatia = (a)** OndeFoi go-live: endpoint `/v1/onde-foi` lendo a fato `execucao_funcao` (sai do
+> grau-demo — **🟡 dono referenda** a ancoragem; ver PENDENCIAS §B); **(b)** reconciliar telas do IVM
+> (reusar `SeloConfianca`+frescor na `MetaIVM`, busca, "o que é IVM", comparar parecidas). **Bloqueios
+> humanos** (Lista de desbloqueio): allowlist INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) +
+> ESTBAN(`www.bcb.gov.br`/`dadosabertos.bcb.gov.br`).
 > _Pausa, não bloqueio — tudo verde._
 
 ## Como usar (legenda)

@@ -12,8 +12,8 @@ from app.produtos.pulso_produtivo import Pulso, Tendencia
 
 class FuncaoOut(BaseModel):
     funcao: str
-    recebido: int
-    exe: int | None  # None onde exe_estado != "valor"
+    empenhado: int
+    liquidado: int | None  # None onde exe_estado != "valor"
     exe_estado: ExeEstado
     pct: int | None
 
@@ -38,15 +38,15 @@ class MetaOndeFoi(BaseModel):
 
 
 class OndeFoiOut(BaseModel):
-    """Recebido × execução por função. % sobre a base divulgada; parcela fora explícita."""
+    """Liquidado ÷ empenhado por função (ADR-0029); % sobre a base divulgada, fora explícito."""
 
     codigo_ibge: str
     nome: str
     uf: str
-    recebido_total: int  # contexto — nunca o denominador
-    recebido_base: int  # denominador do %
-    recebido_fora_base: int  # explícito: total − base
-    executado: int
+    empenhado_total: int  # contexto — nunca o denominador
+    empenhado_base: int  # denominador do %
+    empenhado_fora_base: int  # explícito: total − base
+    liquidado: int
     pct: int
     banda: Banda
     funcoes: list[FuncaoOut]

@@ -10,8 +10,9 @@ from __future__ import annotations
 
 from app.produtos.onde_foi import FuncaoBruta
 
-# (codigo_ibge, nome, uf, recebido_total, funcoes). recebido_total > Σ funções → há recurso não
-# detalhado por função; aparece em recebido_fora_base, nunca silenciosamente fora do %.
+# (codigo_ibge, nome, uf, empenhado_total, funcoes). FuncaoBruta(funcao, empenhado, liquidado).
+# empenhado_total > Σ funções → empenho sem liquidação divulgada/não detalhado por função; aparece
+# em empenhado_fora_base, nunca silenciosamente fora do % (re-ancoragem ADR-0029).
 DEMO_MUNICIPIOS: list[tuple[str, str, str, int, list[FuncaoBruta]]] = [
     (
         "3304557",

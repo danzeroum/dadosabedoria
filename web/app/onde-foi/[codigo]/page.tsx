@@ -49,40 +49,41 @@ export default async function OndeFoiPage({ params }: { params: { codigo: string
         <Donut pct={d.pct} banda={d.banda} />
         <div className="enquadra-txt">
           <h2>
-            <strong>Executou {d.pct}%</strong> do que foi divulgado por função — e isso merece a
+            <strong>Liquidou {d.pct}%</strong> do que empenhou por função — e isso merece a
             pergunta.
           </h2>
           <p>
-            De cada R$ 100 <strong>divulgados por função</strong>, <strong>R$ {d.pct}</strong> foram
-            executados. {mensagemBanda(d.banda)}
+            De cada R$ 100 <strong>empenhados por função</strong>, <strong>R$ {d.pct}</strong> foram
+            liquidados. {mensagemBanda(d.banda)}
           </p>
           <div className="recebido">
             <span>
-              Divulgado por função <b className="tnum">{formatarMilhoes(d.recebido_base)}</b>
+              Empenhado por função <b className="tnum">{formatarMilhoes(d.empenhado_base)}</b>
             </span>
             <span>
-              Executou <b className="tnum">{formatarMilhoes(d.executado)}</b>
+              Liquidou <b className="tnum">{formatarMilhoes(d.liquidado)}</b>
             </span>
             <span className="recebido-fora">
-              Fora do cálculo <b className="tnum">{formatarMilhoes(d.recebido_fora_base)}</b>
+              Fora do cálculo <b className="tnum">{formatarMilhoes(d.empenhado_fora_base)}</b>
             </span>
           </div>
         </div>
       </section>
 
       <p className="honesto">
-        <strong>Atenção honesta:</strong> o % usa a <strong>mesma base</strong> (executado ÷ recebido
-        das funções divulgadas). Do total recebido — <strong>{formatarMilhoes(d.recebido_total)}</strong>{" "}
-        — há <strong>{formatarMilhoes(d.recebido_fora_base)}</strong> não detalhados por função ou
-        protegidos, <strong>fora deste cálculo</strong> (não no denominador). E isto é{" "}
-        <strong>execução orçamentária</strong> (SICONFI), não serviço entregue: um % alto não prova
-        hospital funcionando; um % baixo é sinal para perguntar, não sentença.
+        <strong>Atenção honesta:</strong> o % usa a <strong>mesma base</strong> (liquidado ÷ empenhado
+        das funções divulgadas). Do total empenhado —{" "}
+        <strong>{formatarMilhoes(d.empenhado_total)}</strong> — há{" "}
+        <strong>{formatarMilhoes(d.empenhado_fora_base)}</strong> sem liquidação divulgada por função
+        ou não detalhados, <strong>fora deste cálculo</strong> (não no denominador). E isto é{" "}
+        <strong>execução orçamentária</strong> (SICONFI): empenhar e liquidar não é serviço entregue —
+        um % alto não prova hospital funcionando; um % baixo é sinal para perguntar, não sentença.
       </p>
 
       <section>
         <h2>Execução por função orçamentária</h2>
         <p className="of-sub">
-          {d.meta.periodo_rotulo} · a barra mostra quanto do recebido foi executado ·{" "}
+          {d.meta.periodo_rotulo} · a barra mostra quanto do empenhado foi liquidado ·{" "}
           {nProtegidas > 0
             ? `${nProtegidas} função(ões) com dado protegido ou sem cobertura — não é zero`
             : "todas as funções com dado"}

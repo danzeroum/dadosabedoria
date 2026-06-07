@@ -83,3 +83,16 @@ def test_forma_real_funcoes() -> None:
     for i in itens:
         assert not any("sigil" in k or "supr" in k for k in i)
         assert isinstance(i["valor"], (int, float))
+
+
+def test_agregar_funcoes_empenhado_liquidado() -> None:
+    """Anexo I-E → Empenhado/Liquidado por função (ADR-0029); subfunção (10.301) fica fora."""
+    a = AdaptadorSiconfi(FetcherFake(AMOSTRA_FUNCOES))
+    ag = a.agregar_funcoes(a.transformar_prata_funcoes(a.parse(AMOSTRA_FUNCOES)))
+    por = {r["funcao_cod"]: r for r in ag.iter_rows(named=True)}
+    assert set(por) == {"08", "10", "12", "17"}  # a subfunção "10.301 - Atenção Básica" não entra
+    assert por["10"]["funcao_nome"] == "Saúde"
+    assert por["10"]["empenhado"] == 22_752_837_820.49
+    assert por["10"]["liquidado"] == 21_927_842_055.50
+    # razão Liquidado/Empenhado = a base honesta do OndeFoi re-ancorado ("empenhar ≠ liquidar")
+    assert round(por["10"]["liquidado"] / por["10"]["empenhado"] * 100) == 96

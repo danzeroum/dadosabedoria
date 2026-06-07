@@ -1,10 +1,16 @@
-# Pendências do Dono — fila de análise (checkpoint de 36h)
+# Pendências do Dono — fila de análise (atualizado pós-#0 + MODO DEV)
 
 Tudo que **depende de você** (não do desenvolvedor) para o trabalho avançar de "grau-demo honesto"
 para "produto real / lançado". O dev segue sozinho pelo roadmap enquanto você estiver fora; **não
 fica parado** em nenhum destes — ele **anota e continua**, acumulando o que for novo na *Lista de
 desbloqueio* do repo (ver §3). Quando você voltar, revise **este documento + a Lista de desbloqueio
 atualizada no `roadmap.md`** (o dev pode ter acrescentado itens).
+
+> **MODO DEV (2026-06-07):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI e mergeia no
+> verde sozinho** (barra inalterada: só verde genuíno) e **segue a re-ancoragem do OndeFoi no default**
+> (item B abaixo) sem esperar. **O que mudou desde o último checkpoint:** uma sessão nova abriu, o **#0
+> estava ABERTO**, e o dev validou as fontes abertas contra o dado real (ADR-0028) — confirmou a forma,
+> corrigiu bugs, e **revelou a decisão de produto B**, que só você referenda.
 
 Ordenado por **impacto** (o que destrava mais primeiro). Cada item: o que é · o que fazer · o que
 destrava · impacto se não fizer · prioridade.
@@ -13,12 +19,16 @@ destrava · impacto se não fizer · prioridade.
 
 ## 1. Ações pontuais (gates externos 🔴)
 
-### ✅ #0 — Allowlist do SICONFI *(feito — só confirmar)*
-- **Você já fez.** A prova é a sonda do dev na **sessão nova**: `HTTP/` limpo = aberto; se vier
-  `x-deny-reason: host_not_allowed`, confira no editor do ambiente (claude.ai/code) que ficou
-  **Network access = Custom**, com **"Also include default list of common package managers"**
-  marcada, e **salvo**. Fallback temporário só p/ validar: **Full**.
-- **Destrava:** a 1ª validação real do OndeFoi (forma real do DCA).
+### ✅ #0 — Allowlist *(SICONFI/IBGE/BCB abertos e validados)*
+- **Validado (2026-06-07, ADR-0028):** abertos e exercidos contra o dado real — `apidatalake.tesouro.gov.br`
+  (SICONFI), `servicodados.ibge.gov.br` (IBGE), `www4.bcb.gov.br` (BCB). Forma confirmada, fixtures
+  fiéis-à-forma, bugs corrigidos.
+- **Ainda 403 — adicionar ao allowlist** (Custom + "include default list" + salvar) p/ validar e tornar
+  vivos os conectores restantes: `download.inep.gov.br` (INEP) · `pncp.gov.br` (PNCP) ·
+  `ftp.datasus.gov.br` (DATASUS) · `ftp.mtps.gov.br` (CAGED — FTP do MTPS, host à parte do BCB).
+- **ESTBAN:** host BCB aberto, mas a **URL de download mudou** (BCB migrou o portal). O dev tenta achar
+  a nova navegando no portal; só vira sua pendência se ele registrar que não achou.
+- **Destrava:** tornar vivos INEP/PNCP/DATASUS/CAGED (já estão "vivo-pronto", só falta o dado real).
 
 ### 🔴 OIDC do cidadão — *login real* — **PRIORIDADE ALTA**
 - **O que é:** provedor de identidade para o cidadão se autenticar (assinar alerta "Avise-me", área
@@ -71,6 +81,19 @@ destrava · impacto se não fizer · prioridade.
 O dev está **pré-autorizado** a seguir os *defaults* destes sem te perguntar. Você não precisa
 responder agora; se quiser **dar direção**, anote aqui e eu/ele incorporamos. Senão, ele segue o
 default.
+
+### ⭐ B. Re-ancoragem do OndeFoi — **a referendar** (novo, importante; ADR-0029)
+- **O que tínhamos planejado:** OndeFoi = recebido (transferência) × executado por função.
+- **O que o dado real mostrou (#0):** o SICONFI classifica **despesa** por função (Anexo I-E:
+  Empenhado→Liquidado→Pago), mas **não** a transferência (recebido). "Recebido por função" **não
+  existe na fonte** → o modelo original é **impossível**.
+- **Default que o dev está construindo (MODO DEV):** medir **Liquidado ÷ Empenhado por função** — *"do
+  que foi comprometido (empenhado) por área, quanto foi de fato executado (liquidado)?"*. A honestidade
+  fica intacta (executar ≠ serviço; subexecução **merece a pergunta**, nunca veredito); muda a
+  **pergunta-título** do produto. **Reversível** (expand-and-contract) se você redirecionar.
+- **Status:** a **esteira de dado** (Anexo I-E → fato `execucao_funcao` → pipeline) está **construída**
+  (ADR-0029); a **tela segue grau-demo** até seu aval. **Você decide:** referendar / redirecionar /
+  conversar. **Sem ação:** o dev segue no default; nada bloqueia, só não "congela" o enquadramento.
 
 | # | Decisão | Default que o dev seguirá se você não opinar |
 |---|---|---|

@@ -6,16 +6,13 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO (2026-06-07):** parei em **#0 das fontes ABERTAS validado** — egress aberto nesta
-> sessão nova. Furei a fila e exerci os hosts liberados (ADR-0028): **SICONFI** ✅ validado (DCA real:
-> 3 incógnitas de forma confirmadas, forma-verdade gravada, fixture → **fiel-à-forma**, bugs de forma
-> do indicador `financas` corrigidos); **IBGE** ✅ validado (localidades+malhas casam, sem mudança de
-> código); **ESTBAN/BCB** ⚠️ host aberto mas URL de download dá 404 (BCB migrou o portal); **CAGED**
-> `ftp.mtps.gov.br` ❌ 403 (fora do allowlist); **INEP/PNCP/DATASUS** ❌ ainda 403. **Próxima fatia =**
-> esteira viva de **despesa por função** (SICONFI Anexo I-E → função como dimensão →
-> `run_siconfi`/Dagster) — mas antes, **🟡 do dono**: referendar a re-ancoragem do OndeFoi
-> (recebido→empenhado, ADR-0028 §5), pois "recebido por função" não existe na fonte. **Estado = verde**
-> (ruff/mypy/bandit/pytest 179✔ cov 93% · OpenAPI sem diff). _Pausa, não bloqueio._
+> **MODO DEV — em andamento (2026-06-07):** autonomia ampliada (dev abre PR + mergeia no verde). #0
+> das fontes abertas **validado** (ADR-0028: SICONFI ✅ + IBGE ✅; ESTBAN ⚠️ URL 404; CAGED/INEP/PNCP/
+> DATASUS ❌ 403). **PR #55 mergeado** (verde). Em curso: **esteira viva do OndeFoi re-ancorado**
+> (Liquidado÷Empenhado por função — ADR-0029, default MODO DEV; "recebido por função" não existe na
+> fonte): **data-layer feito** (Anexo I-E → fato `execucao_funcao` → `executar_siconfi_funcoes`,
+> migração 0017). **Próximas fatias:** `run_siconfi_funcoes`+Dagster → endpoint/tela viva (sai do
+> grau-demo após referendo do dono) → reconciliar telas (OndeFoi/IVM) → apertar gate axe → ESTBAN URL.
 
 ## Como usar (legenda)
 
@@ -80,13 +77,14 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   - ❌ ainda **bloqueados** (403 `host_not_allowed`): **INEP** `download.inep.gov.br` · **PNCP**
     `pncp.gov.br` · **DATASUS** `ftp.datasus.gov.br`. _(Dono: adicionar ao allowlist Custom; cada um
     traz a marca "confirmar na 1ª busca real" — a forma vem da fonte, não do mock.)_
-- [ ] **🟡 OndeFoi — re-ancoragem do número (decisão de produto, ADR-0028 §5):** o #0 mostrou que
+- [~] **🟡 OndeFoi — re-ancoragem do número (a referendar; ADR-0028 §5 + ADR-0029):** o #0 mostrou que
   **"recebido por função" NÃO existe na fonte** (transferências [I-C] não são classificadas por
-  função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). Default proposto
-  (source-grounded, pré-autorizado #5): medir **Liquidado/Empenhado por função** ("empenhar≠liquidar").
-  A camada pura (`onde_foi.calcular`) e a honestidade ficam; muda o **significado das colunas** e a
-  moldura do selo. **Tela segue em grau-demo** até o dono referendar. _(Fiz: forma/vocabulário presos
-  no #0; ADR-0028. Falta dono: referendar a moldura → então tela demo→vivo.)_
+  função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). **Em MODO DEV o dev
+  segue no default** (source-grounded): **Liquidado÷Empenhado por função** ("empenhar≠liquidar"). A
+  camada pura (`onde_foi.calcular`) e a honestidade ficam; muda o significado das colunas e a
+  pergunta-título. **Fiz:** forma/vocabulário presos (#0/ADR-0028) **+ esteira de dado construída**
+  (ADR-0029: fato `execucao_funcao`, migração 0017, `executar_siconfi_funcoes`). **Tela segue
+  grau-demo** até o dono referendar. _(Falta dono: referendar a moldura → então tela demo→vivo.)_
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos

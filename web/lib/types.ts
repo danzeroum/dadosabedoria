@@ -78,6 +78,47 @@ export interface PulsoProduto {
   meta: MetaProveniencia;
 }
 
+// ----------------------------------------------------------------- OndeFoi (TRANSP-06)
+
+export type Banda = "alta" | "parcial" | "baixa" | "indef";
+
+export interface FuncaoOut {
+  funcao: string;
+  recebido: number;
+  exe: number | null; // null onde exe_estado != "valor"
+  exe_estado: ExeEstado; // no OndeFoi: "valor" | "sem_cobertura" (orçamento público, sem cadeado)
+  pct: number | null;
+}
+
+export interface FonteOut {
+  sigla: string;
+  orgao: string;
+  ate: string;
+}
+
+export interface MetaOndeFoi {
+  metodologia: string; // "execução orçamentária, NÃO serviço entregue"
+  versao_metodologia: string;
+  periodo: string;
+  periodo_rotulo: string; // "exercício 2025" — selo de frescor
+  atraso_dias: number;
+  fontes: FonteOut[];
+}
+
+export interface OndeFoiProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string;
+  recebido_total: number; // contexto — nunca o denominador
+  recebido_base: number; // denominador do %
+  recebido_fora_base: number; // explícito: total − base
+  executado: number;
+  pct: number;
+  banda: Banda;
+  funcoes: FuncaoOut[];
+  meta: MetaOndeFoi;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

@@ -1,5 +1,6 @@
 import type {
   FeatureCollectionIVM,
+  OndeFoiProduto,
   PulsoProduto,
   RespostaIVM,
   RespostaIVMSerie,
@@ -57,6 +58,19 @@ export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | nu
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o Pulso Produtivo (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarOndeFoi(codigoIbge: string): Promise<OndeFoiProduto | null> {
+  const resp = await fetch(new URL(`/v1/onde-foi/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar o OndeFoi (${resp.status})`);
   }
   return resp.json();
 }

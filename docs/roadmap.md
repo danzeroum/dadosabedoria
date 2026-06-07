@@ -148,7 +148,10 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 - [x] 🟢 **TRANSP-01 IVM completo (multidomínio)** — soma o subíndice de **saúde** (SIH) a
   emprego+finanças, peso dinâmico (saúde opcional, respeita supressão), `versao_metodologia=v1.1`;
   min-max mantido (z-score = v2 ao atingir cobertura nacional) — ADR-0025; migração 0015.
-- [ ] 🔵 **TRAB-01 Pulso Produtivo** — empacotar o produto/endpoint nomeado (dado já no ar via `/v1/valores`).
+- [x] 🔵 **TRAB-01 Pulso Produtivo** — endpoint `/v1/pulso-produtivo/{ibge}` sobre o saldo CAGED
+  **real** (mesmo Repository de `/v1/valores`): nível = a batida do mês, momento = mês vs anterior,
+  janela como contexto explícito. Honesto: emprego **formal**, fluxo volátil que "merece a pergunta",
+  **sem cadeado** (n_minimo=0). *(Tela mínima = próxima fatia, conforme o pivô "até a tela".)*
 - [ ] 🔵 TRAB-03 Giro Local (CAGED+IBGE+ESTBAN); TRAB-02 Salário Radar; TRAB-04 Região Emprega.
 
 **Frontend (design system):**

@@ -240,6 +240,19 @@ components:
       - meta
       title: IndicadorOut
       type: object
+    MesSaldoOut:
+      properties:
+        periodo:
+          title: Periodo
+          type: string
+        saldo:
+          title: Saldo
+          type: integer
+      required:
+      - periodo
+      - saldo
+      title: MesSaldoOut
+      type: object
     MetaIVM:
       description: Proveniência do IVM — índice composto, não vem de uma fonte única.
       properties:
@@ -449,6 +462,78 @@ components:
       required:
       - pergunta
       title: PerguntaIA
+      type: object
+    PulsoProdutivoOut:
+      description: 'Pulso do emprego formal (Novo CAGED): a batida atual + o momento
+        + a janela como contexto.'
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meses:
+          items:
+            $ref: '#/components/schemas/MesSaldoOut'
+          title: Meses
+          type: array
+        meses_negativos:
+          title: Meses Negativos
+          type: integer
+        meses_positivos:
+          title: Meses Positivos
+          type: integer
+        meta:
+          $ref: '#/components/schemas/MetaProveniencia'
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          title: Periodo
+          type: string
+        pulso:
+          enum:
+          - aquecido
+          - estavel
+          - esfriando
+          title: Pulso
+          type: string
+        saldo_acumulado:
+          title: Saldo Acumulado
+          type: integer
+        saldo_mes:
+          title: Saldo Mes
+          type: integer
+        tendencia:
+          anyOf:
+          - enum:
+            - melhorando
+            - estavel
+            - piorando
+            type: string
+          - type: 'null'
+          title: Tendencia
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - saldo_mes
+      - saldo_acumulado
+      - pulso
+      - tendencia
+      - meses_positivos
+      - meses_negativos
+      - meses
+      - nota
+      - meta
+      title: PulsoProdutivoOut
       type: object
     RespostaIA:
       properties:
@@ -1019,6 +1104,41 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Onde Foi
+      tags:
+      - produtos
+  /v1/pulso-produtivo/{codigo_ibge}:
+    get:
+      description: 'Como está o pulso do emprego formal no município? Saldo CAGED
+        (admissões − desligamentos).
+
+
+        Dado **real** do acervo (mesmo Repository de ``/v1/valores``). ``nota``/``meta``
+        enquadram:
+
+        emprego **formal**, fluxo volátil/sazonal — saldo negativo merece a pergunta,
+        não é veredito.'
+      operationId: pulso_produtivo_v1_pulso_produtivo__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PulsoProdutivoOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Pulso Produtivo
       tags:
       - produtos
   /v1/territorios/{codigo_ibge}:

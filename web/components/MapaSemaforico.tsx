@@ -32,7 +32,12 @@ export function MapaSemaforico({ itens }: { itens: IVMItem[] }) {
               <strong>{formatarIVM(it.ivm)}</strong>
               <span className="card-ivm-rotulo">IVM</span>
             </div>
-            <Comparador vEmprego={it.v_emprego} vFinancas={it.v_financas} vSaude={it.v_saude} />
+            <Comparador
+              vEmprego={it.v_emprego}
+              vFinancas={it.v_financas}
+              vSaude={it.v_saude}
+              vSaudeEstado={it.v_saude_estado}
+            />
           </Link>
         </li>
       ))}

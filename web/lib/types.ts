@@ -2,6 +2,8 @@
 
 export type Semaforo = "verde" | "amarelo" | "vermelho";
 
+export type ExeEstado = "valor" | "suprimido" | "sem_cobertura";
+
 export interface IVMItem {
   codigo_ibge: string;
   nome: string;
@@ -11,6 +13,7 @@ export interface IVMItem {
   v_emprego: number;
   v_financas: number;
   v_saude: number | null; // subíndice de saúde (null onde não há dado não suprimido)
+  v_saude_estado: ExeEstado; // valor | suprimido (privacidade) | sem_cobertura
 }
 
 export interface MetaIVM {
@@ -53,6 +56,7 @@ export interface PropriedadesIVM {
   v_emprego: number | null;
   v_financas: number | null;
   v_saude: number | null;
+  v_saude_estado: ExeEstado;
 }
 
 export interface FeatureIVM {

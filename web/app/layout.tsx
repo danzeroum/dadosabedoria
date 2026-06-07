@@ -5,8 +5,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DadoSabedoria — IVM",
-  description: "Índice de Vulnerabilidade Municipal — mapa semafórico de dados públicos brasileiros.",
+  title: "DadoSabedoria",
+  description: "Inteligência de dados públicos brasileiros, com privacidade e proveniência.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -14,13 +14,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <body>
         <header className="topo">
-          <Link href="/ivm" className="topo-marca">
-            DadoSabedoria <span aria-hidden="true">·</span> IVM
+          <Link href="/" className="topo-marca">
+            DadoSabedoria
           </Link>
+          <nav className="topo-nav" aria-label="Produtos">
+            <Link href="/ivm">IVM</Link>
+            <Link href="/pulso/3550308">Pulso</Link>
+            <Link href="/onde-foi/3304557">OndeFoi</Link>
+          </nav>
         </header>
         <div className="conteudo">{children}</div>
         <footer className="rodape">
-          Dados públicos (Novo CAGED · BCB/ESTBAN). Índice composto v1 — metodologia em cada tela.
+          Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia
+          e fonte em cada tela.
         </footer>
       </body>
     </html>

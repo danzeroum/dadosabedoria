@@ -8,6 +8,7 @@ const BASE = process.env.WEB_URL ?? "http://localhost:3000";
 const OUT = process.env.OUT_DIR ?? "capturas";
 
 const paginas = [
+  { nome: "home", url: `${BASE}/` }, // porta de entrada: os produtos como perguntas
   { nome: "ivm-mapa", url: `${BASE}/ivm` }, // cartões semafóricos + subíndices
   { nome: "ivm-municipio-sp", url: `${BASE}/ivm/3550308` }, // drill-down: série + proveniência
   { nome: "pulso-sp", url: `${BASE}/pulso/3550308` }, // TRAB-01: saldo de emprego formal

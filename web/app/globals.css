@@ -46,11 +46,31 @@ a {
   background: var(--cor-marca);
   color: #fff;
   padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 .topo-marca {
   text-decoration: none;
   font-weight: 700;
   letter-spacing: 0.02em;
+  color: #fff;
+}
+.topo-nav {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+.topo-nav a {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.92;
+}
+.topo-nav a:hover {
+  opacity: 1;
+  text-decoration: underline;
 }
 .conteudo {
   max-width: var(--largura-max);
@@ -539,4 +559,82 @@ section h2 {
 .funcao-pct-num {
   font-variant-numeric: tabular-nums;
   min-width: 2.5em;
+}
+
+/* Home — porta de entrada dos produtos */
+.home-hero {
+  margin: 8px 0 28px;
+  max-width: 720px;
+}
+.home-hero h1 {
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+}
+.home-lead {
+  color: var(--cor-texto-suave);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.home-produtos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.home-card {
+  display: block;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 18px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--sombra);
+  transition: border-color 0.15s ease;
+}
+.home-card:hover,
+.home-card:focus-visible {
+  border-color: var(--cor-marca);
+}
+.home-card-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.home-card-topo h2 {
+  font-size: 1.05rem;
+  margin: 0;
+  color: var(--cor-marca);
+}
+.home-selo {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b45309;
+  border: 1px solid #f59e0b;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.home-pergunta {
+  font-weight: 600;
+  margin: 8px 0 6px;
+}
+.home-descricao {
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+.home-cta {
+  color: var(--cor-marca);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.home-nota {
+  color: var(--cor-texto-suave);
+  font-size: 0.82rem;
+  margin-top: 24px;
+  max-width: 720px;
 }

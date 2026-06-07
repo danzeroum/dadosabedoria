@@ -68,7 +68,9 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
   **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
   IVM (reusar o `SeloConfianca` — precisa enriquecer a `MetaIVM` com `fontes`/frescor —, busca,
-  "o que é IVM", comparar parecidas); **gate axe/WCAG no DOM** do job de screenshot.
+  "o que é IVM", comparar parecidas). **Gate axe/WCAG no DOM** do screenshot: **feito** — reprova
+  serious/critical em todas as telas (estrutura WCAG); `color-contrast` é **reportado** até uma
+  auditoria de tokens dedicada (precisa de ferramenta visual) — aí o gate aperta para incluí-lo.
 
 ## Estado atual (reconciliação — 2026-06-06)
 

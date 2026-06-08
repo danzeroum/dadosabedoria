@@ -53,6 +53,15 @@ const PRODUTOS: {
     selo: null,
   },
   {
+    titulo: "Comparar municípios",
+    pergunta: "Como meu município se compara a outro?",
+    descricao:
+      "Dois municípios lado a lado, indicador por indicador, com fonte e período. Descritivo — contexto para perguntar, não um ranking de melhor ou pior; o protegido segue protegido.",
+    href: "/comparar",
+    cta: "Comparar",
+    selo: null,
+  },
+  {
     titulo: "Pergunte aos dados",
     pergunta: "Posso perguntar em vez de procurar?",
     descricao:

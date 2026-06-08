@@ -6,54 +6,20 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **31 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#84; +#85 **resumo do acervo na home**). **#5 exercido
-> ("priorizar um produto" + "siga" ×8) — camada de confiança puxada à tela:** a **porta de entrada**
-> agora prova a si mesma — um resumo vivo do acervo (`N fontes · N indicadores · N domínios`, pelo
-> próprio `/v1/fontes`, com degradação graciosa) recebe quem chega; `/comparar` (ADR-0030);
-> `/fontes` + `GET /v1/fontes` (ADR-0031); `/indicador/{codigo}` — **ficha técnica**, nome clicável;
-> **descoberta global** (Comparar no nav, Fontes no rodapé); **`/serie`** — drill-down do panorama
-> (histórico de qualquer indicador, supressão honesta, sem novo contrato); e **IA ancorada
-> (invariante 3)** em três camadas — léxico do código + prefixo (flexão) + **sinônimos do dia a dia**
-> ('hospital'→saúde, 'escola'→educação, não-ambíguos), tudo acionável pelo **formulário de texto
-> livre sem JS** do `/perguntar`: o leigo pergunta na língua dele e a IA acha o indicador e cita a
-> fonte (sem dado, abstém). Tudo sem JS, na porta de entrada; escala com dado. **#84 (a pedido do
-> dono — "preparar o destrave"):** `docs/RUNBOOK_DESTRAVE.md` — runbook copia-e-cola por conector
-> (host + comando + forma a confirmar + fechar o loop), pra tornar INEP/PNCP/DATASUS/CAGED/ESTBAN
-> vivos em minutos quando o allowlist abrir. **Esgotado o valor não-gated do seed; a alavanca agora é
-> destravar um gate** (ver PENDENCIAS_DO_DONO §1).
-> O selo de confiança vive também nas listas `/ivm` e `/onde-foi`. **Handoff de design reconciliado por completo** — a
-> **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
-> `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face
-> (ordenada por nome, aviso "ilustrativo"); e o drill-down do IVM ganhou **leitura humana** (#73:
-> significado do semáforo + tendência da série). Os âncora têm o **funil completo**
-> (entender→comparar→agir→confiar). **Backlog ungated de PRODUTO esgotado:** o que resta é **TUDO gate
-> do dono** (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD). Entregue:
-> 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
->    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
-> 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
->    função" não existe na fonte): **esteira viva COMPLETA** (Anexo I-E → fato `execucao_funcao`/mig.
->    0017 → `executar_siconfi_funcoes` → `run_siconfi_funcoes` + **Dagster**) **+ produto re-ancorado
->    ponta-a-ponta** (contrato/API `empenhado*`/`liquidado`, tela e copy) — ainda **grau-demo**.
-> 3. **Gate axe/WCAG consertado** (era **falso-verde** — nunca rodava): agora roda, achou e **corrigi** a
->    única violação (contraste de `.tendencia`) e o gate **BLOQUEIA** serious/critical + "axe não rodou".
-> 4. **Telas do IVM reconciliadas — 4/4** (primitivos compartilhados, sem forkar): `SeloConfianca`
->    reutilizado (`MetaIVM` com fontes+frescor), **busca** server-side, **"o que é IVM"** (explicador) e
->    **comparar cidade parecida** (`/v1/ivm/{ibge}/similares`).
-> 5. **Superfície de agir (OndeFoi #68 + IVM)** — `AcoesOndeFoi`/`AcoesIVM`, `<details>` sem JS, sobre
->    o primitivo compartilhado `lib/agir.ts` (+ estilos `.acoes` neutros, renomeados de `of-` sem
->    forkar): compartilhar, exportar com citação **ABNT** (proveniência embutida), avise-me
->    (LGPD-por-desenho, prepara o lugar p/ a auth do cidadão) e a-quem-cobrar/levar (Fala.BR/CGU real).
->    Copy honesta por produto (execução≠serviço; IVM comparativo≠veredito); gates degradando.
->
-> **O que resta é TUDO gate do dono:** **(a)** OndeFoi **go-live** — endpoint
-> lendo a fato `execucao_funcao` (🟡 referenda a ancoragem Liquidado/Empenhado; PENDENCIAS §B); **(b)**
-> **allowlist** dos hosts ainda 403 (INEP/PNCP/DATASUS/CAGED + ESTBAN) p/ tornar vivos os conectores;
-> **(c)** OIDC/domínio/LLM/DataJud/PbD (PENDENCIAS §C). _Sem flake real: o `integration`/`screenshot`
-> às vezes falha por timeout do Docker Hub — mesmo SHA passa no run paralelo; mergeado só no verde._
-> **Bloqueios humanos** (Lista de desbloqueio): allowlist INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) +
-> ESTBAN(`www.bcb.gov.br`/`dadosabertos.bcb.gov.br`).
-> _Pausa, não bloqueio — tudo verde._
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08 + 2026-06-08 #2): estado = VERDE.** Autonomia ampliada exercida: **32 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#84; +#85 resumo da home; +#86 OndeFoi go-live; +#87 conectores reais).
+> **Sessão de 2026-06-08 (#2):** sonda dos 9 hosts (ADR-0033), conectores corrigidos e **ingestão nacional executada**:
+> - **PNCP ✅** — `pncp.gov.br` aberto; bug User-Agent corrigido (`FetcherPncpHTTP`); 35.910 contratos jan/2024.
+> - **IBGE ✅** — gzip fix (`FetcherIbgeHTTP`); 5.571 municípios + 27 UFs carregados da API real.
+> - **SICONFI ✅** — rate-limit bom-cidadão (5 workers, 0.1s delay, backoff) + **bug crítico corrigido**
+>   (asyncpg 32.767 params → batch INSERT de 3.000 linhas); **ingestão nacional 2024 completa**:
+>   83.444 linhas em `execucao_funcao`, 5.541 municípios com dado real.
+> - **OndeFoi 🟢 ao vivo** — endpoint lê `execucao_funcao` (não DEMO_MUNICIPIOS); dado nacional real.
+> - **Gates qualificados (ADR-0033):** INEP ⚠️ TLS cert, ESTBAN ⚠️ URL via SPA Angular, DATASUS ⚠️ FTP
+>   protocolo, CAGED ❌ DNS HTTPS não resolve (`api.bcb.gov.br` seria o caminho novo).
+> **O que resta:** **(a)** OndeFoi — referendo da ancoragem Liquidado/Empenhado (🟡 do dono); **(b)**
+> INEP/ESTBAN/DATASUS/CAGED têm bloqueios técnicos específicos (ver PENDENCIAS_DO_DONO); **(c)**
+> OIDC/domínio/LLM/DataJud/PbD (ver Lista de desbloqueio). _Pausa, não bloqueio — tudo verde._
 
 ## Como usar (legenda)
 

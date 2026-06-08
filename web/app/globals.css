@@ -84,6 +84,24 @@ a {
   color: var(--cor-texto-suave);
   font-size: 0.85rem;
 }
+.rodape-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.rodape-nav a {
+  color: var(--cor-marca);
+  text-decoration: none;
+  font-weight: 600;
+}
+.rodape-nav a:hover {
+  text-decoration: underline;
+}
+.rodape-nota {
+  margin: 0;
+  max-width: 80ch;
+}
 
 .pagina h1 {
   margin: 0 0 4px;

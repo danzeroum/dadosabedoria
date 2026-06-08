@@ -31,6 +31,9 @@ destrava · impacto se não fizer · prioridade.
   ambiente. Para validar/tornar vivo o ESTBAN, **libere um desses dois hosts** no allowlist (não é mais
   "achar a URL"; o dev já sondou e não há caminho aberto).
 - **Destrava:** tornar vivos INEP/PNCP/DATASUS/CAGED (já estão "vivo-pronto", só falta o dado real).
+- **▶ Como executar (copia-e-cola, host + comando + o que conferir, por conector):
+  `docs/RUNBOOK_DESTRAVE.md`.** Depois do flip, é ~2–5 min por conector — ou peça ao dev "valide os
+  conectores abertos".
 
 ### 🔴 OIDC do cidadão — *login real* — **PRIORIDADE ALTA**
 - **O que é:** provedor de identidade para o cidadão se autenticar (assinar alerta "Avise-me", área

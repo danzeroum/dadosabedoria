@@ -487,6 +487,28 @@ components:
       - licenca
       title: MetaProveniencia
       type: object
+    OndeFoiLista:
+      description: 'Diretório de municípios do OndeFoi, ordenado por NOME (não ranking
+        de execução).
+
+
+        Os números são grau-demo (ilustrativos) até a 1ª busca real; a dupla-face
+        §17 mora aqui: nada
+
+        de leaderboard de valor provisório.'
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/OndeFoiResumo'
+          title: Dados
+          type: array
+        meta:
+          $ref: '#/components/schemas/MetaOndeFoi'
+      required:
+      - dados
+      - meta
+      title: OndeFoiLista
+      type: object
     OndeFoiOut:
       description: Liquidado ÷ empenhado por função (ADR-0029); % sobre a base divulgada,
         fora explícito.
@@ -543,6 +565,38 @@ components:
       - funcoes
       - meta
       title: OndeFoiOut
+      type: object
+    OndeFoiResumo:
+      description: Resumo por município para o diretório (lista) do OndeFoi — sem
+        detalhe por função.
+      properties:
+        banda:
+          enum:
+          - alta
+          - parcial
+          - baixa
+          - indef
+          title: Banda
+          type: string
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        nome:
+          title: Nome
+          type: string
+        pct:
+          title: Pct
+          type: integer
+        uf:
+          title: Uf
+          type: string
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - pct
+      - banda
+      title: OndeFoiResumo
       type: object
     Paginacao:
       properties:
@@ -1263,6 +1317,30 @@ paths:
       tags:
       - indicadores
       - ivm
+  /v1/onde-foi:
+    get:
+      description: 'Diretório dos municípios do OndeFoi — porta para o detalhe, ordenado
+        por NOME (não ranking).
+
+
+        GRAU-DEMO: números ilustrativos até a 1ª busca real no SICONFI. A ordenação
+        por nome (em vez de
+
+        por %) é a mitigação de dupla-face (§17): nada de leaderboard de execução
+        provisória. O go-live
+
+        listará os municípios com dado na fato `execucao_funcao`.'
+      operationId: onde_foi_lista_v1_onde_foi_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OndeFoiLista'
+          description: Successful Response
+      summary: Onde Foi Lista
+      tags:
+      - produtos
   /v1/onde-foi/{codigo_ibge}:
     get:
       description: 'Do que a prefeitura empenhou por função, quanto liquidou? (Liquidado÷Empenhado

@@ -756,6 +756,54 @@ section h2 {
   font-size: 0.8rem;
   color: var(--cor-texto-suave);
 }
+/* Diretório do OndeFoi (lista) — porta para o detalhe; aviso de grau-demo forte (dupla-face §17). */
+.of-demo-aviso {
+  background: #fef3c7;
+  border: 1px solid rgba(180, 83, 9, 0.28);
+  border-radius: var(--raio);
+  padding: 12px 16px;
+  margin: 12px 0 16px;
+  font-size: 0.88rem;
+  color: #7c2d12;
+  max-width: 92ch;
+}
+.of-demo-aviso strong {
+  color: #7c2d12;
+}
+.of-dir {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.of-dir-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 12px 14px;
+}
+.of-dir-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+.of-dir-nome {
+  font-weight: 600;
+}
+.of-dir-uf {
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+}
 .exec-pill {
   display: inline-flex;
   align-items: center;

@@ -36,11 +36,11 @@ const PRODUTOS: {
   },
   {
     titulo: "OndeFoi",
-    pergunta: "A transferência da União virou serviço?",
+    pergunta: "Do que a prefeitura empenhou por função, quanto saiu do papel?",
     descricao:
-      "Recebido × executado por função do orçamento municipal. Executar não é entregar — o número que merece a pergunta, nunca o veredito.",
-    href: "/onde-foi/3304557",
-    cta: "Ver exemplo (Rio de Janeiro)",
+      "Liquidado × empenhado por função do orçamento municipal (SICONFI). Empenhar não é liquidar, liquidar não é entregar — o número que merece a pergunta, nunca o veredito.",
+    href: "/onde-foi",
+    cta: "Explorar municípios",
     selo: "demonstração",
   },
   {

@@ -46,3 +46,22 @@ async def test_onde_foi_404(client) -> None:
     r = await client.get("/v1/onde-foi/0000000")
     assert r.status_code == 404
     assert r.json()["erro"] == "nao_encontrado"
+
+
+async def test_onde_foi_lista_ordenada_por_nome(client) -> None:
+    # Diretório: porta para o detalhe. Dupla-face §17 — ordenado por NOME, não por % (sem ranking).
+    r = await client.get("/v1/onde-foi")
+    assert r.status_code == 200
+    b = r.json()
+    nomes = [d["nome"] for d in b["dados"]]
+    assert len(nomes) == 6
+    assert nomes == sorted(nomes)  # por nome, não leaderboard de execução
+    assert nomes[0] == "Belo Horizonte"
+    # cada resumo tem o contrato mínimo; nada de detalhe por função na lista.
+    for d in b["dados"]:
+        assert {"codigo_ibge", "nome", "uf", "pct", "banda"} == set(d)
+    # o resumo bate com o detalhe (mesma camada pura): SP liquidou 88%.
+    sp = next(d for d in b["dados"] if d["codigo_ibge"] == "3550308")
+    assert sp["pct"] == 88 and sp["banda"] == "alta"
+    # selo de confiança herdado do produto (proveniência rica).
+    assert b["meta"]["fontes"][0]["sigla"] == "SICONFI"

@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </Link>
           <nav className="topo-nav" aria-label="Produtos">
             <Link href="/ivm">IVM</Link>
+            <Link href="/comparar">Comparar</Link>
             <Link href="/pulso/3550308">Pulso</Link>
             <Link href="/onde-foi/3304557">OndeFoi</Link>
             <Link href="/perguntar">Perguntar</Link>
@@ -26,8 +27,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </header>
         <div className="conteudo">{children}</div>
         <footer className="rodape">
-          Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia
-          e fonte em cada tela.
+          <nav className="rodape-nav" aria-label="Transparência">
+            <Link href="/fontes">Fontes &amp; confiança</Link>
+            <Link href="/comparar">Comparar municípios</Link>
+            <Link href="/ivm">Mapa do IVM</Link>
+          </nav>
+          <p className="rodape-nota">
+            Dados públicos abertos. Privacidade estrutural e proveniência em cada número —
+            metodologia e fonte em cada tela.
+          </p>
         </footer>
       </body>
     </html>

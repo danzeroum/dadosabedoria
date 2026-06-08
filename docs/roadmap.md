@@ -6,15 +6,15 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **25 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#78; +#79 **ficha técnica do indicador**). **#5
-> exercido ("priorizar um produto" + "siga" ×3) — camada de confiança puxada à tela:** `/comparar`
-> (ADR-0030, dois municípios lado a lado, sem novo contrato, supressão honesta); `/fontes` + `GET
-> /v1/fontes` (ADR-0031, proveniência consolidada com o modelo de privacidade ao lado); e
-> `/indicador/{codigo}` — **ficha técnica** (metodologia, polaridade, cadência, grão, fonte/licença)
-> reusando `/v1/indicadores/{codigo}` (sem novo contrato), com cada nome de indicador do panorama
-> agora **clicável** até a ficha: a "proveniência sempre" tornada navegável. Tudo sem JS, na porta de
-> entrada; escala sozinho com mais dado.
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **26 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#79; +#80 **nav/rodapé**). **#5 exercido ("priorizar
+> um produto" + "siga" ×4) — camada de confiança puxada à tela:** `/comparar` (ADR-0030, dois
+> municípios lado a lado, sem novo contrato, supressão honesta); `/fontes` + `GET /v1/fontes`
+> (ADR-0031, proveniência consolidada com o modelo de privacidade ao lado); `/indicador/{codigo}` —
+> **ficha técnica** reusando `/v1/indicadores/{codigo}`, com cada nome de indicador do panorama
+> **clicável** até a ficha; e **descoberta global** — as superfícies novas (Comparar no nav de
+> Produtos, Fontes & confiança no rodapé navegável) agora alcançáveis de qualquer página, não só da
+> home. Tudo sem JS, na porta de entrada; escala sozinho com mais dado.
 > O selo de confiança vive também nas listas `/ivm` e `/onde-foi`. **Handoff de design reconciliado por completo** — a
 > **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
 > `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face

@@ -877,6 +877,23 @@ section h2 {
   font-size: 0.78rem;
   color: var(--cor-texto-suave);
 }
+.of-legenda {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  margin: 12px 0 16px;
+  font-size: 0.82rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+.of-legenda li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 .exec-pill {
   display: inline-flex;
   align-items: center;

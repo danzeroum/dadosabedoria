@@ -7,6 +7,7 @@ import { Semaforo } from "../../../components/Semaforo";
 import { SeloConfianca } from "../../../components/SeloConfianca";
 import { SerieTemporal } from "../../../components/SerieTemporal";
 import { buscarSerieIVM, buscarSimilaresIVM } from "../../../lib/api";
+import { significadoIVM, tendenciaIVM } from "../../../lib/ivm-leitura";
 import { formatarIVM } from "../../../lib/semaforo";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,10 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
         <span className="destaque-periodo">{atual.periodo}</span>
       </div>
 
+      <p className={`dd-significado dd-sem-${atual.semaforo}`}>
+        {significadoIVM(atual.nome, atual.semaforo)}
+      </p>
+
       <section>
         <h2>Subíndices de vulnerabilidade ({atual.periodo})</h2>
         <Comparador
@@ -47,6 +52,10 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
       <section>
         <h2>Evolução do IVM</h2>
         <SerieTemporal serie={serie} />
+        <p className="serie-nota">
+          {tendenciaIVM(serie).texto} Pontos suprimidos por privacidade seriam marcados, nunca
+          omitidos.
+        </p>
       </section>
 
       {similares.length > 0 && (

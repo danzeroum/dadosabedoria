@@ -255,6 +255,33 @@ a {
 .destaque-periodo {
   color: var(--cor-texto-suave);
 }
+/* Leitura humana do IVM (handoff TelaDrill): significado do semáforo + tendência da série. A cor é
+   redundante (o texto carrega o sentido) — borda colorida só reforça, com tom AA. */
+.dd-significado {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-texto-suave);
+  border-radius: var(--raio);
+  padding: 12px 16px;
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  max-width: 80ch;
+}
+.dd-sem-verde {
+  border-left-color: #15803d;
+}
+.dd-sem-amarelo {
+  border-left-color: #b45309;
+}
+.dd-sem-vermelho {
+  border-left-color: #b91c1c;
+}
+.serie-nota {
+  font-size: 0.82rem;
+  color: var(--cor-texto-suave);
+  margin: 8px 0 0;
+  max-width: 64ch;
+}
 section h2 {
   font-size: 1.1rem;
   margin: 20px 0 8px;

@@ -6,13 +6,14 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **17 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#71). **Handoff de design reconciliado por completo** — a
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **18 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#72). **Handoff de design reconciliado por completo** — a
 > **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
-> `.acoes`); os drill-downs-âncora têm o **funil completo** (entender→comparar→agir→confiar); e a
-> **lista/índice `/onde-foi`** (#72) fechou o último item do handoff, **com mitigação de dupla-face**
-> (ordenada por nome, não ranking; aviso "ilustrativo"). **Backlog ungated de PRODUTO esgotado:** o que
-> resta é **TUDO gate do dono** (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD). Entregue:
+> `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face
+> (ordenada por nome, aviso "ilustrativo"); e o drill-down do IVM ganhou **leitura humana** (#73:
+> significado do semáforo + tendência da série). Os âncora têm o **funil completo**
+> (entender→comparar→agir→confiar). **Backlog ungated de PRODUTO esgotado:** o que resta é **TUDO gate
+> do dono** (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
@@ -137,7 +138,10 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; bloco no drill-down); ✅
   **superfície de agir** (`AcoesIVM` reusa `lib/agir.ts` + estilos `.acoes` neutros — primitivo
   compartilhado com o OndeFoi, sem forkar: compartilhar/exportar-ABNT/avise-me/a-quem-levar, copy
-  honesta "comparativo, não veredito", gates degradando). _Default
+  honesta "comparativo, não veredito", gates degradando); ✅ **leitura humana** do drill-down
+  (`lib/ivm-leitura.ts`, pura/testada): **significado do semáforo** ("entre as mais vulneráveis — há
+  razão para cobrar prioridade, não sentença") + **tendência da série** (subir = piora) — o "so what"
+  do handoff `TelaDrill`, sem JS. _Default
   "parecida" = mesma UF + IVM mais próximo, no exercício; reversível se o dono preferir outro._ **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
   (2026-06-07)** — (1) o axe **nunca rodava** (falso-verde): `captura.mjs` usava `browser.newPage()`,
   rejeitado pelo `@axe-core/playwright` → auditoria pulada em silêncio; corrigido com

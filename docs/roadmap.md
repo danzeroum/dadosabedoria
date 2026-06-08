@@ -6,8 +6,8 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07): estado = VERDE.** Autonomia ampliada exercida: **7 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#61). Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **10 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#64). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
@@ -16,10 +16,13 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 >    ponta-a-ponta** (contrato/API `empenhado*`/`liquidado`, tela e copy) — ainda **grau-demo**.
 > 3. **Gate axe/WCAG consertado** (era **falso-verde** — nunca rodava): agora roda, achou e **corrigi** a
 >    única violação (contraste de `.tendencia`) e o gate **BLOQUEIA** serious/critical + "axe não rodou".
+> 4. **Telas do IVM reconciliadas** (primitivos compartilhados, sem forkar): `SeloConfianca` reutilizado
+>    no drill-down (`MetaIVM` com fontes+frescor), **busca** de município (server-side) e **"o que é
+>    IVM"** (explicador) no mapa.
 >
 > **Próxima fatia = (a)** OndeFoi **go-live**: endpoint `/v1/onde-foi` lendo a fato `execucao_funcao`
-> (sai do grau-demo — **🟡 dono referenda** a ancoragem; ver PENDENCIAS §B); **(b)** reconciliar telas
-> do IVM (reusar `SeloConfianca`+frescor na `MetaIVM`, busca, "o que é IVM", comparar parecidas).
+> (sai do grau-demo — **🟡 dono referenda** a ancoragem; ver PENDENCIAS §B); **(b)** IVM **comparar
+> cidade parecida** (🟡 leve: definir "parecida" — default = vizinhança de IVM/porte).
 > **Bloqueios humanos** (Lista de desbloqueio): allowlist INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) +
 > ESTBAN(`www.bcb.gov.br`/`dadosabertos.bcb.gov.br`).
 > _Pausa, não bloqueio — tudo verde._

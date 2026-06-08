@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AcoesOndeFoi } from "../../../components/AcoesOndeFoi";
 import { Donut } from "../../../components/Donut";
 import { ExecucaoFuncoes } from "../../../components/ExecucaoFuncoes";
 import { SeloConfianca } from "../../../components/SeloConfianca";
@@ -79,6 +80,8 @@ export default async function OndeFoiPage({ params }: { params: { codigo: string
         <strong>execução orçamentária</strong> (SICONFI): empenhar e liquidar não é serviço entregue —
         um % alto não prova hospital funcionando; um % baixo é sinal para perguntar, não sentença.
       </p>
+
+      <AcoesOndeFoi d={d} />
 
       <section>
         <h2>Execução por função orçamentária</h2>

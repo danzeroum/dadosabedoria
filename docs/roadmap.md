@@ -6,8 +6,8 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **10 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#64). Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **12 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#66). **Backlog ungated do MODO DEV: ZERADO.** Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
@@ -16,13 +16,15 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 >    ponta-a-ponta** (contrato/API `empenhado*`/`liquidado`, tela e copy) — ainda **grau-demo**.
 > 3. **Gate axe/WCAG consertado** (era **falso-verde** — nunca rodava): agora roda, achou e **corrigi** a
 >    única violação (contraste de `.tendencia`) e o gate **BLOQUEIA** serious/critical + "axe não rodou".
-> 4. **Telas do IVM reconciliadas** (primitivos compartilhados, sem forkar): `SeloConfianca` reutilizado
->    no drill-down (`MetaIVM` com fontes+frescor), **busca** de município (server-side) e **"o que é
->    IVM"** (explicador) no mapa.
+> 4. **Telas do IVM reconciliadas — 4/4** (primitivos compartilhados, sem forkar): `SeloConfianca`
+>    reutilizado (`MetaIVM` com fontes+frescor), **busca** server-side, **"o que é IVM"** (explicador) e
+>    **comparar cidade parecida** (`/v1/ivm/{ibge}/similares`).
 >
-> **Próxima fatia = (a)** OndeFoi **go-live**: endpoint `/v1/onde-foi` lendo a fato `execucao_funcao`
-> (sai do grau-demo — **🟡 dono referenda** a ancoragem; ver PENDENCIAS §B); **(b)** IVM **comparar
-> cidade parecida** (🟡 leve: definir "parecida" — default = vizinhança de IVM/porte).
+> **O que resta é TUDO gate do dono** (nada ungated em fila): **(a)** OndeFoi **go-live** — endpoint
+> lendo a fato `execucao_funcao` (🟡 referenda a ancoragem Liquidado/Empenhado; PENDENCIAS §B); **(b)**
+> **allowlist** dos hosts ainda 403 (INEP/PNCP/DATASUS/CAGED + ESTBAN) p/ tornar vivos os conectores;
+> **(c)** OIDC/domínio/LLM/DataJud/PbD (PENDENCIAS §C). _Sem flake real: o `integration`/`screenshot`
+> às vezes falha por timeout do Docker Hub — mesmo SHA passa no run paralelo; mergeado só no verde._
 > **Bloqueios humanos** (Lista de desbloqueio): allowlist INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) +
 > ESTBAN(`www.bcb.gov.br`/`dadosabertos.bcb.gov.br`).
 > _Pausa, não bloqueio — tudo verde._

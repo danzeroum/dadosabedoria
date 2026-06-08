@@ -39,6 +39,28 @@ def test_sem_match_retorna_none() -> None:
     assert identificar_indicador("qual a cor do céu hoje?", CATALOGO) is None
 
 
+def test_identifica_por_termo_do_codigo_com_flexao() -> None:
+    # "emprego" (singular, fora do nome "Saldo de empregos formais") casa pelo léxico do CÓDIGO
+    # (trabalho.emprego.saldo_caged) + prefixo — antes a IA abstinha de uma pergunta com dado.
+    assert (
+        identificar_indicador("como está o emprego em São Paulo?", CATALOGO)
+        == "trabalho.emprego.saldo_caged"
+    )
+
+
+def test_identifica_credito_por_termo_curto() -> None:
+    assert (
+        identificar_indicador("qual o crédito disponível na cidade?", CATALOGO)
+        == "credito.operacoes.saldo_total"
+    )
+
+
+def test_palavra_generica_do_codigo_nao_casa_sozinha() -> None:
+    # "total" existe só no código (credito...saldo_total), não no nome → score 1 < limiar:
+    # não basta uma palavra genérica para fixar o indicador (evita falso-positivo).
+    assert identificar_indicador("qual o total de impostos?", CATALOGO) is None
+
+
 def test_numeros_normaliza_separadores() -> None:
     # ``8.200`` e ``8200`` contam como o mesmo número; só conta >= 2 dígitos.
     assert numeros("foi 8.200 em 2026-02 (conf 4/5)") == {"8200", "2026", "02"}

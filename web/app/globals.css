@@ -1486,6 +1486,53 @@ section h2 {
   margin: 12px 0 0;
   padding-left: 18px;
 }
+/* Formulário da IA — pergunta livre sem JS (GET): a recuperação ancorada acha o indicador. */
+.ia-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 8px 0 6px;
+}
+.ia-form-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ia-form-campo label {
+  font-size: 0.82rem;
+  color: var(--cor-texto-suave);
+  font-weight: 600;
+}
+.ia-form input {
+  padding: 8px 11px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  font: inherit;
+  min-width: 260px;
+}
+.ia-form input#territorio {
+  min-width: 170px;
+}
+.ia-form button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--raio);
+  background: var(--cor-marca);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ia-form button:hover {
+  filter: brightness(1.08);
+}
+.ia-form-nota {
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+  margin: 0 0 8px;
+  max-width: 70ch;
+}
 /* Fontes & confiança (/fontes) — proveniência consolidada: o ativo confiança como fato. */
 .fonte-grid {
   display: grid;

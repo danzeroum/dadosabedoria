@@ -676,6 +676,86 @@ section h2 {
   font-size: 0.85rem;
   margin: 0 0 10px;
 }
+/* Superfície de "agir" (handoff de design) — disclosures nativos, sem JS no cliente. */
+.of-acoes {
+  margin: 22px 0 8px;
+}
+.of-acoes h2 {
+  margin: 0 0 4px;
+}
+.of-acao {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  margin: 8px 0;
+}
+.of-acao summary {
+  cursor: pointer;
+  padding: 11px 14px;
+  font-weight: 600;
+  color: var(--cor-marca);
+  list-style-position: inside;
+}
+.of-acao[open] summary {
+  border-bottom: 1px solid var(--cor-borda);
+}
+.of-acao-corpo {
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+.of-acao-corpo p {
+  margin: 0 0 10px;
+}
+.of-acao-corpo p:last-child {
+  margin-bottom: 0;
+}
+.of-acao-rotulo {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-texto-suave);
+  margin: 0 0 4px !important;
+}
+.of-acao-bloco {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--cor-texto);
+}
+.of-acoes-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.of-acoes-links a {
+  text-decoration: none;
+  color: var(--cor-marca);
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+.of-acoes-links a:hover {
+  border-color: var(--cor-marca);
+}
+.of-acao-privacidade {
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-left: 3px solid var(--cor-marca);
+  border-radius: var(--raio);
+  padding: 10px 12px;
+  font-size: 0.84rem;
+}
+.of-acao-nota {
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+}
 .exec-pill {
   display: inline-flex;
   align-items: center;

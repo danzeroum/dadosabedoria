@@ -6,8 +6,9 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **12 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#66). **Backlog ungated do MODO DEV: ZERADO.** Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **13 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#67) + a fatia da **superfície de agir do OndeFoi** (em
+> curso). **Handoff de design reconciliado por completo** (último item ungated fechado). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
@@ -19,8 +20,11 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 > 4. **Telas do IVM reconciliadas — 4/4** (primitivos compartilhados, sem forkar): `SeloConfianca`
 >    reutilizado (`MetaIVM` com fontes+frescor), **busca** server-side, **"o que é IVM"** (explicador) e
 >    **comparar cidade parecida** (`/v1/ivm/{ibge}/similares`).
+> 5. **OndeFoi — superfície de agir** (`AcoesOndeFoi`, `<details>` sem JS): compartilhar, exportar com
+>    citação ABNT (proveniência embutida), avise-me (LGPD-por-desenho, prepara o lugar) e a-quem-cobrar
+>    (Fala.BR real) — gates degradando honestamente; fecha a reconciliação do handoff.
 >
-> **O que resta é TUDO gate do dono** (nada ungated em fila): **(a)** OndeFoi **go-live** — endpoint
+> **O que resta é TUDO gate do dono:** **(a)** OndeFoi **go-live** — endpoint
 > lendo a fato `execucao_funcao` (🟡 referenda a ancoragem Liquidado/Empenhado; PENDENCIAS §B); **(b)**
 > **allowlist** dos hosts ainda 403 (INEP/PNCP/DATASUS/CAGED + ESTBAN) p/ tornar vivos os conectores;
 > **(c)** OIDC/domínio/LLM/DataJud/PbD (PENDENCIAS §C). _Sem flake real: o `integration`/`screenshot`
@@ -107,9 +111,13 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos
   primitivos compartilhados, sem forkar): OndeFoi **enquadramento honesto** (donut + enquadra +
   callout + trilha + "o que é execução") **e o selo de confiança** (`SeloConfianca` compartilhado,
-  `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
-  **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
-  IVM — **reconciliação COMPLETA**: ✅ `SeloConfianca` reutilizado no drill-down (`MetaIVM` com
+  `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. OndeFoi
+  **superfície de agir COMPLETA** ✅ (`AcoesOndeFoi`, `<details>` nativos sem JS no cliente):
+  **compartilhar** (texto cívico honesto + WhatsApp/e-mail + link canônico), **exportar com citação
+  ABNT** (proveniência embutida + ponteiro à API `/v1`), **avise-me** (prepara o lugar + nota
+  LGPD-por-desenho — a auth do cidadão é gate do dono) e **a quem cobrar** (Fala.BR/CGU real + busca
+  da ouvidoria local, foco no território, nunca em pessoas) — `lib/agir.ts` com testes; gates
+  degradando honestamente. IVM — **reconciliação COMPLETA**: ✅ `SeloConfianca` reutilizado no drill-down (`MetaIVM` com
   `fontes` [CAGED/ESTBAN/SIH] + frescor + licença, sem forkar); ✅ **busca** de município (server-side
   `?q=`, sem JS); ✅ **"o que é IVM"** (explicador `<details>`); ✅ **comparar cidade parecida**
   (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; bloco no drill-down). _Default

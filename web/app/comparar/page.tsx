@@ -123,24 +123,22 @@ export default async function CompararPage({
       {grupos.length === 0 ? (
         <p className="vazio">Sem indicadores em comum no acervo para estes municípios.</p>
       ) : (
-        <div className="cmp-tabela" role="table" aria-label={`Indicadores: ${pa.nome} vs ${pb.nome}`}>
-          <div className="cmp-linha cmp-cabeca" role="row">
-            <span role="columnheader">Indicador</span>
-            <span role="columnheader">{pa.nome}</span>
-            <span role="columnheader">{pb.nome}</span>
+        <div className="cmp-tabela">
+          <div className="cmp-linha cmp-cabeca">
+            <span>Indicador</span>
+            <span>{pa.nome}</span>
+            <span>{pb.nome}</span>
           </div>
           {grupos.map(([dominio, linhas]: [string, LinhaComparacao[]]) => (
             <div key={dominio} className="cmp-grupo">
               <h2 className="cmp-dominio">{ROTULO_DOMINIO[dominio] ?? dominio}</h2>
               {linhas.map((l) => (
-                <div key={l.codigo} className="cmp-linha" role="row">
-                  <span className="cmp-ind" role="cell">
-                    {l.nome}
-                  </span>
-                  <span role="cell">
+                <div key={l.codigo} className="cmp-linha">
+                  <span className="cmp-ind">{l.nome}</span>
+                  <span>
                     <Celula ind={l.a} />
                   </span>
-                  <span role="cell">
+                  <span>
                     <Celula ind={l.b} />
                   </span>
                 </div>

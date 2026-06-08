@@ -202,6 +202,11 @@ components:
         semaforo:
           title: Semaforo
           type: string
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
         v_emprego:
           title: V Emprego
           type: number
@@ -1184,6 +1189,35 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Ivm Municipio
+      tags:
+      - indicadores
+      - ivm
+  /v1/ivm/{codigo_ibge}/similares:
+    get:
+      description: 'Cidades parecidas: mesma UF, IVM mais próximo no período recente
+        — comparar no contexto.'
+      operationId: ivm_similares_v1_ivm__codigo_ibge__similares_get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaIVMSerie'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ivm Similares
       tags:
       - indicadores
       - ivm

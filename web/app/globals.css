@@ -347,6 +347,32 @@ section h2 {
   font-weight: 600;
   cursor: pointer;
 }
+.parecidas {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+}
+.parecidas li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.parecidas a {
+  color: var(--cor-marca);
+  font-weight: 600;
+  text-decoration: none;
+}
+.parecidas a:hover {
+  text-decoration: underline;
+}
+.parecida-ivm {
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+}
 .coropleta {
   margin: 0 0 16px;
   max-width: 720px;

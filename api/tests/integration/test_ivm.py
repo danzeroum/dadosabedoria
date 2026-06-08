@@ -55,7 +55,9 @@ async def _semear_ivm(conn: AsyncConnection) -> None:
         text(
             "INSERT INTO territorio (codigo_ibge, nome, nivel, uf, populacao) VALUES "
             "('3106200','Belo Horizonte','municipio','MG',2315560),"
-            "('3304557','Rio de Janeiro','municipio','RJ',6747815) "
+            "('3304557','Rio de Janeiro','municipio','RJ',6747815),"
+            "('3170206','Uberlândia','municipio','MG',699097),"
+            "('3118601','Contagem','municipio','MG',668949) "
             "ON CONFLICT (codigo_ibge) DO NOTHING"
         )
     )
@@ -64,21 +66,30 @@ async def _semear_ivm(conn: AsyncConnection) -> None:
     sau_id, sau_fonte = await _id_indicador(conn, "saude.resp.internacoes_j")
     bh = await _id_territorio(conn, _BH)
     rio = await _id_territorio(conn, _RIO)
+    udi = await _id_territorio(conn, "3170206")  # Uberlândia (MG) — par de BH (cidades parecidas)
+    cont = await _id_territorio(conn, "3118601")  # Contagem (MG) — outro par MG
 
     meta = {
         caged_id: MetaIndicadorSupressao(0, origem_sensivel=False),
         cred_id: MetaIndicadorSupressao(0, origem_sensivel=False),
         sau_id: MetaIndicadorSupressao(5, origem_sensivel=True),
     }
-    # BH: muito emprego + crédito + POUCAS internações (menos vulnerável nos 3 subíndices).
-    # Rio: o oposto (mais vulnerável nos 3). n_amostra ≥ 5 → saúde não suprimida.
+    # BH: muito emprego + crédito + POUCAS internações (menos vulnerável nos 3 = IVM mínimo).
+    # Rio: o oposto (mais vulnerável = IVM máx). UDI/Contagem (MG): valores INTERMEDIÁRIOS, para BH
+    # ter pares na mesma UF sem deslocar os extremos. n_amostra >= 5 -> saúde não suprimida.
     celulas = [
         CelulaOuro(caged_id, bh, _PERIODO, "mensal", Decimal(10000), None, 5, caged_fonte),
         CelulaOuro(caged_id, rio, _PERIODO, "mensal", Decimal(-5000), None, 5, caged_fonte),
+        CelulaOuro(caged_id, udi, _PERIODO, "mensal", Decimal(5000), None, 5, caged_fonte),
+        CelulaOuro(caged_id, cont, _PERIODO, "mensal", Decimal(2000), None, 5, caged_fonte),
         CelulaOuro(cred_id, bh, _PERIODO, "mensal", Decimal("2e11"), None, 4, cred_fonte),
         CelulaOuro(cred_id, rio, _PERIODO, "mensal", Decimal("5e10"), None, 4, cred_fonte),
+        CelulaOuro(cred_id, udi, _PERIODO, "mensal", Decimal("1.5e11"), None, 4, cred_fonte),
+        CelulaOuro(cred_id, cont, _PERIODO, "mensal", Decimal("1e11"), None, 4, cred_fonte),
         CelulaOuro(sau_id, bh, _PERIODO, "mensal", Decimal(20), 20, 4, sau_fonte),
         CelulaOuro(sau_id, rio, _PERIODO, "mensal", Decimal(800), 800, 4, sau_fonte),
+        CelulaOuro(sau_id, udi, _PERIODO, "mensal", Decimal(100), 100, 4, sau_fonte),
+        CelulaOuro(sau_id, cont, _PERIODO, "mensal", Decimal(300), 300, 4, sau_fonte),
     ]
     await grav_escrever(conn, celulas, meta, caged_fonte)
 
@@ -157,3 +168,19 @@ async def test_v_saude_estado_distingue_supressao_de_cobertura(client) -> None:
     }
     assert por02["3550308"]["v_saude_estado"] == "sem_cobertura"
     assert por02["3550308"]["v_saude"] is None  # null-por-cobertura
+
+
+async def test_similares_mesma_uf_ivm_proximo(client) -> None:
+    # Reusa o seed do mapa (2026-08): BH/UDI/Contagem em MG, Rio em RJ. "Parecida" = MESMA UF, IVM
+    # mais próximo — similares de BH traz os MG (UDI/Contagem), nunca o Rio (RJ) nem o próprio.
+    async with connect(get_settings().database_url) as conn:
+        await _semear_ivm(conn)
+    await refrescar_ivm()
+
+    body = (await client.get(f"/v1/ivm/{_BH}/similares")).json()
+    cods = [d["codigo_ibge"] for d in body["dados"]]
+    assert _BH not in cods  # exclui o próprio município
+    assert _RIO not in cods  # outra UF (RJ) não entra
+    assert cods, "deveria haver ao menos uma cidade parecida na mesma UF"
+    assert all(d["uf"] == "MG" for d in body["dados"])
+    assert {"3170206", "3118601"} <= set(cods)  # os pares MG (Uberlândia, Contagem)

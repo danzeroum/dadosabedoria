@@ -7,6 +7,7 @@ export type ExeEstado = "valor" | "suprimido" | "sem_cobertura";
 export interface IVMItem {
   codigo_ibge: string;
   nome: string;
+  uf?: string | null;
   periodo: string; // YYYY-MM
   ivm: number; // 0..100, maior = mais vulnerável
   semaforo: Semaforo;

@@ -37,7 +37,7 @@ COMPONENTES = [
 _CACHE_PREFIXO = "v1:ivm"
 
 _SELECT_BASE = """
-    SELECT t.codigo_ibge, t.nome, m.periodo, m.ivm, m.semaforo,
+    SELECT t.codigo_ibge, t.nome, t.uf, m.periodo, m.ivm, m.semaforo,
            m.v_emprego, m.v_financas, m.v_saude, m.v_saude_estado
     FROM ivm_municipio m JOIN territorio t ON t.id = m.territorio_id
 """
@@ -115,6 +115,7 @@ def _item(r: RowMapping) -> IVMItem:
     return IVMItem(
         codigo_ibge=r["codigo_ibge"],
         nome=r["nome"],
+        uf=r["uf"],
         periodo=r["periodo"].strftime("%Y-%m"),
         ivm=float(r["ivm"]),
         semaforo=r["semaforo"],
@@ -162,6 +163,34 @@ class RepositorioIVM:
             params["ate"] = ate
         sql += " ORDER BY m.periodo"
         return list((await session.execute(text(sql), params)).mappings().all())
+
+    async def similares(
+        self, session: AsyncSession, *, codigo_ibge: str, limite: int
+    ) -> list[RowMapping]:
+        """Pares 'parecidos': mesma UF, no período mais recente do município, IVM mais próximo.
+
+        'Parecida' = vulnerabilidade próxima no mesmo estado — comparar no contexto, não rankear.
+        Sem par na UF → lista vazia (a tela degrada). Exclui o próprio município.
+        """
+        sql = text(
+            """
+            SELECT t.codigo_ibge, t.nome, t.uf, m.periodo, m.ivm, m.semaforo,
+                   m.v_emprego, m.v_financas, m.v_saude, m.v_saude_estado
+            FROM ivm_municipio m
+            JOIN territorio t ON t.id = m.territorio_id
+            JOIN (
+                SELECT t2.uf AS uf, m2.periodo AS periodo, m2.ivm AS ivm
+                FROM ivm_municipio m2 JOIN territorio t2 ON t2.id = m2.territorio_id
+                WHERE t2.codigo_ibge = :codigo
+                ORDER BY m2.periodo DESC LIMIT 1
+            ) alvo ON t.uf = alvo.uf AND m.periodo = alvo.periodo
+            WHERE t.codigo_ibge <> :codigo
+            ORDER BY abs(m.ivm - alvo.ivm) ASC, t.codigo_ibge
+            LIMIT :limite
+            """
+        )
+        rows = await session.execute(sql, {"codigo": codigo_ibge, "limite": limite})
+        return list(rows.mappings().all())
 
     async def malha(self, session: AsyncSession, *, uf: str, periodo: date) -> dict:
         """GeoJSON FeatureCollection: geometria do município + IVM (null onde não há dado)."""
@@ -225,6 +254,13 @@ class IVMFacade:
         if not rows:
             raise NaoEncontradoError(f"IVM para território '{codigo_ibge}'")
         return RespostaIVMSerie(dados=[_item(r) for r in rows], meta=_meta(rows[-1]["periodo"]))
+
+    @cache_leitura("v1:ivm:similares")
+    async def similares(self, *, codigo_ibge: str, limite: int = 3) -> RespostaIVMSerie:
+        """Cidades parecidas (mesma UF, IVM mais próximo) do município — comparar no contexto."""
+        rows = await self._repo.similares(self._s, codigo_ibge=codigo_ibge, limite=limite)
+        periodo = rows[0]["periodo"] if rows else None
+        return RespostaIVMSerie(dados=[_item(r) for r in rows], meta=_meta(periodo))
 
     @cache_leitura("v1:mapa:ivm")
     async def malha(self, *, uf: str, periodo: date | None = None) -> dict:

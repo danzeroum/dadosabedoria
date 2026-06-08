@@ -120,6 +120,15 @@ async def ivm_municipio(
     )
 
 
+@router.get("/ivm/{codigo_ibge}/similares", response_model=RespostaIVMSerie, tags=["ivm"])
+async def ivm_similares(
+    codigo_ibge: str,
+    session: AsyncSession = Depends(get_session),
+) -> RespostaIVMSerie:
+    """Cidades parecidas: mesma UF, IVM mais próximo no período recente — comparar no contexto."""
+    return await IVMFacade(session).similares(codigo_ibge=codigo_ibge)
+
+
 @router.get("/mapa/ivm", tags=["ivm"])
 async def ivm_malha(
     uf: str = Query(..., description="sigla da UF (ex.: SP)"),

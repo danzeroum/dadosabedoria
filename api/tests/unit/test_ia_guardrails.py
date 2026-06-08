@@ -12,6 +12,8 @@ from app.ia.guardrails import (
 CATALOGO = [
     ("trabalho.emprego.saldo_caged", "Saldo de empregos formais"),
     ("credito.operacoes.saldo_total", "Saldo de operações de crédito"),
+    ("saude.resp.internacoes_j", "Internações por doenças respiratórias"),
+    ("educacao.matriculas.fundamental", "Matrículas no ensino fundamental"),
 ]
 
 
@@ -59,6 +61,34 @@ def test_palavra_generica_do_codigo_nao_casa_sozinha() -> None:
     # "total" existe só no código (credito...saldo_total), não no nome → score 1 < limiar:
     # não basta uma palavra genérica para fixar o indicador (evita falso-positivo).
     assert identificar_indicador("qual o total de impostos?", CATALOGO) is None
+
+
+def test_sinonimo_leigo_escola_casa_educacao() -> None:
+    # "escola"/"aluno" não estão no código/nome (matriculas, ensino, fundamental) — o sinônimo
+    # do dia a dia aponta o domínio educação. Antes a IA abstinha de uma pergunta com dado.
+    assert (
+        identificar_indicador("quantos alunos nas escolas de São Paulo?", CATALOGO)
+        == "educacao.matriculas.fundamental"
+    )
+
+
+def test_sinonimo_leigo_hospital_casa_saude() -> None:
+    assert (
+        identificar_indicador("tem muito doente internado no hospital?", CATALOGO)
+        == "saude.resp.internacoes_j"
+    )
+
+
+def test_sinonimo_desemprego_casa_trabalho() -> None:
+    assert (
+        identificar_indicador("o desemprego subiu na cidade?", CATALOGO)
+        == "trabalho.emprego.saldo_caged"
+    )
+
+
+def test_palavra_fora_do_mapa_nao_inventa_dominio() -> None:
+    # "banco" é ambíguo (deixado fora do mapa) — não deve fixar crédito sozinho.
+    assert identificar_indicador("onde fica o banco da praça?", CATALOGO) is None
 
 
 def test_numeros_normaliza_separadores() -> None:

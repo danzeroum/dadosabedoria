@@ -41,6 +41,18 @@ async def test_identifica_indicador_pela_pergunta(client) -> None:
     assert body["citacoes"][0]["indicador"] == "trabalho.emprego.saldo_caged"
 
 
+async def test_identifica_por_sinonimo_leigo(client) -> None:
+    # "escola"/"aluno" não estão no léxico do dado (matrículas/ensino); o sinônimo do cidadão
+    # aponta o domínio educação e a IA responde com citação, em vez de abster.
+    r = await client.post(
+        "/v1/ia/perguntar",
+        json={"pergunta": "quantos alunos nas escolas?", "territorio": "3550308"},
+    )
+    body = r.json()
+    assert body["abstencao"] is False
+    assert body["citacoes"][0]["indicador"] == "educacao.matriculas.fundamental"
+
+
 async def test_abstem_sem_indicador(client) -> None:
     r = await client.post("/v1/ia/perguntar", json={"pergunta": "qual a cor do céu hoje?"})
     body = r.json()

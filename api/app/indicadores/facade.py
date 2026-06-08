@@ -10,11 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import (
+    FonteAcervoOut,
     IndicadorOut,
     IndicadorValorOut,
     MetaProveniencia,
     Paginacao,
     PanoramaOut,
+    RespostaFontes,
     RespostaIndicadores,
     RespostaValores,
     TerritorioOut,
@@ -146,6 +148,29 @@ class IndicadoresFacade:
             uf=terr["uf"],
             indicadores=indicadores,
         )
+
+    @cache_leitura("v1:fontes")
+    async def listar_fontes(self) -> RespostaFontes:
+        linhas = await self._repo.listar_fontes(self._s)
+        dados = [
+            FonteAcervoOut(
+                codigo=r["codigo"],
+                nome=r["nome"],
+                orgao=r["orgao"],
+                url_doc=r["url_doc"],
+                licenca=r["licenca"],
+                atualizacao=r["atualizacao"],
+                lag_tipico_dias=r["lag_tipico_dias"],
+                permite_uso_comercial=r["permite_uso_comercial"],
+                permite_redistribuicao=r["permite_redistribuicao"],
+                base_legal_artigo=r["base_legal_artigo"],
+                base_legal_hipotese=r["base_legal_hipotese"],
+                dominios=sorted(d for d in (r["dominios"] or []) if d is not None),
+                n_indicadores=r["n_indicadores"],
+            )
+            for r in linhas
+        ]
+        return RespostaFontes(dados=dados, total=len(dados))
 
     @cache_leitura("v1:territorio")
     async def obter_territorio(self, *, codigo_ibge: str) -> TerritorioOut:

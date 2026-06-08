@@ -226,3 +226,25 @@ export interface FeatureCollectionIVM {
   type: "FeatureCollection";
   features: FeatureIVM[];
 }
+
+// Fontes do acervo (/v1/fontes) — proveniência consolidada: a confiança tornada verificável.
+export interface FonteAcervo {
+  codigo: string;
+  nome: string;
+  orgao: string;
+  url_doc: string | null;
+  licenca: string;
+  atualizacao: string; // cadência: diaria..irregular
+  lag_tipico_dias: number | null;
+  permite_uso_comercial: boolean;
+  permite_redistribuicao: boolean;
+  base_legal_artigo: string;
+  base_legal_hipotese: string;
+  dominios: string[];
+  n_indicadores: number;
+}
+
+export interface RespostaFontes {
+  dados: FonteAcervo[];
+  total: number;
+}

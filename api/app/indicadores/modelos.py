@@ -167,3 +167,33 @@ class RespostaIVM(BaseModel):
 class RespostaIVMSerie(BaseModel):
     dados: list[IVMItem]
     meta: MetaIVM
+
+
+# ------------------------------------------------ Fontes (proveniência consolidada do acervo)
+
+
+class FonteAcervoOut(BaseModel):
+    """Uma fonte por trás dos números: órgão, licença, cadência, lag e base legal (LGPD).
+
+    A transparência das fontes é o ativo "confiança" tornado verificável — não a promessa, o fato:
+    estes campos vêm da tabela ``fonte``/``base_legal`` do acervo, não de texto fixo.
+    """
+
+    codigo: str
+    nome: str
+    orgao: str
+    url_doc: str | None = None
+    licenca: str
+    atualizacao: str  # cadência (diaria..irregular)
+    lag_tipico_dias: int | None = None
+    permite_uso_comercial: bool
+    permite_redistribuicao: bool
+    base_legal_artigo: str
+    base_legal_hipotese: str
+    dominios: list[str]  # domínios públicos cobertos por esta fonte no acervo
+    n_indicadores: int  # quantos indicadores públicos vêm dela
+
+
+class RespostaFontes(BaseModel):
+    dados: list[FonteAcervoOut]
+    total: int

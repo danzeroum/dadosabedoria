@@ -5,6 +5,7 @@ import type {
   Panorama,
   PerguntaInput,
   PulsoProduto,
+  RespostaFontes,
   RespostaIA,
   RespostaIVM,
   RespostaIVMSerie,
@@ -108,6 +109,15 @@ export async function buscarPanorama(codigoIbge: string): Promise<Panorama | nul
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o panorama (${resp.status})`);
+  }
+  return resp.json();
+}
+
+// Fontes do acervo (proveniência consolidada). Degrada para null em erro — a tela mostra o vazio.
+export async function buscarFontes(): Promise<RespostaFontes | null> {
+  const resp = await fetch(new URL("/v1/fontes", BASE), { next: { revalidate: REVALIDATE } });
+  if (!resp.ok) {
+    return null;
   }
   return resp.json();
 }

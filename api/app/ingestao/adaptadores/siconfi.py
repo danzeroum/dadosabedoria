@@ -214,7 +214,7 @@ class FetcherSiconfiHTTP:
     # ~5.500 entes × 0.1 s de delay → ~11 min; cada thread aguarda antes de cada request.
     _MAX_WORKERS = 5
     _TIMEOUT = 45
-    _DELAY = 0.1   # s entre requests por thread (bom-cidadão — invariante 6)
+    _DELAY = 0.1  # s entre requests por thread (bom-cidadão — invariante 6)
     _MAX_RETRIES = 3
 
     def _listar_municipios(self, ano: int) -> list[int]:  # pragma: no cover - rede
@@ -254,7 +254,7 @@ class FetcherSiconfiHTTP:
             except (urllib.error.URLError, OSError):
                 if attempt == self._MAX_RETRIES:
                     raise
-                time.sleep(2 ** attempt)  # backoff exponencial: 2s, 4s
+                time.sleep(2**attempt)  # backoff exponencial: 2s, 4s
         return []  # nunca alcançado; satisfaz o type-checker
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede

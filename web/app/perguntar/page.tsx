@@ -88,6 +88,40 @@ export default async function PerguntarPage({
       </p>
 
       <section>
+        <h2>Sua pergunta</h2>
+        <form method="get" action="/perguntar" className="ia-form">
+          <div className="ia-form-campo">
+            <label htmlFor="q">Pergunte sobre os dados públicos</label>
+            <input
+              id="q"
+              name="q"
+              type="text"
+              required
+              defaultValue={q ?? ""}
+              placeholder="ex.: como está o emprego em São Paulo?"
+            />
+          </div>
+          <div className="ia-form-campo">
+            <label htmlFor="territorio">Município — código IBGE (opcional)</label>
+            <input
+              id="territorio"
+              name="territorio"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              defaultValue={territorio ?? ""}
+              placeholder="ex.: 3550308"
+            />
+          </div>
+          <button type="submit">Perguntar</button>
+        </form>
+        <p className="ia-form-nota">
+          Não precisa escolher o indicador — a IA tenta achar o mais relevante pela sua pergunta e
+          cita a fonte. Sem dado, ela se abstém.
+        </p>
+      </section>
+
+      <section>
         <h2>Exemplos</h2>
         <ul className="ia-exemplos">
           {EXEMPLOS.map((e) => (

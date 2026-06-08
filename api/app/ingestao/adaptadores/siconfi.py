@@ -199,30 +199,69 @@ class AdaptadorSiconfi:
 class FetcherSiconfiHTTP:
     """Fetcher real: baixa a DCA do exercício na API do SICONFI (aberta, sem credencial).
 
-    Não exercitado em teste (rede); parse/transformação são cobertos por fixture. URL/params
-    confirmados no #0 (ADR-0028): ``an_exercicio`` + ``no_anexo`` (espaços codificados). Sem
-    ``id_ente`` a API devolve todos os entes do exercício, **paginada** (``offset``/``hasMore``) —
-    a paginação nacional fica para a fatia da esteira viva.
+    **Ingestão nacional**: a API exige ``id_ente`` por município (sem ele retorna 0 linhas —
+    validado em 2026-06-08, ADR-0032). Estratégia: (1) lista todos os municípios via
+    ``/tt/entes``; (2) busca o DCA de cada um com 20 threads. Tempo: ~2 min / ~5.500 municípios.
+    URL/params confirmados no #0 (ADR-0028): ``an_exercicio`` + ``no_anexo`` + ``id_ente``.
     """
 
     BASE = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/dca"
+    ENTES = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/entes"
     ANEXO = (
         "DCA-Anexo I-C"  # receitas (Transferências Correntes); I-E = despesas por função (OndeFoi)
     )
+    _MAX_WORKERS = 20
+    _TIMEOUT = 30
 
-    def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+    def _listar_municipios(self, ano: int) -> list[int]:  # pragma: no cover - rede
+        import json as _json
+        import urllib.request
+
+        municipios: list[int] = []
+        offset = 0
+        limit = 500
+        while True:
+            url = f"{self.ENTES}?an_exercicio={ano}&tipo_esfera=M&limit={limit}&offset={offset}"
+            with urllib.request.urlopen(url, timeout=60) as resp:  # noqa: S310  # nosec B310
+                d = _json.load(resp)
+            items = d.get("items", [])
+            municipios.extend(int(it["cod_ibge"]) for it in items)
+            if not d.get("hasMore"):
+                break
+            offset += len(items)
+        return municipios
+
+    def _baixar_ente(self, ano: int, cod_ibge: int) -> list[dict]:  # pragma: no cover - rede
+        import json as _json
         import urllib.parse
         import urllib.request
 
-        # an_exercicio = ano da janela (DCA é anual). Espaços do nome do anexo → codificados.
-        query = urllib.parse.urlencode({"an_exercicio": janela.ano, "no_anexo": self.ANEXO})
+        query = urllib.parse.urlencode(
+            {"an_exercicio": ano, "no_anexo": self.ANEXO, "id_ente": cod_ibge}
+        )
         url = f"{self.BASE}?{query}"
-        with urllib.request.urlopen(url, timeout=60) as resp:  # noqa: S310  # nosec B310 - URL fixa https
-            return resp.read(), url
+        with urllib.request.urlopen(url, timeout=self._TIMEOUT) as resp:  # noqa: S310  # nosec B310
+            return _json.load(resp).get("items", [])
+
+    def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+        import json as _json
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        municipios = self._listar_municipios(janela.ano)
+        todos: list[dict] = []
+        with ThreadPoolExecutor(max_workers=self._MAX_WORKERS) as ex:
+            futures = {ex.submit(self._baixar_ente, janela.ano, cod): cod for cod in municipios}
+            for fut in as_completed(futures):
+                todos.extend(fut.result())
+        url_ref = f"{self.BASE}?an_exercicio={janela.ano}&no_anexo={self.ANEXO}"
+        return _json.dumps({"items": todos}).encode(), url_ref
 
 
 class FetcherSiconfiFuncoesHTTP(FetcherSiconfiHTTP):  # pragma: no cover - rede
-    """Fetcher real do **Anexo I-E** (despesas por função) — OndeFoi (ADR-0029). Mesmo endpoint,
-    troca só o ``no_anexo``; paginação nacional fica para a fatia da esteira viva (ADR-0028)."""
+    """Fetcher real do **Anexo I-E** (despesas por função) — OndeFoi (ADR-0029).
+
+    Herda a estratégia nacional (lista entes → DCA por município com threads);
+    troca só o ``no_anexo``.
+    """
 
     ANEXO = "DCA-Anexo I-E"

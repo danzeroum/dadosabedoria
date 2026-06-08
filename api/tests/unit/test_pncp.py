@@ -18,14 +18,14 @@ def _ad() -> AdaptadorPncp:
 def test_parse_le_data() -> None:
     df = _ad().parse(AMOSTRA)
     assert "unidadeOrgao" in df.columns
-    assert df.height == 4
+    assert df.height == 5  # 3 float + 1 None + 1 str heterogênea (fiel-à-forma 2026-06-08)
 
 
 def test_prata_extrai_ibge_aninhado_e_filtra() -> None:
     a = _ad()
     df = a.transformar_prata(a.parse(AMOSTRA))
     assert set(df.columns) == {"cod_ibge", "valor"}
-    assert df.height == 3  # o contrato sem valorGlobal é descartado
+    assert df.height == 3  # None e str inválida filtrados pelo cast strict=False + is_not_null
 
 
 def test_agregar_soma_por_municipio() -> None:
@@ -36,7 +36,7 @@ def test_agregar_soma_por_municipio() -> None:
 
 
 def test_extrair_valida_contrato() -> None:
-    assert _ad().extrair(Janela(2024, 1)).height == 4
+    assert _ad().extrair(Janela(2024, 1)).height == 5
 
 
 def test_contrato_reprova_layout_mudado() -> None:

@@ -47,12 +47,14 @@ class AdaptadorPncp:
     def parse(self, bruto: bytes) -> pl.DataFrame:
         # A API devolve {"data": [...]}; o município vem aninhado em unidadeOrgao (Struct). Resposta
         # vazia → DataFrame vazio tipado (o contrato reprova em min_linhas, com mensagem clara).
+        # infer_schema_length=None: escaneia TODAS as linhas antes de inferir tipo — evita
+        # ComputeError quando a API retorna valorGlobal como str em algum item (dado heterogêneo).
         data = json.loads(bruto).get("data", [])
         if not data:
             return pl.DataFrame(
                 schema={COL_VALOR: pl.Float64, COL_UNIDADE: pl.Struct({COL_IBGE_ANINHADO: pl.Utf8})}
             )
-        return pl.DataFrame(data)
+        return pl.from_dicts(data, infer_schema_length=None)
 
     def extrair(self, janela: Janela) -> pl.DataFrame:
         bruto, _ = self.baixar_bruto(janela)
@@ -86,15 +88,30 @@ class AdaptadorPncp:
 class FetcherPncpHTTP:
     """Fetcher real: consulta os contratos do exercício na API aberta do PNCP (sem credencial).
 
-    Não exercitado em teste (rede); parse/transformação são cobertos por fixture.
+    Itera mensalmente (anual direto dá 500 no servidor) e percorre todas as páginas de cada mês.
+    Não exercitado em teste (rede); parse/transformação cobertos por fixture.
     """
 
     BASE = "https://pncp.gov.br/api/consulta/v1/contratos"
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+        import calendar
+        import json as _json
         import urllib.request
 
-        # Janela anual → intervalo [ano-01-01, ano-12-31]. URL/params a confirmar contra a API real.
-        url = f"{self.BASE}?dataInicial={janela.ano}0101&dataFinal={janela.ano}1231&pagina=1"
-        with urllib.request.urlopen(url, timeout=120) as resp:  # noqa: S310  # nosec B310
-            return resp.read(), url
+        todos: list[dict] = []
+        for mes in range(1, 13):
+            _, ultimo_dia = calendar.monthrange(janela.ano, mes)
+            ini = f"{janela.ano}{mes:02d}01"
+            fim = f"{janela.ano}{mes:02d}{ultimo_dia:02d}"
+            pagina = 1
+            while True:
+                url = f"{self.BASE}?dataInicial={ini}&dataFinal={fim}&pagina={pagina}"
+                with urllib.request.urlopen(url, timeout=120) as resp:  # noqa: S310  # nosec B310
+                    d = _json.load(resp)
+                todos.extend(d.get("data", []))
+                if pagina >= d.get("totalPaginas", 1):
+                    break
+                pagina += 1
+        url_ref = f"{self.BASE}?an_exercicio={janela.ano}"
+        return _json.dumps({"data": todos}).encode(), url_ref

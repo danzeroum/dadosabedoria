@@ -15,7 +15,11 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 > (invariante 3)** em três camadas — léxico do código + prefixo (flexão) + **sinônimos do dia a dia**
 > ('hospital'→saúde, 'escola'→educação, não-ambíguos), tudo acionável pelo **formulário de texto
 > livre sem JS** do `/perguntar`: o leigo pergunta na língua dele e a IA acha o indicador e cita a
-> fonte (sem dado, abstém). Tudo sem JS, na porta de entrada; escala com dado.
+> fonte (sem dado, abstém). Tudo sem JS, na porta de entrada; escala com dado. **#84 (a pedido do
+> dono — "preparar o destrave"):** `docs/RUNBOOK_DESTRAVE.md` — runbook copia-e-cola por conector
+> (host + comando + forma a confirmar + fechar o loop), pra tornar INEP/PNCP/DATASUS/CAGED/ESTBAN
+> vivos em minutos quando o allowlist abrir. **Esgotado o valor não-gated do seed; a alavanca agora é
+> destravar um gate** (ver PENDENCIAS_DO_DONO §1).
 > O selo de confiança vive também nas listas `/ivm` e `/onde-foi`. **Handoff de design reconciliado por completo** — a
 > **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
 > `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face
@@ -100,7 +104,8 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [ ] **DataJud (e outras fontes com auth):** credencial/chave. _(fontes abertas seguem sem isso.)_
 - [~] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
   construídos "vivo-pronto" (esteira + schedule + fixture), mas a 1ª busca real só roda com o host
-  liberado. **#0 parcialmente aberto (sondado 2026-06-07, sessão nova):**
+  liberado. **▶ Execução copia-e-cola por conector: `docs/RUNBOOK_DESTRAVE.md`.**
+  **#0 parcialmente aberto (sondado 2026-06-07, sessão nova):**
   - ✅ **SICONFI** `apidatalake.tesouro.gov.br` (200) — **VALIDADO** (forma real gravada, ADR-0028;
     fixture promovida a **fiel-à-forma**).
   - ✅ **IBGE** `servicodados.ibge.gov.br` (aberto) — **VALIDADO** no #0: `localidades/municipios`

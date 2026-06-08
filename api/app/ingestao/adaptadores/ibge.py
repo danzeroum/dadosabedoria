@@ -76,10 +76,16 @@ class FetcherIbgeHTTP:  # pragma: no cover - rede
     BASE = "https://servicodados.ibge.gov.br/api"
 
     def _get(self, url: str) -> bytes:
+        import gzip
         import urllib.request
 
-        with urllib.request.urlopen(url, timeout=120) as resp:  # noqa: S310  # nosec B310
-            return resp.read()
+        req = urllib.request.Request(url, headers={"Accept-Encoding": "gzip"})
+        with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310
+            data = resp.read()
+        # A API do IBGE retorna gzip quando solicitado; descomprimir se necessário.
+        if data[:2] == b"\x1f\x8b":
+            data = gzip.decompress(data)
+        return data
 
     def localidades_municipios(self) -> bytes:
         return self._get(f"{self.BASE}/v1/localidades/municipios")

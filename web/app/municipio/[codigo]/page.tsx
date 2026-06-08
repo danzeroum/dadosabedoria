@@ -65,7 +65,7 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
             <h2>{ROTULO_DOMINIO[dominio] ?? dominio}</h2>
             <div className="indicador-grid">
               {indicadores.map((ind) => (
-                <IndicadorCard key={ind.codigo} ind={ind} />
+                <IndicadorCard key={ind.codigo} ind={ind} codigoIbge={p.codigo_ibge} />
               ))}
             </div>
           </section>

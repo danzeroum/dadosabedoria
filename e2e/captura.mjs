@@ -20,6 +20,7 @@ const paginas = [
   { nome: "comparar-municipios", url: `${BASE}/comparar` }, // produto #5: SP vs Campinas, lado a lado
   { nome: "fontes-confianca", url: `${BASE}/fontes` }, // proveniência consolidada + modelo de privacidade
   { nome: "ficha-indicador", url: `${BASE}/indicador/trabalho.emprego.saldo_caged` }, // metodologia + proveniência
+  { nome: "serie-credito-sp", url: `${BASE}/serie?territorio=3550308&indicador=credito.operacoes.saldo_total` }, // drill-down: histórico por período
   {
     nome: "ia-perguntar",
     url: `${BASE}/perguntar?q=${encodeURIComponent("Como está o emprego formal em São Paulo?")}&indicador=trabalho.emprego.saldo_caged&territorio=3550308`,

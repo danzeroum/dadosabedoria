@@ -64,6 +64,21 @@ export interface MetaProveniencia {
   licenca: string;
 }
 
+// Série de um indicador num território (/v1/valores) — valores por período, supressão honesta.
+export interface ValorSerie {
+  periodo: string; // YYYY-MM
+  valor: number | null; // null quando suprimido
+  confiabilidade: number | null;
+  suprimido: boolean;
+  motivo_supressao: string | null;
+}
+
+export interface RespostaValores {
+  dados: ValorSerie[];
+  meta: MetaProveniencia;
+  paginacao: Paginacao;
+}
+
 // Ficha técnica de um indicador (/v1/indicadores/{codigo}) — metodologia + proveniência completas.
 export interface IndicadorDetalhe {
   codigo: string;

@@ -6,15 +6,15 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **27 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#80; +#81 **IA pergunta livre**). **#5 exercido
-> ("priorizar um produto" + "siga" ×5) — camada de confiança puxada à tela:** `/comparar` (ADR-0030);
-> `/fontes` + `GET /v1/fontes` (ADR-0031, proveniência consolidada); `/indicador/{codigo}` — **ficha
-> técnica** reusando `/v1/indicadores/{codigo}`, nome do indicador clicável; **descoberta global**
-> (Comparar no nav, Fontes no rodapé navegável); e **IA pergunta livre (invariante 3)** — o matcher
-> ancorado agora minera o léxico do próprio código (`trabalho.emprego…` → "emprego") com casamento
-> por prefixo p/ flexão (antes abstinha de perguntas com dado), e o `/perguntar` ganhou **formulário
-> de texto livre sem JS** que aciona esse matcher. Tudo sem JS, na porta de entrada; escala com dado.
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **28 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#81; +#82 **série histórica**). **#5 exercido
+> ("priorizar um produto" + "siga" ×6) — camada de confiança puxada à tela:** `/comparar` (ADR-0030);
+> `/fontes` + `GET /v1/fontes` (ADR-0031); `/indicador/{codigo}` — **ficha técnica**, nome clicável;
+> **descoberta global** (Comparar no nav, Fontes no rodapé); **IA pergunta livre (invariante 3)** —
+> matcher minera o léxico do código + casa por prefixo, com formulário de texto livre sem JS; e
+> **`/serie`** — drill-down do panorama: o histórico de **qualquer** indicador num município (tabela
+> acessível, supressão honesta, variação descritiva ≠ projeção), reusando `/v1/valores` (sem novo
+> contrato), com "ver série" em cada card do panorama. Tudo sem JS, na porta de entrada; escala com dado.
 > O selo de confiança vive também nas listas `/ivm` e `/onde-foi`. **Handoff de design reconciliado por completo** — a
 > **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
 > `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face

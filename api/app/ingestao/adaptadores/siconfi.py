@@ -251,7 +251,7 @@ class FetcherSiconfiHTTP:
             try:
                 with urllib.request.urlopen(url, timeout=self._TIMEOUT) as resp:  # noqa: S310  # nosec B310
                     return _json.load(resp).get("items", [])
-            except (urllib.error.URLError, OSError) as exc:
+            except (urllib.error.URLError, OSError):
                 if attempt == self._MAX_RETRIES:
                     raise
                 time.sleep(2 ** attempt)  # backoff exponencial: 2s, 4s

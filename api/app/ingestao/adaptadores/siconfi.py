@@ -201,7 +201,7 @@ class FetcherSiconfiHTTP:
 
     **Ingestão nacional**: a API exige ``id_ente`` por município (sem ele retorna 0 linhas —
     validado em 2026-06-08, ADR-0032). Estratégia: (1) lista todos os municípios via
-    ``/tt/entes``; (2) busca o DCA de cada um com 20 threads. Tempo: ~2 min / ~5.500 municípios.
+    ``/tt/entes``; (2) busca o DCA de cada um com threads (limitadas + backoff).
     URL/params confirmados no #0 (ADR-0028): ``an_exercicio`` + ``no_anexo`` + ``id_ente``.
     """
 
@@ -210,8 +210,12 @@ class FetcherSiconfiHTTP:
     ANEXO = (
         "DCA-Anexo I-C"  # receitas (Transferências Correntes); I-E = despesas por função (OndeFoi)
     )
-    _MAX_WORKERS = 20
-    _TIMEOUT = 30
+    # Bom-cidadão: 5 threads simultâneas + backoff (invariante 6).
+    # ~5.500 entes × 0.1 s de delay → ~11 min; cada thread aguarda antes de cada request.
+    _MAX_WORKERS = 5
+    _TIMEOUT = 45
+    _DELAY = 0.1  # s entre requests por thread (bom-cidadão — invariante 6)
+    _MAX_RETRIES = 3
 
     def _listar_municipios(self, ano: int) -> list[int]:  # pragma: no cover - rede
         import json as _json
@@ -233,6 +237,8 @@ class FetcherSiconfiHTTP:
 
     def _baixar_ente(self, ano: int, cod_ibge: int) -> list[dict]:  # pragma: no cover - rede
         import json as _json
+        import time
+        import urllib.error
         import urllib.parse
         import urllib.request
 
@@ -240,19 +246,34 @@ class FetcherSiconfiHTTP:
             {"an_exercicio": ano, "no_anexo": self.ANEXO, "id_ente": cod_ibge}
         )
         url = f"{self.BASE}?{query}"
-        with urllib.request.urlopen(url, timeout=self._TIMEOUT) as resp:  # noqa: S310  # nosec B310
-            return _json.load(resp).get("items", [])
+        time.sleep(self._DELAY)  # bom-cidadão: pausa antes de cada request (invariante 6)
+        for attempt in range(1, self._MAX_RETRIES + 1):
+            try:
+                with urllib.request.urlopen(url, timeout=self._TIMEOUT) as resp:  # noqa: S310  # nosec B310
+                    return _json.load(resp).get("items", [])
+            except (urllib.error.URLError, OSError):
+                if attempt == self._MAX_RETRIES:
+                    raise
+                time.sleep(2**attempt)  # backoff exponencial: 2s, 4s
+        return []  # nunca alcançado; satisfaz o type-checker
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
         import json as _json
+        import logging
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
+        log = logging.getLogger(__name__)
         municipios = self._listar_municipios(janela.ano)
+        log.info("SICONFI: %d municípios para o exercício %d", len(municipios), janela.ano)
         todos: list[dict] = []
+        concluidos = 0
         with ThreadPoolExecutor(max_workers=self._MAX_WORKERS) as ex:
             futures = {ex.submit(self._baixar_ente, janela.ano, cod): cod for cod in municipios}
             for fut in as_completed(futures):
                 todos.extend(fut.result())
+                concluidos += 1
+                if concluidos % 500 == 0 or concluidos == len(municipios):
+                    log.info("SICONFI: %d/%d municípios baixados", concluidos, len(municipios))
         url_ref = f"{self.BASE}?an_exercicio={janela.ano}&no_anexo={self.ANEXO}"
         return _json.dumps({"items": todos}).encode(), url_ref
 

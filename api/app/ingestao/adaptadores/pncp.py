@@ -94,10 +94,25 @@ class FetcherPncpHTTP:
 
     BASE = "https://pncp.gov.br/api/consulta/v1/contratos"
 
+    # Cabeçalhos mínimos: PNCP retorna 500 sem User-Agent.
+    _HEADERS = {
+        "Accept": "application/json",
+        "User-Agent": (
+            "DadoSabedoria/1.0 (dados publicos; contato: dadosabedoria@buildtovalue.cloud)"
+        ),
+    }
+
+    def _get_json(self, url: str) -> dict:  # pragma: no cover - rede
+        import json as _json
+        import urllib.request
+
+        req = urllib.request.Request(url, headers=self._HEADERS)  # noqa: S310
+        with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310
+            return _json.load(resp)
+
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
         import calendar
         import json as _json
-        import urllib.request
 
         todos: list[dict] = []
         for mes in range(1, 13):
@@ -107,8 +122,7 @@ class FetcherPncpHTTP:
             pagina = 1
             while True:
                 url = f"{self.BASE}?dataInicial={ini}&dataFinal={fim}&pagina={pagina}"
-                with urllib.request.urlopen(url, timeout=120) as resp:  # noqa: S310  # nosec B310
-                    d = _json.load(resp)
+                d = self._get_json(url)
                 todos.extend(d.get("data", []))
                 if pagina >= d.get("totalPaginas", 1):
                     break

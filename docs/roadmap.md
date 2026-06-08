@@ -107,19 +107,27 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
 - [~] **Allowlist dos conectores vivos (lote, a adicionar em bloco no #0):** os conectores foram
   construídos "vivo-pronto" (esteira + schedule + fixture), mas a 1ª busca real só roda com o host
   liberado. **▶ Execução copia-e-cola por conector: `docs/RUNBOOK_DESTRAVE.md`.**
-  **#0 parcialmente aberto (sondado 2026-06-07, sessão nova):**
+  **#0 sondado 2× (2026-06-07 + 2026-06-08, sessão nova a cada vez; ADR-0028 + ADR-0033):**
   - ✅ **SICONFI** `apidatalake.tesouro.gov.br` (200) — **VALIDADO** (forma real gravada, ADR-0028;
-    fixture promovida a **fiel-à-forma**).
-  - ✅ **IBGE** `servicodados.ibge.gov.br` (aberto) — **VALIDADO** no #0: `localidades/municipios`
-    (5571) + `v3/malhas` casam o `AdaptadorIbge`; fixture já fiel-à-forma, **sem mudança de código**.
-  - ⚠️ **ESTBAN/BCB** — `www4.bcb.gov.br` aberto mas a URL antiga dá **404**: o BCB migrou o portal
-    para `www.bcb.gov.br` / `dadosabertos.bcb.gov.br`, **ambos 403** no ambiente. _(Dono: liberar um
-    desses hosts no allowlist — virou **gate de host**, não "achar a URL". Sondei o portal, 2026-06-07.)_
-  - ❌ **CAGED** `ftp.mtps.gov.br` (FTP do MTPS) — **403**: host **fora** do allowlist (que tem BCB,
-    não MTPS). _(Dono: adicionar `ftp.mtps.gov.br`.)_
-  - ❌ ainda **bloqueados** (403 `host_not_allowed`): **INEP** `download.inep.gov.br` · **PNCP**
-    `pncp.gov.br` · **DATASUS** `ftp.datasus.gov.br`. _(Dono: adicionar ao allowlist Custom; cada um
-    traz a marca "confirmar na 1ª busca real" — a forma vem da fonte, não do mock.)_
+    rate-limit bom-cidadão adicionado, ADR-0033; **ingestão nacional 2024 executada** em 2026-06-08).
+  - ✅ **IBGE** `servicodados.ibge.gov.br` (301→HTTPS) — **VALIDADO** (gzip fix aplicado ADR-0033;
+    5571 municípios + 27 UFs carregados em 2026-06-08; `AdaptadorIbge` fiel-à-forma).
+  - ✅ **PNCP** `pncp.gov.br` (homepage 503, **API 200**) — **ABERTO E VALIDADO** (ADR-0033): API
+    `/api/consulta/v1/contratos` retorna 200/JSON; bug de User-Agent corrigido no fetcher (sem
+    User-Agent → 500); 35.910 contratos jan/2024 confirmados. Forma fiel ao ADR-0032.
+  - ⚠️ **INEP** `download.inep.gov.br` (503 acessível, sem `x-deny-reason`) — **TLS BLOQUEADO**:
+    servidor INEP tem `CERTIFICATE_VERIFY_FAILED` (issuer não reconhecido pela CA bundle padrão).
+    _(Dono: problema do certificado do servidor INEP, não do allowlist — investigar se há URL
+    alternativa com TLS válido ou se o INEP corrigiu o cert.)_
+  - ⚠️ **ESTBAN/BCB** — `www.bcb.gov.br` e `dadosabertos.bcb.gov.br` **ambos 200** (abertos em
+    2026-06-08). Gate mudou: **URL do ZIP não encontrada** (BCB migrou para SPA Angular; catálogo
+    CKAN 4.225 datasets sem "estban"; URLs históricas retornam HTML do SPA). _(Dono: URL do download
+    provavelmente está no bundle JS do SPA — investigar ou solicitar ao BCB/COSIF.)_
+  - ⚠️ **DATASUS** `ftp.datasus.gov.br` — timeout na porta 443 (FTP puro na porta 21, não acessível
+    via HTTPS; sem URL HTTP alternativa identificada para o SIH). _(Protocolo FTP não suportado.)_
+  - ❌ **CAGED** `ftp.mtps.gov.br` — `x-deny-reason: resolve_no_records` (DNS não resolve para
+    HTTPS; host existe só como FTP). _(CAGED novo via API BCB/PDET em `api.bcb.gov.br` — não está
+    no allowlist; dono: adicionar `api.bcb.gov.br` se quiser novo CAGED.)_
 - [~] **🟡 OndeFoi — re-ancoragem do número (a referendar; ADR-0028 §5 + ADR-0029):** o #0 mostrou que
   **"recebido por função" NÃO existe na fonte** (transferências [I-C] não são classificadas por
   função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). **Em MODO DEV o dev

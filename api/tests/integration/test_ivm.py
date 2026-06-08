@@ -106,6 +106,12 @@ async def test_mapa_semaforo_por_periodo(client) -> None:
     assert por_mun[_RIO]["v_saude"] == 100.0  # Rio: muitas internações → subíndice de saúde alto
     assert body["meta"]["versao_metodologia"] == "v1.1"
     assert "saude.resp.internacoes_j" in body["meta"]["componentes"]
+    # selo de confiança reutilizado (primitivo compartilhado OndeFoi↔IVM): fontes ricas + frescor.
+    meta = body["meta"]
+    assert {f["sigla"] for f in meta["fontes"]} == {"CAGED", "ESTBAN", "SIH/SUS"}
+    assert all({"nome", "orgao", "dominio", "ate", "atraso"} <= set(f) for f in meta["fontes"])
+    assert meta["periodo_rotulo"] and meta["atraso_dias"] > 0
+    assert "Licença aberta" in meta["licenca"]
 
 
 async def test_periodo_padrao_e_o_mais_recente(client) -> None:

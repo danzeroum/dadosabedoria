@@ -104,8 +104,9 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   callout + trilha + "o que é execução") **e o selo de confiança** (`SeloConfianca` compartilhado,
   `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
   **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
-  IVM (reusar o `SeloConfianca` — precisa enriquecer a `MetaIVM` com `fontes`/frescor —, busca,
-  "o que é IVM", comparar parecidas). **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
+  IVM — ✅ **`SeloConfianca` reutilizado** no drill-down (`MetaIVM` enriquecida com `fontes`
+  [CAGED/ESTBAN/SIH] + frescor + licença, sem forkar o primitivo); faltam **busca**, **"o que é
+  IVM"** e **comparar parecidas**. **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
   (2026-06-07)** — (1) o axe **nunca rodava** (falso-verde): `captura.mjs` usava `browser.newPage()`,
   rejeitado pelo `@axe-core/playwright` → auditoria pulada em silêncio; corrigido com
   `browser.newContext()`. (2) A 1ª rodada real acusou **1 violação** (`color-contrast` em `.tendencia`

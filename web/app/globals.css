@@ -638,9 +638,9 @@ section h2 {
 :root {
   --exec-alta: var(--cor-marca);
   --exec-alta-tint: #e6f3f1;
-  --exec-parcial: #b45309;
+  --exec-parcial: #92400e;
   --exec-parcial-tint: #fef3c7;
-  --exec-baixa: #dc2626;
+  --exec-baixa: #991b1b;
   --exec-baixa-tint: #fee2e2;
 }
 .tnum {

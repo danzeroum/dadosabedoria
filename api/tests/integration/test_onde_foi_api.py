@@ -1,11 +1,17 @@
 """Integração da rota do OndeFoi (``/v1/onde-foi``) — leitura da fato ``execucao_funcao``.
 
 Comportamento pós go-live (ADR-0029/0032): sem grau-demo, dado real da pipeline de ingestão.
-- Sem dado: lista vazia; detalhe → 404.
-- Com dado: pct/banda corretos, contrato ADR-0026 mantido.
+- Município desconhecido: 404 (nunca 200 com demo).
+- Com dado semeado: pct/banda corretos, contrato ADR-0026 mantido.
+
+Nota: ``role_analitica`` (DATABASE_URL) tem INSERT/UPDATE em ``execucao_funcao`` mas NÃO DELETE;
+a limpeza usa o ADMIN_DATABASE_URL (role postgres). Os testes que precisam de estado limpo
+semeiam explicitamente; os que precisam de vazio usam a coleção admin para limpar.
 """
 
 from __future__ import annotations
+
+import os
 
 import pytest
 from sqlalchemy import text
@@ -32,28 +38,29 @@ async def _seed(conn_url: str) -> None:
         )
 
 
-async def _limpar(conn_url: str) -> None:
-    async with connect(conn_url) as conn:
+async def _limpar() -> None:
+    """Limpa execucao_funcao via ADMIN_DATABASE_URL (role_analitica não tem DELETE)."""
+    admin_url = os.environ.get("ADMIN_DATABASE_URL", get_settings().database_url)
+    async with connect(admin_url) as conn:
         await conn.execute(_DELETE)
 
 
-async def test_onde_foi_lista_vazia_sem_dado(client, db_pronto: None) -> None:
-    await _limpar(get_settings().database_url)
-    r = await client.get("/v1/onde-foi")
-    assert r.status_code == 200
-    b = r.json()
-    assert b["dados"] == []
-
-
 async def test_onde_foi_404_sem_dado(client, db_pronto: None) -> None:
-    await _limpar(get_settings().database_url)
+    await _limpar()
     r = await client.get("/v1/onde-foi/3550308")
     assert r.status_code == 404
     assert r.json()["erro"] == "nao_encontrado"
 
 
+async def test_onde_foi_lista_vazia_sem_dado(client, db_pronto: None) -> None:
+    await _limpar()
+    r = await client.get("/v1/onde-foi")
+    assert r.status_code == 200
+    assert r.json()["dados"] == []
+
+
 async def test_onde_foi_contrato_sp(client, db_pronto: None) -> None:
-    await _limpar(get_settings().database_url)
+    await _limpar()
     await _seed(get_settings().database_url)
     r = await client.get("/v1/onde-foi/3550308")
     assert r.status_code == 200
@@ -78,7 +85,7 @@ async def test_onde_foi_contrato_sp(client, db_pronto: None) -> None:
 
 
 async def test_onde_foi_lista_com_dado(client, db_pronto: None) -> None:
-    await _limpar(get_settings().database_url)
+    await _limpar()
     await _seed(get_settings().database_url)
     r = await client.get("/v1/onde-foi")
     assert r.status_code == 200

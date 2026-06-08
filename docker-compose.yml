@@ -12,16 +12,14 @@
 services:
   proxy:
     image: traefik:v3.1
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.file.directory=/etc/traefik/dynamic"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
+    # Config estática lida de /etc/traefik/traefik.yml (montada abaixo — ADR-0005/PASSO-5).
+    # Dev (ACME_EMAIL vazio): ACME inativo, certificado auto-assinado ou acesso direto às portas.
+    # Prod (ACME_EMAIL + PUBLIC_DOMAIN definidos): Let's Encrypt via tlsChallenge automático.
     ports: ["80:80", "443:443"]
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./infra/traefik:/etc/traefik:ro"
+      - "acme:/acme"
     # net_consentimento só para ROTEAR ao serviço de consentimento (ingress controlado);
     # api/worker/ai seguem sem acesso ao schema app.
     networks: [net_core, net_consentimento]
@@ -93,7 +91,9 @@ services:
       - "traefik.enable=true"
       # Expõe só a API pública (/v1) e /health. /metrics NÃO é roteado (interno) — §13.
       - "traefik.http.routers.api.rule=PathPrefix(`/v1`) || Path(`/health`)"
-      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=le"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
       - "traefik.http.routers.api.middlewares=dsab-ratelimit@file,dsab-cors@file,dsab-headers@file"
     networks: [net_core]
@@ -111,7 +111,9 @@ services:
       # api (PathPrefix /v1, /health) tem prioridade maior; web é o catch-all.
       - "traefik.http.routers.web.rule=PathPrefix(`/`)"
       - "traefik.http.routers.web.priority=1"
-      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.routers.web.tls=true"
+      - "traefik.http.routers.web.tls.certresolver=le"
       - "traefik.http.services.web.loadbalancer.server.port=3000"
       - "traefik.http.routers.web.middlewares=dsab-headers@file"
     networks: [net_core]
@@ -200,7 +202,9 @@ services:
       # Rotas de PII/auth do cidadão (prioridade > api, que pega o resto de /v1).
       - "traefik.http.routers.consent.rule=PathPrefix(`/v1/alertas`) || PathPrefix(`/v1/auth`) || Path(`/v1/eu`)"
       - "traefik.http.routers.consent.priority=100"
-      - "traefik.http.routers.consent.entrypoints=web"
+      - "traefik.http.routers.consent.entrypoints=websecure"
+      - "traefik.http.routers.consent.tls=true"
+      - "traefik.http.routers.consent.tls.certresolver=le"
       - "traefik.http.services.consent.loadbalancer.server.port=8000"
       - "traefik.http.routers.consent.middlewares=dsab-cors@file,dsab-headers@file"
     networks: [net_consentimento]
@@ -247,6 +251,7 @@ volumes:
   pgdata: {}
   minio: {}
   dagster_home: {}   # histórico de runs/agendamentos do orchestrator (sobrevive a restart)
+  acme: {}           # certificados Let's Encrypt; sobrevive a restart do Traefik
 
 networks:
   net_core:

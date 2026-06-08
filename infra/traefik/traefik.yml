@@ -1,0 +1,37 @@
+# Traefik v3 — config estática. Lida na inicialização; mudanças exigem restart do container.
+# Em dev (PUBLIC_DOMAIN vazio) as rotas HTTP path-based das labels funcionam normalmente.
+# Em produção (PUBLIC_DOMAIN + ACME_EMAIL definidos) o ACME emite TLS e HTTPS é ativado.
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      # HTTP → HTTPS: redirect permanente; ignorado em dev (domínio sem DNS real).
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false
+  file:
+    directory: /etc/traefik/dynamic
+
+certificatesResolvers:
+  le:
+    acme:
+      # ACME_EMAIL: endereço para notificações de expiração do Let's Encrypt.
+      email: "${ACME_EMAIL}"
+      storage: /acme/acme.json
+      # TLS-ALPN-01: não exige porta 80 aberta; funciona com o entrypoint websecure.
+      tlsChallenge: {}
+
+log:
+  level: WARN
+
+api:
+  insecure: false  # dashboard só via rede interna/VPN, nunca público

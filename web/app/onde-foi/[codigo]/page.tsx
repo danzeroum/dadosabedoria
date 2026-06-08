@@ -97,9 +97,7 @@ export default async function OndeFoiPage({ params }: { params: { codigo: string
       <section className="of-proveniencia">
         <h2>De onde vem este número</h2>
         <SeloConfianca meta={d.meta} />
-        <p className="metodologia">
-          {d.meta.metodologia} · grau-demo até a 1ª busca real no SICONFI/DCA (#0).
-        </p>
+        <p className="metodologia">{d.meta.metodologia}</p>
       </section>
     </main>
   );

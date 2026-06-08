@@ -20,6 +20,6 @@ http:
         contentTypeNosniff: true
         browserXssFilter: true
         referrerPolicy: "no-referrer"
-        # HSTS só quando o TLS estiver ligado (não enviar sobre HTTP). Habilitar em produção:
-        # stsSeconds: 31536000
-        # stsIncludeSubdomains: true
+        # HSTS: TLS agora obrigatório em prod (traefik.yml + certresolver=le).
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true

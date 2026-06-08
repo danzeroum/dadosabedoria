@@ -91,23 +91,30 @@ class AdaptadorEstban:
 class FetcherEstbanHTTP:  # pragma: no cover - rede/zip
     """Fetcher real: baixa o ZIP do ESTBAN municipal do BCB e extrai o CSV.
 
-    **#0 (2026-06-07):** o host ``www4.bcb.gov.br`` está **aberto**, mas este padrão de URL dá
-    **404** — o BCB **migrou o portal do ESTBAN** para ``www.bcb.gov.br`` /
-    ``dadosabertos.bcb.gov.br``, **ambos 403 (host_not_allowed)** no ambiente. Logo a validação do
-    ESTBAN precisa que o dono **libere um desses hosts** no allowlist (gate) — não só "achar a URL".
-    Parse/agregação seguem cobertos por fixture (anota-e-segue).
+    **#0 (2026-06-08):** ``www.bcb.gov.br`` e ``dadosabertos.bcb.gov.br`` estão **abertos** (200).
+    O antigo ``www4.bcb.gov.br`` dá 404. O BCB migrou para um portal Angular (SPA) — todos os
+    caminhos estáticos retornam HTML. A URL binária do ZIP precisa ser descoberta via API backend
+    do BCB (``/api/servico/sitebcb/estban/…``) — investigação pendente (ver Lista de desbloqueio).
+    Parse/agregação cobertos por fixture até a URL ser confirmada.
     """
 
-    BASE = "https://www4.bcb.gov.br/fis/cosif/estban"
+    BASE = "https://www.bcb.gov.br/estabilidadefinanceira/docs/estban"
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:
         import urllib.request
         import zipfile
 
         comp = janela.competencia
-        url = f"{self.BASE}/{janela.ano}/ESTBAN_MUNICIPIO_{comp}.ZIP"
+        # URL a confirmar: o portal BCB migrou de www4 para www.bcb.gov.br (SPA Angular).
+        # Tentar o padrão do portal novo — se retornar HTML (SPA) levantar ValueError informativo.
+        url = f"{self.BASE}/ESTBAN_MUNICIPIO_{comp}.ZIP"
         with urllib.request.urlopen(url, timeout=120) as resp:  # noqa: S310  # nosec B310
             dados = resp.read()
+        if dados[:5] == b"<!doc" or dados[:5] == b"<?xml":  # SPA ou página de erro
+            raise ValueError(
+                f"BCB ESTBAN: URL {url!r} retornou HTML (SPA Angular). "
+                "A URL binária do ZIP precisa ser atualizada — ver List de desbloqueio."
+            )
         with zipfile.ZipFile(io.BytesIO(dados)) as z:
             conteudo = z.read(z.namelist()[0])
         return conteudo, url

@@ -107,10 +107,11 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   callout + trilha + "o que é execução") **e o selo de confiança** (`SeloConfianca` compartilhado,
   `<details>` acessível; meta enriquecida com fonte rica + licença) — feitos. Faltam: OndeFoi
   **superfície de agir** (compartilhar/exportar-ABNT/avise-me/a-quem-cobrar, gates degradando);
-  IVM — ✅ **`SeloConfianca` reutilizado** no drill-down (`MetaIVM` com `fontes` [CAGED/ESTBAN/SIH]
-  + frescor + licença, sem forkar); ✅ **busca** de município (server-side `?q=`, sem JS, acessível) e
-  ✅ **"o que é IVM"** (explicador `<details>`) no mapa; falta **comparar cidade parecida** (precisa de
-  uma definição de "parecida" — 🟡 leve: default = vizinhança de IVM/porte). **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
+  IVM — **reconciliação COMPLETA**: ✅ `SeloConfianca` reutilizado no drill-down (`MetaIVM` com
+  `fontes` [CAGED/ESTBAN/SIH] + frescor + licença, sem forkar); ✅ **busca** de município (server-side
+  `?q=`, sem JS); ✅ **"o que é IVM"** (explicador `<details>`); ✅ **comparar cidade parecida**
+  (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; bloco no drill-down). _Default
+  "parecida" = mesma UF + IVM mais próximo, no exercício; reversível se o dono preferir outro._ **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
   (2026-06-07)** — (1) o axe **nunca rodava** (falso-verde): `captura.mjs` usava `browser.newPage()`,
   rejeitado pelo `@axe-core/playwright` → auditoria pulada em silêncio; corrigido com
   `browser.newContext()`. (2) A 1ª rodada real acusou **1 violação** (`color-contrast` em `.tendencia`

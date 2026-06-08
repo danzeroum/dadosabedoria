@@ -147,6 +147,7 @@ class MetaIVM(BaseModel):
 class IVMItem(BaseModel):
     codigo_ibge: str
     nome: str
+    uf: str | None = None
     periodo: str  # YYYY-MM
     ivm: float  # 0..100, maior = mais vulnerável
     semaforo: str  # verde | amarelo | vermelho

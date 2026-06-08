@@ -52,6 +52,17 @@ export async function buscarSerieIVM(codigoIbge: string): Promise<RespostaIVMSer
   return resp.json();
 }
 
+// Cidades parecidas (mesma UF, IVM mais próximo). Degrada para [] em erro — bloco opcional na tela.
+export async function buscarSimilaresIVM(codigoIbge: string): Promise<RespostaIVMSerie | null> {
+  const resp = await fetch(new URL(`/v1/ivm/${codigoIbge}/similares`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (!resp.ok) {
+    return null;
+  }
+  return resp.json();
+}
+
 export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | null> {
   const resp = await fetch(new URL(`/v1/pulso-produtivo/${codigoIbge}`, BASE), {
     next: { revalidate: REVALIDATE },

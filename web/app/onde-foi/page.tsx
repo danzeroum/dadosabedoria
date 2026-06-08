@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ExecPill } from "../../components/ExecPill";
+import { SeloConfianca } from "../../components/SeloConfianca";
 import { buscarListaOndeFoi } from "../../lib/api";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,8 @@ export default async function OndeFoiDiretorioPage({
         SICONFI/DCA — <strong>não refletem a gestão real</strong> e estão ordenados por nome,{" "}
         <strong>sem ranking</strong>.
       </p>
+
+      <SeloConfianca meta={lista.meta} />
 
       <form className="ivm-busca" method="get" role="search">
         <label htmlFor="busca-of">Buscar município</label>

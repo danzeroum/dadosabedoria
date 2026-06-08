@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Coropleta } from "../../components/Coropleta";
 import { Legenda } from "../../components/Legenda";
 import { MapaSemaforico } from "../../components/MapaSemaforico";
+import { SeloConfianca } from "../../components/SeloConfianca";
 import { buscarIVM, buscarMalhaIVM } from "../../lib/api";
 import type { FeatureCollectionIVM } from "../../lib/types";
 
@@ -71,6 +72,8 @@ export default async function IVMPage({
           </p>
         </div>
       </details>
+
+      <SeloConfianca meta={meta} />
 
       <Legenda faixas={meta.semaforo} />
 

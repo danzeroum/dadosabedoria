@@ -79,7 +79,7 @@ class FetcherIbgeHTTP:  # pragma: no cover - rede
         import gzip
         import urllib.request
 
-        req = urllib.request.Request(url, headers={"Accept-Encoding": "gzip"})
+        req = urllib.request.Request(url, headers={"Accept-Encoding": "gzip"})  # noqa: S310
         with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310
             data = resp.read()
         # A API do IBGE retorna gzip quando solicitado; descomprimir se necessário.

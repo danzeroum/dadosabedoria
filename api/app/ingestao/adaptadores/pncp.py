@@ -94,10 +94,12 @@ class FetcherPncpHTTP:
 
     BASE = "https://pncp.gov.br/api/consulta/v1/contratos"
 
-    # Cabeçalhos mínimos para evitar respostas 500 do PNCP (API bloqueia requisições sem User-Agent).
+    # Cabeçalhos mínimos: PNCP retorna 500 sem User-Agent.
     _HEADERS = {
         "Accept": "application/json",
-        "User-Agent": "DadoSabedoria/1.0 (dados publicos; contato: dadosabedoria@buildtovalue.cloud)",
+        "User-Agent": (
+            "DadoSabedoria/1.0 (dados publicos; contato: dadosabedoria@buildtovalue.cloud)"
+        ),
     }
 
     def _get_json(self, url: str) -> dict:  # pragma: no cover - rede

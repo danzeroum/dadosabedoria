@@ -321,8 +321,11 @@ async def executar_siconfi_funcoes(
             }
         )
 
-    if linhas:
-        stmt = pg_insert(t_execucao_funcao).values(linhas)
+    # asyncpg tem limite de 32.767 parâmetros por query; com 8 colunas → máx ~4000 linhas por lote.
+    _BATCH = 3000
+    for i in range(0, len(linhas), _BATCH):
+        lote = linhas[i : i + _BATCH]
+        stmt = pg_insert(t_execucao_funcao).values(lote)
         stmt = stmt.on_conflict_do_update(
             index_elements=["territorio_id", "periodo", "funcao_cod"],
             set_={

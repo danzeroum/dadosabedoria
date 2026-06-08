@@ -6,9 +6,11 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **29 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#82; +#83 **IA sinônimos do leigo**). **#5 exercido
-> ("priorizar um produto" + "siga" ×7) — camada de confiança puxada à tela:** `/comparar` (ADR-0030);
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **31 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#84; +#85 **resumo do acervo na home**). **#5 exercido
+> ("priorizar um produto" + "siga" ×8) — camada de confiança puxada à tela:** a **porta de entrada**
+> agora prova a si mesma — um resumo vivo do acervo (`N fontes · N indicadores · N domínios`, pelo
+> próprio `/v1/fontes`, com degradação graciosa) recebe quem chega; `/comparar` (ADR-0030);
 > `/fontes` + `GET /v1/fontes` (ADR-0031); `/indicador/{codigo}` — **ficha técnica**, nome clicável;
 > **descoberta global** (Comparar no nav, Fontes no rodapé); **`/serie`** — drill-down do panorama
 > (histórico de qualquer indicador, supressão honesta, sem novo contrato); e **IA ancorada

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { buscarFontes } from "../lib/api";
+
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "DadoSabedoria — produtos",
   description: "Produtos de inteligência sobre dados públicos brasileiros, com proveniência.",
@@ -72,7 +76,24 @@ const PRODUTOS: {
   },
 ];
 
-export default function Home() {
+// Resumo honesto do acervo (vivo), pelo próprio /v1/fontes. Degrada em silêncio: se a API não
+// responder (ex.: build sem backend), a porta de entrada segue inteira, só sem o resumo.
+async function acervoResumo(): Promise<{ fontes: number; indicadores: number; dominios: number } | null> {
+  try {
+    const r = await buscarFontes();
+    if (!r) return null;
+    return {
+      fontes: r.total,
+      indicadores: r.dados.reduce((s, f) => s + f.n_indicadores, 0),
+      dominios: new Set(r.dados.flatMap((f) => f.dominios)).size,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function Home() {
+  const acervo = await acervoResumo();
   return (
     <main className="pagina home">
       <section className="home-hero">
@@ -82,6 +103,14 @@ export default function Home() {
           em cada número e <strong>qualidade provada</strong> a cada commit. Sem chave de pessoa; o
           que é protegido aparece como protegido.
         </p>
+        {acervo ? (
+          <Link href="/fontes" className="home-acervo">
+            <strong>{acervo.fontes}</strong> fontes públicas ·{" "}
+            <strong>{acervo.indicadores}</strong> indicadores ·{" "}
+            <strong>{acervo.dominios}</strong> domínios — com proveniência e supressão honesta em cada
+            número →
+          </Link>
+        ) : null}
       </section>
 
       <section className="home-produtos" aria-label="Produtos">

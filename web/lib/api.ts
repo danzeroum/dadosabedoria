@@ -10,6 +10,7 @@ import type {
   RespostaIA,
   RespostaIVM,
   RespostaIVMSerie,
+  RespostaValores,
 } from "./types";
 
 // Fetch server-side (sem CORS). Em compose, API_URL = http://api:8000 (rede interna).
@@ -124,6 +125,21 @@ export async function buscarIndicador(codigo: string): Promise<IndicadorDetalhe 
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o indicador (${resp.status})`);
+  }
+  return resp.json();
+}
+
+// Série de um indicador num território (drill-down do panorama). 404/erro → null.
+export async function buscarValores(
+  indicador: string,
+  territorio: string,
+): Promise<RespostaValores | null> {
+  const url = new URL("/v1/valores", BASE);
+  url.searchParams.set("indicador", indicador);
+  url.searchParams.set("territorio", territorio);
+  const resp = await fetch(url, { next: { revalidate: REVALIDATE } });
+  if (!resp.ok) {
+    return null;
   }
   return resp.json();
 }

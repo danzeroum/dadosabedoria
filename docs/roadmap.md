@@ -6,23 +6,21 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07): estado = VERDE.** Autonomia ampliada exercida: **5 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#59). Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07): estado = VERDE.** Autonomia ampliada exercida: **7 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#61). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
-> 2. **OndeFoi re-ancorado** (Liquidado÷Empenhado por função — ADR-0029, default MODO DEV pois
->    "recebido por função" não existe na fonte): **esteira viva COMPLETA** — Anexo I-E → fato
->    `execucao_funcao` (migração 0017) → `executar_siconfi_funcoes` → `run_siconfi_funcoes` + **Dagster**
->    (`job_siconfi_funcoes`/`schedule_siconfi_funcoes_anual`).
+> 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
+>    função" não existe na fonte): **esteira viva COMPLETA** (Anexo I-E → fato `execucao_funcao`/mig.
+>    0017 → `executar_siconfi_funcoes` → `run_siconfi_funcoes` + **Dagster**) **+ produto re-ancorado
+>    ponta-a-ponta** (contrato/API `empenhado*`/`liquidado`, tela e copy) — ainda **grau-demo**.
 > 3. **Gate axe/WCAG consertado** (era **falso-verde** — nunca rodava): agora roda, achou e **corrigi** a
 >    única violação (contraste de `.tendencia`) e o gate **BLOQUEIA** serious/critical + "axe não rodou".
 >
-> **Copy do OndeFoi reconciliada** (PR ondefoi-reancoragem): contrato + tela + demo re-ancorados em
-> **Liquidado÷Empenhado** (campos `empenhado*`/`liquidado`, ADR-0029); ainda grau-demo. **Próxima
-> fatia = (a)** OndeFoi go-live: endpoint `/v1/onde-foi` lendo a fato `execucao_funcao` (sai do
-> grau-demo — **🟡 dono referenda** a ancoragem; ver PENDENCIAS §B); **(b)** reconciliar telas do IVM
-> (reusar `SeloConfianca`+frescor na `MetaIVM`, busca, "o que é IVM", comparar parecidas). **Bloqueios
-> humanos** (Lista de desbloqueio): allowlist INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) +
+> **Próxima fatia = (a)** OndeFoi **go-live**: endpoint `/v1/onde-foi` lendo a fato `execucao_funcao`
+> (sai do grau-demo — **🟡 dono referenda** a ancoragem; ver PENDENCIAS §B); **(b)** reconciliar telas
+> do IVM (reusar `SeloConfianca`+frescor na `MetaIVM`, busca, "o que é IVM", comparar parecidas).
+> **Bloqueios humanos** (Lista de desbloqueio): allowlist INEP/PNCP/DATASUS/CAGED(`ftp.mtps.gov.br`) +
 > ESTBAN(`www.bcb.gov.br`/`dadosabertos.bcb.gov.br`).
 > _Pausa, não bloqueio — tudo verde._
 

@@ -12,7 +12,13 @@ import { formatarIVM } from "../../../lib/semaforo";
 
 export const dynamic = "force-dynamic";
 
-export default async function MunicipioPage({ params }: { params: { codigo: string } }) {
+export default async function MunicipioPage({
+  params,
+  searchParams,
+}: {
+  params: { codigo: string };
+  searchParams: { compara?: string };
+}) {
   const resp = await buscarSerieIVM(params.codigo);
   if (!resp || resp.dados.length === 0) {
     notFound();
@@ -20,6 +26,8 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
   const serie = resp.dados;
   const atual = serie[serie.length - 1];
   const similares = (await buscarSimilaresIVM(params.codigo))?.dados ?? [];
+  // Comparação lado a lado (sem JS): a parecida escolhida vem do ?compara=, default = a mais próxima.
+  const outra = similares.find((c) => c.codigo_ibge === searchParams.compara) ?? similares[0] ?? null;
 
   return (
     <main className="pagina">
@@ -58,22 +66,55 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
         </p>
       </section>
 
-      {similares.length > 0 && (
+      {similares.length > 0 && outra && (
         <section>
-          <h2>Cidades parecidas{atual.uf ? ` (${atual.uf})` : ""}</h2>
+          <h2>Comparar com cidade parecida{atual.uf ? ` (${atual.uf})` : ""}</h2>
           <p className="of-sub">
-            Mesma UF, vulnerabilidade (IVM) mais próxima — para comparar no contexto, não para
-            rankear.
+            Mesma UF, vulnerabilidade (IVM) mais próxima — para enxergar se o problema é local ou
+            regional, não para rankear. Escolha com quem comparar:
           </p>
-          <ul className="parecidas">
+          <nav className="comparar-picker" aria-label="Escolher cidade para comparar">
             {similares.map((c) => (
-              <li key={c.codigo_ibge}>
-                <Link href={`/ivm/${c.codigo_ibge}`}>{c.nome}</Link>
-                <span className="parecida-ivm tnum">{formatarIVM(c.ivm)} IVM</span>
-                <Semaforo estado={c.semaforo} />
-              </li>
+              <Link
+                key={c.codigo_ibge}
+                href={`/ivm/${atual.codigo_ibge}?compara=${c.codigo_ibge}`}
+                className={c.codigo_ibge === outra.codigo_ibge ? "picker-ativo" : ""}
+                aria-current={c.codigo_ibge === outra.codigo_ibge ? "true" : undefined}
+              >
+                {c.nome}
+              </Link>
             ))}
-          </ul>
+          </nav>
+          <div className="comparar-grid">
+            <article className="comparar-card comparar-card-base">
+              <h3>
+                {atual.nome} <span className="tnum">{formatarIVM(atual.ivm)} IVM</span>
+                <Semaforo estado={atual.semaforo} />
+              </h3>
+              <Comparador
+                vEmprego={atual.v_emprego}
+                vFinancas={atual.v_financas}
+                vSaude={atual.v_saude}
+                vSaudeEstado={atual.v_saude_estado}
+              />
+            </article>
+            <p className="comparar-vs" aria-hidden="true">
+              vs
+            </p>
+            <article className="comparar-card">
+              <h3>
+                <Link href={`/ivm/${outra.codigo_ibge}`}>{outra.nome}</Link>{" "}
+                <span className="tnum">{formatarIVM(outra.ivm)} IVM</span>
+                <Semaforo estado={outra.semaforo} />
+              </h3>
+              <Comparador
+                vEmprego={outra.v_emprego}
+                vFinancas={outra.v_financas}
+                vSaude={outra.v_saude}
+                vSaudeEstado={outra.v_saude_estado}
+              />
+            </article>
+          </div>
         </section>
       )}
 

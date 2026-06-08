@@ -374,31 +374,77 @@ section h2 {
   font-weight: 600;
   cursor: pointer;
 }
-.parecidas {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  display: grid;
-  gap: 8px;
-  max-width: 520px;
-}
-.parecidas li {
+/* Comparar com cidade parecida — lado a lado (handoff TelaDrill). Picker sem JS (?compara=). */
+.comparar-picker {
   display: flex;
-  align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
 }
-.parecidas a {
+.comparar-picker a {
+  text-decoration: none;
   color: var(--cor-marca);
   font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+.comparar-picker a:hover {
+  border-color: var(--cor-marca);
+}
+.comparar-picker .picker-ativo {
+  background: var(--cor-marca);
+  color: #fff;
+  border-color: var(--cor-marca);
+}
+.comparar-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 560px) {
+  .comparar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.comparar-card {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 14px 16px;
+}
+.comparar-card-base {
+  border-left: 4px solid var(--cor-marca);
+}
+.comparar-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+.comparar-card h3 .tnum {
+  color: var(--cor-texto-suave);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.comparar-card h3 a {
+  color: var(--cor-marca);
   text-decoration: none;
 }
-.parecidas a:hover {
-  text-decoration: underline;
-}
-.parecida-ivm {
+.comparar-vs {
+  align-self: center;
+  margin: 0;
   color: var(--cor-texto-suave);
-  font-size: 0.9rem;
+  font-style: italic;
+}
+@media (max-width: 560px) {
+  .comparar-vs {
+    text-align: center;
+  }
 }
 .coropleta {
   margin: 0 0 16px;

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { formatarValor } from "../lib/formato";
 import type { IndicadorValor } from "../lib/types";
 import { EstadoSupressao } from "./EstadoSupressao";
@@ -8,7 +10,9 @@ import { EstadoSupressao } from "./EstadoSupressao";
 export function IndicadorCard({ ind }: { ind: IndicadorValor }) {
   return (
     <div className="indicador-card">
-      <span className="indicador-nome">{ind.nome}</span>
+      <Link href={`/indicador/${ind.codigo}`} className="indicador-nome">
+        {ind.nome}
+      </Link>
       <span className="indicador-valor">
         {ind.suprimido ? (
           <EstadoSupressao estado="suprimido" rotulo="Valor" />

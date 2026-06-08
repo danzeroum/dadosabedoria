@@ -1,5 +1,6 @@
 import type {
   FeatureCollectionIVM,
+  IndicadorDetalhe,
   OndeFoiLista,
   OndeFoiProduto,
   Panorama,
@@ -109,6 +110,20 @@ export async function buscarPanorama(codigoIbge: string): Promise<Panorama | nul
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o panorama (${resp.status})`);
+  }
+  return resp.json();
+}
+
+// Ficha técnica de um indicador. 404 → null (a tela responde com notFound).
+export async function buscarIndicador(codigo: string): Promise<IndicadorDetalhe | null> {
+  const resp = await fetch(new URL(`/v1/indicadores/${encodeURIComponent(codigo)}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar o indicador (${resp.status})`);
   }
   return resp.json();
 }

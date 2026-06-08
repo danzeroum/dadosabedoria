@@ -64,6 +64,22 @@ export interface MetaProveniencia {
   licenca: string;
 }
 
+// Ficha técnica de um indicador (/v1/indicadores/{codigo}) — metodologia + proveniência completas.
+export interface IndicadorDetalhe {
+  codigo: string;
+  nome: string;
+  descricao: string;
+  dominio: string;
+  subdominio: string;
+  unidade: string;
+  polaridade: string;
+  atualizacao: string;
+  nivel_minimo_agregacao: string;
+  metodologia: string;
+  versao_metodologia: string;
+  meta: MetaProveniencia;
+}
+
 export interface PulsoProduto {
   codigo_ibge: string;
   nome: string;

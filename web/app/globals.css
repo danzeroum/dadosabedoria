@@ -1332,6 +1332,52 @@ section h2 {
 .indicador-nome {
   font-size: 0.85rem;
   color: var(--cor-texto-suave);
+  text-decoration: none;
+}
+.indicador-nome:hover {
+  color: var(--cor-marca);
+  text-decoration: underline;
+}
+/* Ficha técnica do indicador (/indicador/[codigo]) — o "como" de cada número, navegável. */
+.ficha-dominio {
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+  margin: 0 0 10px;
+}
+.ficha-dominio code {
+  font-size: 0.82rem;
+  background: var(--cor-fundo);
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--cor-borda);
+}
+.ficha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+.ficha-grid > div {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  padding: 12px 14px;
+}
+.ficha-larga {
+  grid-column: 1 / -1;
+}
+.ficha-grid dt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+.ficha-grid dd {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 .indicador-valor {
   font-size: 1.3rem;

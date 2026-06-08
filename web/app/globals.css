@@ -894,6 +894,105 @@ section h2 {
   align-items: center;
   gap: 7px;
 }
+/* Comparar municípios (produto #5) — lado a lado, descritivo. Picker sem JS (?a=&b=). */
+.cmp-picker {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 18px;
+  padding: 12px 14px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+.cmp-picker-lado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cmp-picker-rotulo {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+  min-width: 92px;
+}
+.cmp-picker a {
+  text-decoration: none;
+  color: var(--cor-marca);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+.cmp-picker a:hover {
+  border-color: var(--cor-marca);
+}
+.cmp-picker .picker-ativo {
+  background: var(--cor-marca);
+  color: #fff;
+  border-color: var(--cor-marca);
+}
+.cmp-trocar {
+  margin: 0;
+  font-size: 0.85rem;
+}
+.cmp-trocar a {
+  color: var(--cor-marca);
+  font-weight: 600;
+  text-decoration: none;
+}
+.cmp-tabela {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  overflow: hidden;
+  background: var(--cor-superficie);
+}
+.cmp-linha {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--cor-borda);
+  align-items: baseline;
+}
+.cmp-cabeca {
+  border-top: none;
+  font-weight: 700;
+  background: var(--cor-fundo);
+}
+.cmp-dominio {
+  font-size: 0.95rem;
+  margin: 0;
+  padding: 12px 14px 2px;
+  color: var(--cor-texto-suave);
+}
+.cmp-ind {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.cmp-valor {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+.cmp-valor small {
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--cor-texto-suave);
+}
+.cmp-vazio {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+}
+@media (max-width: 560px) {
+  .cmp-linha {
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+}
 .exec-pill {
   display: inline-flex;
   align-items: center;

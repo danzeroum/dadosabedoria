@@ -6,8 +6,11 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **21 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#75; +#76 legenda das faixas no diretório OndeFoi).
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **23 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#76; +#77 **produto "Comparar municípios"**). **#5
+> exercido (o dono pediu "priorizar um produto"):** novo produto `/comparar` (ADR-0030) — dois
+> municípios lado a lado, indicador por indicador, sobre o panorama existente (sem novo contrato),
+> descritivo (não ranking), supressão honesta, sem JS; na porta de entrada. Escala com mais dado.
 > O selo de confiança vive também nas listas `/ivm` e `/onde-foi`. **Handoff de design reconciliado por completo** — a
 > **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
 > `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face

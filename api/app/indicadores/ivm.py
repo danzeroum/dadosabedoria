@@ -18,6 +18,7 @@ from app.core.db import connect_autocommit
 from app.core.erros import NaoEncontradoError
 from app.core.observabilidade import get_logger
 from app.indicadores.modelos import (
+    FonteSelo,
     IVMItem,
     MetaIVM,
     Paginacao,
@@ -50,7 +51,45 @@ async def refrescar_ivm() -> None:
     _log.info("ivm_refrescado")
 
 
+_MESES = ("jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez")
+
+
+def _rotulo(periodo: date) -> str:
+    return f"{_MESES[periodo.month - 1]}/{periodo.year}"
+
+
+def _fontes_ivm(rotulo: str) -> list[FonteSelo]:
+    """As três fontes do índice composto (emprego, crédito, saúde) — para o selo de confiança."""
+    return [
+        FonteSelo(
+            sigla="CAGED",
+            nome="Novo CAGED (Cadastro Geral de Empregados e Desempregados)",
+            orgao="MTE / PDET",
+            dominio="Trabalho (emprego formal)",
+            ate=rotulo,
+            atraso="~40 dias após o mês",
+        ),
+        FonteSelo(
+            sigla="ESTBAN",
+            nome="Estatística Bancária Mensal por Município",
+            orgao="Banco Central do Brasil (BCB)",
+            dominio="Crédito / Finanças",
+            ate=rotulo,
+            atraso="~60 dias após o mês",
+        ),
+        FonteSelo(
+            sigla="SIH/SUS",
+            nome="Sistema de Informações Hospitalares (internações respiratórias)",
+            orgao="DATASUS / Ministério da Saúde",
+            dominio="Saúde",
+            ate=rotulo,
+            atraso="~90 dias (subíndice opcional)",
+        ),
+    ]
+
+
 def _meta(periodo: date | None) -> MetaIVM:
+    rotulo = _rotulo(periodo) if periodo else None
     return MetaIVM(
         indicador=CODIGO_IVM,
         nome="Índice de Vulnerabilidade Municipal (IVM)",
@@ -63,6 +102,12 @@ def _meta(periodo: date | None) -> MetaIVM:
         componentes=COMPONENTES,
         semaforo={"verde": "< 33", "amarelo": "33–66", "vermelho": "> 66"},
         periodo=periodo.strftime("%Y-%m") if periodo else None,
+        # Selo de confiança (reuso do primitivo compartilhado): fontes ricas + frescor típico.
+        fontes=_fontes_ivm(rotulo) if rotulo else [],
+        periodo_rotulo=rotulo,
+        atraso_dias=60,  # lag típico do composto (base emprego+finanças); saúde detalhada por fonte
+        licenca="Dados públicos (CAGED/MTE · ESTBAN/BCB · SIH/DATASUS) · Licença aberta · "
+        "Atribuição: DadoSabedoria.",
     )
 
 

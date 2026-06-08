@@ -16,11 +16,12 @@ export interface IVMItem {
   v_saude_estado: ExeEstado; // valor | suprimido (privacidade) | sem_cobertura
 }
 
-export interface MetaIVM {
+// MetaIVM reusa o contrato do selo de confiança (SeloMeta: fontes/frescor/licença) — primitivo
+// compartilhado com o OndeFoi, sem forkar. Acrescenta os campos próprios do índice composto.
+export interface MetaIVM extends SeloMeta {
   indicador: string;
   nome: string;
   metodologia: string;
-  versao_metodologia: string;
   componentes: string[];
   semaforo: Record<string, string>;
   periodo: string | null;

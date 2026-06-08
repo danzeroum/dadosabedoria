@@ -112,6 +112,37 @@ components:
       - atraso
       title: FonteOut
       type: object
+    FonteSelo:
+      description: Uma fonte no selo de confiança (primitivo compartilhado OndeFoi
+        ↔ IVM).
+      properties:
+        ate:
+          title: Ate
+          type: string
+        atraso:
+          title: Atraso
+          type: string
+        dominio:
+          title: Dominio
+          type: string
+        nome:
+          title: Nome
+          type: string
+        orgao:
+          title: Orgao
+          type: string
+        sigla:
+          title: Sigla
+          type: string
+      required:
+      - sigla
+      - nome
+      - orgao
+      - dominio
+      - ate
+      - atraso
+      title: FonteSelo
+      type: object
     FuncaoOut:
       properties:
         empenhado:
@@ -331,13 +362,26 @@ components:
     MetaIVM:
       description: Proveniência do IVM — índice composto, não vem de uma fonte única.
       properties:
+        atraso_dias:
+          default: 60
+          title: Atraso Dias
+          type: integer
         componentes:
           items:
             type: string
           title: Componentes
           type: array
+        fontes:
+          items:
+            $ref: '#/components/schemas/FonteSelo'
+          title: Fontes
+          type: array
         indicador:
           title: Indicador
+          type: string
+        licenca:
+          default: ''
+          title: Licenca
           type: string
         metodologia:
           title: Metodologia
@@ -350,6 +394,11 @@ components:
           - type: string
           - type: 'null'
           title: Periodo
+        periodo_rotulo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo Rotulo
         semaforo:
           additionalProperties:
             type: string

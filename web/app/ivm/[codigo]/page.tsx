@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { Comparador } from "../../../components/Comparador";
 import { Semaforo } from "../../../components/Semaforo";
+import { SeloConfianca } from "../../../components/SeloConfianca";
 import { SerieTemporal } from "../../../components/SerieTemporal";
 import { buscarSerieIVM } from "../../../lib/api";
 import { formatarIVM } from "../../../lib/semaforo";
@@ -56,7 +57,11 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
         </Link>
       </p>
 
-      <p className="metodologia">{resp.meta.metodologia}</p>
+      <section className="of-proveniencia">
+        <h2>De onde vem este número</h2>
+        <SeloConfianca meta={resp.meta} />
+        <p className="metodologia">{resp.meta.metodologia}</p>
+      </section>
     </main>
   );
 }

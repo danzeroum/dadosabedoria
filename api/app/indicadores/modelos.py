@@ -116,6 +116,17 @@ class ErroOut(BaseModel):
 # ----------------------------------------------------------------------- IVM (índice composto)
 
 
+class FonteSelo(BaseModel):
+    """Uma fonte no selo de confiança (primitivo compartilhado OndeFoi ↔ IVM)."""
+
+    sigla: str
+    nome: str
+    orgao: str
+    dominio: str
+    ate: str
+    atraso: str
+
+
 class MetaIVM(BaseModel):
     """Proveniência do IVM — índice composto, não vem de uma fonte única."""
 
@@ -126,6 +137,11 @@ class MetaIVM(BaseModel):
     componentes: list[str]
     semaforo: dict[str, str]
     periodo: str | None = None
+    # Selo de confiança (compartilhado): proveniência rica por fonte + frescor (reuso na tela).
+    fontes: list[FonteSelo] = Field(default_factory=list)
+    periodo_rotulo: str | None = None
+    atraso_dias: int = 60
+    licenca: str = ""
 
 
 class IVMItem(BaseModel):

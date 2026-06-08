@@ -6,8 +6,8 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **18 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#72). **Handoff de design reconciliado por completo** — a
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **19 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#73; +#74 comparar lado-a-lado). **Handoff de design reconciliado por completo** — a
 > **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
 > `.acoes`); a **lista/índice `/onde-foi`** (#72) fechou a navegação com mitigação de dupla-face
 > (ordenada por nome, aviso "ilustrativo"); e o drill-down do IVM ganhou **leitura humana** (#73:
@@ -134,8 +134,9 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   da ouvidoria local, foco no território, nunca em pessoas) — `lib/agir.ts` com testes; gates
   degradando honestamente. IVM — **reconciliação COMPLETA**: ✅ `SeloConfianca` reutilizado no drill-down (`MetaIVM` com
   `fontes` [CAGED/ESTBAN/SIH] + frescor + licença, sem forkar); ✅ **busca** de município (server-side
-  `?q=`, sem JS); ✅ **"o que é IVM"** (explicador `<details>`); ✅ **comparar cidade parecida**
-  (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; bloco no drill-down); ✅
+  `?q=`, sem JS); ✅ **"o que é IVM"** (explicador `<details>`); ✅ **comparar cidade parecida
+  LADO A LADO** (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; subíndices
+  side-by-side com picker `?compara=` sem JS — revela ONDE duas cidades parecidas diferem); ✅
   **superfície de agir** (`AcoesIVM` reusa `lib/agir.ts` + estilos `.acoes` neutros — primitivo
   compartilhado com o OndeFoi, sem forkar: compartilhar/exportar-ABNT/avise-me/a-quem-levar, copy
   honesta "comparativo, não veredito", gates degradando); ✅ **leitura humana** do drill-down

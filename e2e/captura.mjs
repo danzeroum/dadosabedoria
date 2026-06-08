@@ -15,7 +15,7 @@ const paginas = [
   { nome: "ivm-mapa", url: `${BASE}/ivm` }, // cartões semafóricos + subíndices
   { nome: "ivm-municipio-sp", url: `${BASE}/ivm/3550308` }, // drill-down: série + proveniência
   { nome: "pulso-sp", url: `${BASE}/pulso/3550308` }, // TRAB-01: saldo de emprego formal
-  { nome: "onde-foi-rio", url: `${BASE}/onde-foi/3304557` }, // TRANSP-06: execução + sem cobertura
+  { nome: "onde-foi-lista", url: `${BASE}/onde-foi` }, // TRANSP-06: diretório OndeFoi (lista)
   { nome: "municipio-campinas", url: `${BASE}/municipio/3509502` }, // panorama: domínios + protegido
   { nome: "comparar-municipios", url: `${BASE}/comparar` }, // produto #5: SP vs Campinas, lado a lado
   { nome: "fontes-confianca", url: `${BASE}/fontes` }, // proveniência consolidada + modelo de privacidade

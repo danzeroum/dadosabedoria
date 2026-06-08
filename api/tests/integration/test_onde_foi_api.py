@@ -20,7 +20,7 @@ from tests.fixtures.siconfi import AMOSTRA_FUNCOES, FetcherFake
 
 pytestmark = pytest.mark.integration
 
-_TRUNCATE = text("TRUNCATE execucao_funcao RESTART IDENTITY CASCADE")
+_DELETE = text("DELETE FROM execucao_funcao")
 
 
 async def _seed(conn_url: str) -> None:
@@ -32,13 +32,13 @@ async def _seed(conn_url: str) -> None:
         )
 
 
-async def _truncate(conn_url: str) -> None:
+async def _limpar(conn_url: str) -> None:
     async with connect(conn_url) as conn:
-        await conn.execute(_TRUNCATE)
+        await conn.execute(_DELETE)
 
 
 async def test_onde_foi_lista_vazia_sem_dado(client, db_pronto: None) -> None:
-    await _truncate(get_settings().database_url)
+    await _limpar(get_settings().database_url)
     r = await client.get("/v1/onde-foi")
     assert r.status_code == 200
     b = r.json()
@@ -46,14 +46,14 @@ async def test_onde_foi_lista_vazia_sem_dado(client, db_pronto: None) -> None:
 
 
 async def test_onde_foi_404_sem_dado(client, db_pronto: None) -> None:
-    await _truncate(get_settings().database_url)
+    await _limpar(get_settings().database_url)
     r = await client.get("/v1/onde-foi/3550308")
     assert r.status_code == 404
     assert r.json()["erro"] == "nao_encontrado"
 
 
 async def test_onde_foi_contrato_sp(client, db_pronto: None) -> None:
-    await _truncate(get_settings().database_url)
+    await _limpar(get_settings().database_url)
     await _seed(get_settings().database_url)
     r = await client.get("/v1/onde-foi/3550308")
     assert r.status_code == 200
@@ -78,7 +78,7 @@ async def test_onde_foi_contrato_sp(client, db_pronto: None) -> None:
 
 
 async def test_onde_foi_lista_com_dado(client, db_pronto: None) -> None:
-    await _truncate(get_settings().database_url)
+    await _limpar(get_settings().database_url)
     await _seed(get_settings().database_url)
     r = await client.get("/v1/onde-foi")
     assert r.status_code == 200

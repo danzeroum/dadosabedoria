@@ -6,9 +6,11 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **13 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#67) + a fatia da **superfície de agir do OndeFoi** (em
-> curso). **Handoff de design reconciliado por completo** (último item ungated fechado). Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **14 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#68). **Handoff de design reconciliado por completo**
+> (último item ungated — a **superfície de agir do OndeFoi** — fechado no #68). **Backlog ungated do
+> MODO DEV: ZERADO** — verificado item a item no checkpoint final: o que resta é **TUDO gate do dono**
+> (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por

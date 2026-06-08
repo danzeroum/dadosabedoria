@@ -68,6 +68,22 @@ export default async function OndeFoiDiretorioPage({
         ) : null}
       </form>
 
+      <ul className="of-legenda" aria-label="Legenda das faixas de execução">
+        <li>
+          <span className="exec-pill exec-alta">≥80%</span> liquidou quase tudo — confira se virou
+          serviço
+        </li>
+        <li>
+          <span className="exec-pill exec-parcial">55–79%</span> liquidação parcial
+        </li>
+        <li>
+          <span className="exec-pill exec-baixa">&lt;55%</span> liquidou pouco — merece a pergunta
+        </li>
+        <li>
+          <span className="exec-pill exec-indef">—</span> sem liquidação divulgada
+        </li>
+      </ul>
+
       {dados.length === 0 ? (
         <p className="vazio">Nenhum município encontrado{q ? ` para “${q}”` : ""}.</p>
       ) : (

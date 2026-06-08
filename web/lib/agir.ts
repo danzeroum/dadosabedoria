@@ -1,4 +1,4 @@
-import type { OndeFoiProduto } from "./types";
+import type { IVMItem, MetaIVM, OndeFoiProduto } from "./types";
 
 // Helpers puros da superfície de "agir" (etapa final do funil — handoff de design): compartilhar,
 // citar com proveniência e levar o dado adiante. Tudo no cliente-zero (server components): os links
@@ -40,5 +40,32 @@ export function citacaoAbntOndeFoi(d: OndeFoiProduto, hoje: Date = new Date()): 
     `DadoSabedoria (${ano}). OndeFoi — execução orçamentária por função ` +
     `(${d.meta.versao_metodologia}) — ${d.nome}/${d.uf}, ${d.meta.periodo_rotulo}. ` +
     `Fontes: ${fontes}. Acesso em ${dataAcesso}. ${d.meta.licenca}`
+  );
+}
+
+// ----------------------------------------------------------------- IVM (mesma superfície de agir)
+
+export function urlCanonicaIvm(codigoIbge: string): string {
+  return `${siteUrl()}/ivm/${codigoIbge}`;
+}
+
+// O IVM é índice COMPARATIVO de vulnerabilidade (maior = mais vulnerável), min-max no período — não
+// veredito nem ranking de "pior cidade". O texto preserva isso (ADR-0018/0025).
+export function textoCompartilharIvm(item: IVMItem): string {
+  return (
+    `IVM de ${item.nome}: ${item.ivm.toFixed(1)} (${item.semaforo}) — índice de vulnerabilidade ` +
+    `municipal (emprego, finanças, saúde), comparativo no período ${item.periodo}, não veredito. ` +
+    `via DadoSabedoria`
+  );
+}
+
+export function citacaoAbntIvm(item: IVMItem, meta: MetaIVM, hoje: Date = new Date()): string {
+  const dataAcesso = hoje.toLocaleDateString("pt-BR");
+  const ano = hoje.getFullYear();
+  const fontes = meta.fontes.map((f) => f.sigla).join(", ");
+  const uf = item.uf ? `/${item.uf}` : "";
+  return (
+    `DadoSabedoria (${ano}). Índice de Vulnerabilidade Municipal (IVM ${meta.versao_metodologia}) — ` +
+    `${item.nome}${uf}, ${meta.periodo_rotulo}. Fontes: ${fontes}. Acesso em ${dataAcesso}. ${meta.licenca}`
   );
 }

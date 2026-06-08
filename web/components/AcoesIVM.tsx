@@ -1,32 +1,31 @@
 import {
-  citacaoAbntOndeFoi,
+  citacaoAbntIvm,
   linkEmail,
   linkWhatsapp,
-  textoCompartilharOndeFoi,
-  urlCanonicaOndeFoi,
+  textoCompartilharIvm,
+  urlCanonicaIvm,
 } from "../lib/agir";
-import type { OndeFoiProduto } from "../lib/types";
+import type { IVMItem, MetaIVM } from "../lib/types";
 
-// Superfície de "agir" (etapa final do funil do OndeFoi — handoff de design): levar o dado adiante
-// sem JS no cliente, com os gates degradando honestamente. São <details> nativos (acessíveis,
-// operáveis por teclado), no mesmo idioma do "O que é execução". Compartilhar e citar já funcionam;
-// "avise-me" prepara o lugar (a autenticação do cidadão é gate do dono); "a quem cobrar" leva ao
-// canal real de LAI/ouvidoria (Fala.BR), sem expor pessoas — o foco é o território.
-export function AcoesOndeFoi({ d }: { d: OndeFoiProduto }) {
-  const url = urlCanonicaOndeFoi(d.codigo_ibge);
-  const texto = textoCompartilharOndeFoi(d);
-  const citacao = citacaoAbntOndeFoi(d);
-  const assunto = `Onde foi o dinheiro de ${d.nome}?`;
+// Superfície de "agir" do IVM — mesmo primitivo do OndeFoi (`lib/agir.ts` + estilos `.acoes`/`.acao`),
+// sem forkar. `<details>` nativos, cliente-zero. O IVM é índice COMPARATIVO de vulnerabilidade (não
+// veredito nem ranking) — a copy preserva isso em cada ação. "Avise-me" prepara o lugar (auth do
+// cidadão é gate do dono); "a quem levar" leva ao canal real (Fala.BR), foco no território.
+export function AcoesIVM({ item, meta }: { item: IVMItem; meta: MetaIVM }) {
+  const url = urlCanonicaIvm(item.codigo_ibge);
+  const texto = textoCompartilharIvm(item);
+  const citacao = citacaoAbntIvm(item, meta);
+  const assunto = `Vulnerabilidade (IVM) de ${item.nome}`;
   const buscaOuvidoria = `https://www.google.com/search?q=${encodeURIComponent(
-    `ouvidoria câmara prefeitura ${d.nome} ${d.uf}`,
+    `ouvidoria câmara prefeitura ${item.nome}${item.uf ? ` ${item.uf}` : ""}`,
   )}`;
 
   return (
     <section className="acoes" aria-label="O que fazer com este dado">
       <h2>Leve este dado adiante</h2>
       <p className="of-sub">
-        O número sozinho não cobra — você cobra. Compartilhe, cite com proveniência e leve à
-        ouvidoria. Sem expor pessoas: o foco é o território, não quem.
+        Vulnerabilidade alta é um sinal para <strong>priorizar política</strong>, não um veredito
+        sobre a gestão. Compartilhe, cite com proveniência e leve a quem decide.
       </p>
 
       <details className="acao">
@@ -54,18 +53,18 @@ export function AcoesOndeFoi({ d }: { d: OndeFoiProduto }) {
           <p className="acao-rotulo">Citação sugerida (ABNT)</p>
           <code className="acao-bloco">{citacao}</code>
           <p className="acao-nota">
-            Selecione e copie o texto acima. Para os dados em JSON com proveniência, use a API
-            pública <code>/v1/onde-foi/{d.codigo_ibge}</code>.
+            Selecione e copie o texto acima. Para a série e os subíndices em JSON com proveniência,
+            use a API pública <code>/v1/ivm/{item.codigo_ibge}</code>.
           </p>
         </div>
       </details>
 
       <details className="acao">
-        <summary>Avise-me se travar</summary>
+        <summary>Avise-me se piorar</summary>
         <div className="acao-corpo">
           <p>
-            Receba um aviso quando a execução de <strong>{d.nome}</strong> mudar de faixa — por
-            exemplo, ao cair para <em>liquidou pouco</em>.
+            Receba um aviso quando o IVM de <strong>{item.nome}</strong> mudar de faixa — por
+            exemplo, ao entrar no <em>vermelho</em>.
           </p>
           <p className="acao-privacidade">
             <strong>LGPD por desenho.</strong> Seu contato ficaria num cofre isolado (schema{" "}
@@ -80,11 +79,12 @@ export function AcoesOndeFoi({ d }: { d: OndeFoiProduto }) {
       </details>
 
       <details className="acao">
-        <summary>A quem cobrar</summary>
+        <summary>A quem levar</summary>
         <div className="acao-corpo">
           <p>
-            Leve a execução orçamentária a quem decide e pergunte <strong>por que travou</strong> ou{" "}
-            <strong>se virou serviço</strong>. Execução não é entrega — a pergunta é legítima.
+            Leve o panorama de vulnerabilidade a quem decide — vereadores, secretarias, ouvidoria —
+            para <strong>priorizar política pública</strong>. É sinal comparativo para priorizar,
+            não sentença.
           </p>
           <p className="acoes-links">
             <a href="https://falabr.cgu.gov.br/" target="_blank" rel="noopener noreferrer">
@@ -92,7 +92,7 @@ export function AcoesOndeFoi({ d }: { d: OndeFoiProduto }) {
               <span className="sr-only"> (abre em nova aba)</span>
             </a>
             <a href={buscaOuvidoria} target="_blank" rel="noopener noreferrer">
-              Ouvidoria/câmara de {d.nome}
+              Ouvidoria/câmara de {item.nome}
               <span className="sr-only"> (abre em nova aba)</span>
             </a>
           </p>

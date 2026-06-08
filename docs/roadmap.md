@@ -6,11 +6,13 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **14 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#68). **Handoff de design reconciliado por completo**
-> (último item ungated — a **superfície de agir do OndeFoi** — fechado no #68). **Backlog ungated do
-> MODO DEV: ZERADO** — verificado item a item no checkpoint final: o que resta é **TUDO gate do dono**
-> (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD). Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **15+ PRs
+> abertos, CI verde e mergeados sozinho** (#55–#69 + a fatia da superfície de agir do IVM). **Handoff
+> de design reconciliado por completo** — a **superfície de agir** (compartilhar/citar-ABNT/avise-me/
+> a-quem-levar) cobre agora **OndeFoi (#68) e IVM**, primitivo compartilhado (`lib/agir.ts` + estilos
+> `.acoes`). **Backlog ungated de PRODUTO essencialmente esgotado**: o que resta enumerado no roadmap é
+> **gate do dono** (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD); a veia ainda viva é
+> só o **polimento do handoff** (a reconciliação rendeu OndeFoi-agir e IVM-agir). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
@@ -22,9 +24,11 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 > 4. **Telas do IVM reconciliadas — 4/4** (primitivos compartilhados, sem forkar): `SeloConfianca`
 >    reutilizado (`MetaIVM` com fontes+frescor), **busca** server-side, **"o que é IVM"** (explicador) e
 >    **comparar cidade parecida** (`/v1/ivm/{ibge}/similares`).
-> 5. **OndeFoi — superfície de agir** (`AcoesOndeFoi`, `<details>` sem JS): compartilhar, exportar com
->    citação ABNT (proveniência embutida), avise-me (LGPD-por-desenho, prepara o lugar) e a-quem-cobrar
->    (Fala.BR real) — gates degradando honestamente; fecha a reconciliação do handoff.
+> 5. **Superfície de agir (OndeFoi #68 + IVM)** — `AcoesOndeFoi`/`AcoesIVM`, `<details>` sem JS, sobre
+>    o primitivo compartilhado `lib/agir.ts` (+ estilos `.acoes` neutros, renomeados de `of-` sem
+>    forkar): compartilhar, exportar com citação **ABNT** (proveniência embutida), avise-me
+>    (LGPD-por-desenho, prepara o lugar p/ a auth do cidadão) e a-quem-cobrar/levar (Fala.BR/CGU real).
+>    Copy honesta por produto (execução≠serviço; IVM comparativo≠veredito); gates degradando.
 >
 > **O que resta é TUDO gate do dono:** **(a)** OndeFoi **go-live** — endpoint
 > lendo a fato `execucao_funcao` (🟡 referenda a ancoragem Liquidado/Empenhado; PENDENCIAS §B); **(b)**
@@ -122,7 +126,10 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   degradando honestamente. IVM — **reconciliação COMPLETA**: ✅ `SeloConfianca` reutilizado no drill-down (`MetaIVM` com
   `fontes` [CAGED/ESTBAN/SIH] + frescor + licença, sem forkar); ✅ **busca** de município (server-side
   `?q=`, sem JS); ✅ **"o que é IVM"** (explicador `<details>`); ✅ **comparar cidade parecida**
-  (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; bloco no drill-down). _Default
+  (endpoint `/v1/ivm/{ibge}/similares` = mesma UF, IVM mais próximo; bloco no drill-down); ✅
+  **superfície de agir** (`AcoesIVM` reusa `lib/agir.ts` + estilos `.acoes` neutros — primitivo
+  compartilhado com o OndeFoi, sem forkar: compartilhar/exportar-ABNT/avise-me/a-quem-levar, copy
+  honesta "comparativo, não veredito", gates degradando). _Default
   "parecida" = mesma UF + IVM mais próximo, no exercício; reversível se o dono preferir outro._ **axe/WCAG no DOM vivo** do screenshot: ✅ **RESOLVIDO
   (2026-06-07)** — (1) o axe **nunca rodava** (falso-verde): `captura.mjs` usava `browser.newPage()`,
   rejeitado pelo `@axe-core/playwright` → auditoria pulada em silêncio; corrigido com

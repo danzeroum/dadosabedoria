@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  citacaoAbntIvm,
   citacaoAbntOndeFoi,
   linkEmail,
   linkWhatsapp,
+  textoCompartilharIvm,
   textoCompartilharOndeFoi,
+  urlCanonicaIvm,
   urlCanonicaOndeFoi,
 } from "./agir";
-import type { OndeFoiProduto } from "./types";
+import type { IVMItem, MetaIVM, OndeFoiProduto } from "./types";
 
 const D: OndeFoiProduto = {
   codigo_ibge: "3550308",
@@ -70,6 +73,67 @@ describe("citacaoAbntOndeFoi (proveniência embutida)", () => {
     expect(c).toContain("exercício 2024");
     expect(c).toContain("SICONFI"); // fonte citada
     expect(c).toContain("v1"); // versão da metodologia
+    expect(c).toContain("CC BY 4.0"); // licença
+  });
+});
+
+// ----------------------------------------------------------------- IVM (mesma superfície)
+
+const ITEM: IVMItem = {
+  codigo_ibge: "3106200",
+  nome: "Belo Horizonte",
+  uf: "MG",
+  periodo: "2026-08",
+  ivm: 42.7,
+  semaforo: "amarelo",
+  v_emprego: 0.4,
+  v_financas: 0.5,
+  v_saude: 0.3,
+  v_saude_estado: "valor",
+};
+
+const META_IVM: MetaIVM = {
+  fontes: [
+    { sigla: "CAGED", nome: "Novo CAGED", orgao: "MTE", dominio: "x", ate: "2026-08", atraso: "—" },
+    { sigla: "ESTBAN", nome: "ESTBAN", orgao: "BCB", dominio: "y", ate: "2026-08", atraso: "—" },
+  ],
+  periodo_rotulo: "agosto/2026",
+  atraso_dias: 30,
+  versao_metodologia: "v1.1",
+  licenca: "CC BY 4.0",
+  indicador: "ivm",
+  nome: "Índice de Vulnerabilidade Municipal",
+  metodologia: "min-max",
+  componentes: ["emprego", "finanças", "saúde"],
+  semaforo: {},
+  periodo: "2026-08",
+};
+
+describe("urlCanonicaIvm", () => {
+  it("aponta para o drill-down do IVM no domínio canônico", () => {
+    expect(urlCanonicaIvm("3106200")).toBe("https://dadosabedoria.org/ivm/3106200");
+  });
+});
+
+describe("textoCompartilharIvm (comparativo, não veredito)", () => {
+  it("traz o valor, o período e a ressalva 'não veredito'", () => {
+    const t = textoCompartilharIvm(ITEM);
+    expect(t).toContain("Belo Horizonte");
+    expect(t).toContain("42.7");
+    expect(t).toContain("2026-08");
+    expect(t).toContain("não veredito"); // honestidade do índice comparativo
+  });
+});
+
+describe("citacaoAbntIvm (proveniência embutida)", () => {
+  it("inclui obra IVM, município/UF, período, fontes, versão e licença", () => {
+    const c = citacaoAbntIvm(ITEM, META_IVM, new Date("2026-06-08T12:00:00Z"));
+    expect(c).toContain("DadoSabedoria (2026)");
+    expect(c).toContain("Índice de Vulnerabilidade Municipal");
+    expect(c).toContain("Belo Horizonte/MG");
+    expect(c).toContain("agosto/2026");
+    expect(c).toContain("CAGED"); // fonte citada
+    expect(c).toContain("v1.1"); // versão da metodologia
     expect(c).toContain("CC BY 4.0"); // licença
   });
 });

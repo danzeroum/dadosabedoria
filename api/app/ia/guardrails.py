@@ -37,6 +37,28 @@ def _casa(tok: str, palavras: set[str]) -> bool:
     return any(tok == w or w.startswith(tok) or tok.startswith(w) for w in palavras)
 
 
+# Sinônimos do dia a dia → domínio. O léxico do código/nome já cobre os termos técnicos do dado
+# ('emprego', 'internacoes', 'matriculas'…); aqui entram as palavras que o cidadão usa e que NÃO
+# aparecem no dado. Só termos não-ambíguos (de fora: 'banco', 'receita', 'carteira', 'vaga').
+_SINONIMOS: dict[str, str] = {
+    "hospital": "saude",
+    "doente": "saude",
+    "internado": "saude",
+    "escola": "educacao",
+    "aluno": "educacao",
+    "estudante": "educacao",
+    "creche": "educacao",
+    "repasse": "financas",
+    "emprestimo": "credito",
+    "financiamento": "credito",
+    "licitacao": "compras",
+    "fornecedor": "compras",
+    "pregao": "compras",
+    "desemprego": "trabalho",
+    "trabalhador": "trabalho",
+}
+
+
 def identificar_indicador(pergunta: str, catalogo: list[tuple[str, str]]) -> str | None:
     """Casa a pergunta com o catálogo ``[(codigo, nome)]``. Retorna o melhor ou None (abster).
 
@@ -44,15 +66,22 @@ def identificar_indicador(pergunta: str, catalogo: list[tuple[str, str]]) -> str
     'internacoes'…) como duas fontes, com casamento por prefixo p/ flexão. Um termo forte aparece
     nas DUAS (emprego/empregos, credito/credito) → score 2; uma palavra genérica só do código
     ('total') casa uma vez → fica abaixo do limiar, sem falso-positivo nem inflar o ruído.
+
+    Acresce um SINÔNIMO do dia a dia (peso 2) quando o cidadão usa uma palavra que não está no dado
+    mas aponta o domínio sem ambiguidade ('hospital'→saude, 'escola'→educacao) — recall p/ leigos.
     """
     p = _normalizar(pergunta)
     palavras = set(_tokens(pergunta))
     melhor: str | None = None
     melhor_score = 0
     for codigo, nome in catalogo:
+        dominio = _normalizar(codigo).split(".", 1)[0]
         score = 5 if _normalizar(codigo) in p else 0
         score += sum(1 for tok in set(_tokens_codigo(codigo)) if _casa(tok, palavras))
         score += sum(1 for tok in set(_tokens(nome)) if _casa(tok, palavras))
+        score += 2 * sum(
+            1 for termo, dom in _SINONIMOS.items() if dom == dominio and _casa(termo, palavras)
+        )
         if score > melhor_score:
             melhor, melhor_score = codigo, score
     return melhor if melhor_score >= 2 else None

@@ -5,8 +5,9 @@ import type { RespostaIA } from "../../lib/types";
 
 export const dynamic = "force-dynamic";
 
-// Exemplos navegáveis (sem JS no cliente): cada link faz uma pergunta. O 3º é fora do acervo —
-// mostra a IA se ABSTENDO (não inventa). A IA só afirma o que recupera, sempre com citação.
+// Exemplos navegáveis (sem JS no cliente): cada link faz uma pergunta. O 3º usa palavra do dia a
+// dia ("alunos/escolas") SEM informar o indicador — a IA acha pelo sinônimo. O 4º é fora do acervo
+// → mostra a IA se ABSTENDO (não inventa). A IA só afirma o que recupera, sempre com citação.
 const EXEMPLOS: { q: string; indicador?: string; territorio?: string }[] = [
   {
     q: "Como está o emprego formal em São Paulo?",
@@ -18,6 +19,7 @@ const EXEMPLOS: { q: string; indicador?: string; territorio?: string }[] = [
     indicador: "saude.resp.internacoes_j",
     territorio: "3550308",
   },
+  { q: "Quantos alunos nas escolas de São Paulo?", territorio: "3550308" }, // sinônimo → educação
   { q: "Qual será a cotação do dólar amanhã?" }, // fora do repositório → a IA se abstém
 ];
 

@@ -100,7 +100,8 @@ export default function Home() {
 
       <p className="home-nota">
         Dados abertos (IBGE · Novo CAGED · BCB/ESTBAN · DATASUS/SIH · SICONFI/STN · INEP · PNCP). Cada
-        tela traz sua metodologia e a fonte. O OndeFoi roda em demonstração até o dado vivo do Tesouro.
+        tela traz sua metodologia e a fonte. O OndeFoi roda em demonstração até o dado vivo do Tesouro.{" "}
+        <Link href="/fontes">De onde vêm os dados e como protegemos →</Link>
       </p>
     </main>
   );

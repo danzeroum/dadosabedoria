@@ -83,6 +83,76 @@ components:
       - consultas
       title: ConsultaLoteIn
       type: object
+    FonteAcervoOut:
+      description: 'Uma fonte por trás dos números: órgão, licença, cadência, lag
+        e base legal (LGPD).
+
+
+        A transparência das fontes é o ativo "confiança" tornado verificável — não
+        a promessa, o fato:
+
+        estes campos vêm da tabela ``fonte``/``base_legal`` do acervo, não de texto
+        fixo.'
+      properties:
+        atualizacao:
+          title: Atualizacao
+          type: string
+        base_legal_artigo:
+          title: Base Legal Artigo
+          type: string
+        base_legal_hipotese:
+          title: Base Legal Hipotese
+          type: string
+        codigo:
+          title: Codigo
+          type: string
+        dominios:
+          items:
+            type: string
+          title: Dominios
+          type: array
+        lag_tipico_dias:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lag Tipico Dias
+        licenca:
+          title: Licenca
+          type: string
+        n_indicadores:
+          title: N Indicadores
+          type: integer
+        nome:
+          title: Nome
+          type: string
+        orgao:
+          title: Orgao
+          type: string
+        permite_redistribuicao:
+          title: Permite Redistribuicao
+          type: boolean
+        permite_uso_comercial:
+          title: Permite Uso Comercial
+          type: boolean
+        url_doc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url Doc
+      required:
+      - codigo
+      - nome
+      - orgao
+      - licenca
+      - atualizacao
+      - permite_uso_comercial
+      - permite_redistribuicao
+      - base_legal_artigo
+      - base_legal_hipotese
+      - dominios
+      - n_indicadores
+      title: FonteAcervoOut
+      type: object
     FonteOut:
       properties:
         ate:
@@ -752,6 +822,21 @@ components:
       - meta
       title: PulsoProdutivoOut
       type: object
+    RespostaFontes:
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/FonteAcervoOut'
+          title: Dados
+          type: array
+        total:
+          title: Total
+          type: integer
+      required:
+      - dados
+      - total
+      title: RespostaFontes
+      type: object
     RespostaIA:
       properties:
         abstencao:
@@ -1051,6 +1136,31 @@ paths:
       summary: Consultas Lote
       tags:
       - profundo
+  /v1/fontes:
+    get:
+      description: 'As fontes por trás de cada número: órgão, licença, cadência, lag
+        e base legal (LGPD).
+
+
+        Proveniência consolidada (invariante 5) — a transparência das fontes tornada
+        verificável. Lê a
+
+        tabela ``fonte``/``base_legal`` do acervo; cobertura (domínios, nº de indicadores)
+        só dos
+
+        indicadores **públicos**.'
+      operationId: listar_fontes_v1_fontes_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaFontes'
+          description: Successful Response
+      summary: Listar Fontes
+      tags:
+      - indicadores
+      - proveniencia
   /v1/ia/perguntar:
     post:
       description: Responde SÓ com o que recupera do repositório, com citação; sem

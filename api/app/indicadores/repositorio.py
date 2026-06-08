@@ -10,10 +10,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from sqlalchemy import RowMapping, case, func, select
+from sqlalchemy import RowMapping, and_, case, distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.tables import fonte, indicador, territorio, valor
+from app.core.tables import base_legal, fonte, indicador, territorio, valor
 
 
 def _cols_meta() -> list:
@@ -131,6 +131,40 @@ class RepositorioIndicadores:
             .where(territorio.c.codigo_ibge == codigo_ibge, indicador.c.publico.is_(True))
             .distinct(indicador.c.codigo)
             .order_by(indicador.c.codigo, valor.c.periodo.desc(), valor.c.versao.desc())
+        )
+        return list((await session.execute(stmt)).mappings().all())
+
+    async def listar_fontes(self, session: AsyncSession) -> list[RowMapping]:
+        """Fontes do acervo + cobertura (domínios e nº de indicadores PÚBLICos), em uma consulta.
+
+        Outer join nos indicadores públicos: uma fonte sem indicador público ainda aparece (com
+        ``dominios=[]`` e ``n_indicadores=0``) — honesto sobre o que existe. A fonte sem casamento
+        agrega ``{NULL}`` em ``dominios``; o ``None`` é descartado na facade (sem bind de NULL
+        sem-tipo no SQL). ``count(distinct ...)`` já ignora NULL → 0 na cobertura vazia.
+        """
+        j = fonte.join(base_legal, base_legal.c.id == fonte.c.base_legal_id).outerjoin(
+            indicador,
+            and_(indicador.c.fonte_id == fonte.c.id, indicador.c.publico.is_(True)),
+        )
+        stmt = (
+            select(
+                fonte.c.codigo,
+                fonte.c.nome,
+                fonte.c.orgao,
+                fonte.c.url_doc,
+                fonte.c.licenca,
+                fonte.c.atualizacao,
+                fonte.c.lag_tipico_dias,
+                fonte.c.permite_uso_comercial,
+                fonte.c.permite_redistribuicao,
+                base_legal.c.artigo.label("base_legal_artigo"),
+                base_legal.c.hipotese.label("base_legal_hipotese"),
+                func.array_agg(distinct(indicador.c.dominio)).label("dominios"),
+                func.count(distinct(indicador.c.codigo)).label("n_indicadores"),
+            )
+            .select_from(j)
+            .group_by(fonte.c.id, base_legal.c.id)
+            .order_by(fonte.c.nome)
         )
         return list((await session.execute(stmt)).mappings().all())
 

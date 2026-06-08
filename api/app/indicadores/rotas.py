@@ -14,6 +14,7 @@ from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     IndicadorOut,
     PanoramaOut,
+    RespostaFontes,
     RespostaIndicadores,
     RespostaIVM,
     RespostaIVMSerie,
@@ -73,6 +74,17 @@ async def listar_valores(
         pagina=pagina,
         por_pagina=por_pagina,
     )
+
+
+@router.get("/fontes", response_model=RespostaFontes, tags=["proveniencia"])
+async def listar_fontes(session: AsyncSession = Depends(get_session)) -> RespostaFontes:
+    """As fontes por trás de cada número: órgão, licença, cadência, lag e base legal (LGPD).
+
+    Proveniência consolidada (invariante 5) — a transparência das fontes tornada verificável. Lê a
+    tabela ``fonte``/``base_legal`` do acervo; cobertura (domínios, nº de indicadores) só dos
+    indicadores **públicos**.
+    """
+    return await IndicadoresFacade(session).listar_fontes()
 
 
 @router.get("/territorios/{codigo_ibge}", response_model=TerritorioOut)

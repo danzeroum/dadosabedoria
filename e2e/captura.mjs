@@ -18,6 +18,7 @@ const paginas = [
   { nome: "onde-foi-rio", url: `${BASE}/onde-foi/3304557` }, // TRANSP-06: execução + sem cobertura
   { nome: "municipio-campinas", url: `${BASE}/municipio/3509502` }, // panorama: domínios + protegido
   { nome: "comparar-municipios", url: `${BASE}/comparar` }, // produto #5: SP vs Campinas, lado a lado
+  { nome: "fontes-confianca", url: `${BASE}/fontes` }, // proveniência consolidada + modelo de privacidade
   {
     nome: "ia-perguntar",
     url: `${BASE}/perguntar?q=${encodeURIComponent("Como está o emprego formal em São Paulo?")}&indicador=trabalho.emprego.saldo_caged&territorio=3550308`,

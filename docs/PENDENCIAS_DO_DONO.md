@@ -6,11 +6,19 @@ fica parado** em nenhum destes — ele **anota e continua**, acumulando o que fo
 desbloqueio* do repo (ver §3). Quando você voltar, revise **este documento + a Lista de desbloqueio
 atualizada no `roadmap.md`** (o dev pode ter acrescentado itens).
 
-> **MODO DEV (2026-06-07):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI e mergeia no
-> verde sozinho** (barra inalterada: só verde genuíno) e **segue a re-ancoragem do OndeFoi no default**
-> (item B abaixo) sem esperar. **O que mudou desde o último checkpoint:** uma sessão nova abriu, o **#0
-> estava ABERTO**, e o dev validou as fontes abertas contra o dado real (ADR-0028) — confirmou a forma,
-> corrigiu bugs, e **revelou a decisão de produto B**, que só você referenda.
+> **MODO DEV (2026-06-07 + 2026-06-08):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI
+> e mergeia no verde sozinho** (barra inalterada: só verde genuíno). **O que mudou desde o último
+> checkpoint (sessão de 2026-06-08):**
+> - **PNCP aberto e validado**: `pncp.gov.br` retorna 200 na API (bug de User-Agent corrigido; ADR-0033).
+> - **IBGE gzip fix**: `FetcherIbgeHTTP` agora descomprime; 5.571 municípios + 27 UFs carregados (ADR-0033).
+> - **SICONFI nacional 2024**: ingestão completa de ~5.570 municípios executada; OndeFoi go-live com
+>   dados reais (endpoint lê `execucao_funcao`, não DEMO_MUNICIPIOS). ADR-0033.
+> - **INEP TLS cert**: host acessível mas certificado do servidor falha. Gate mudou de "allowlist" para
+>   "certificado INEP". Bloqueio técnico do lado do INEP.
+> - **ESTBAN URL gate**: `www.bcb.gov.br` / `dadosabertos.bcb.gov.br` respondem 200, mas a URL do ZIP
+>   do ESTBAN está embutida no SPA Angular (não encontrada no catálogo CKAN). Gate mudou de "host" para "URL".
+> - **DATASUS FTP**: timeout na porta 443; protocolo FTP puro não é acessível via proxy HTTP.
+> - **CAGED DNS**: `ftp.mtps.gov.br` não resolve para HTTPS; novo CAGED via `api.bcb.gov.br` (fora do allowlist).
 
 Ordenado por **impacto** (o que destrava mais primeiro). Cada item: o que é · o que fazer · o que
 destrava · impacto se não fizer · prioridade.
@@ -19,21 +27,35 @@ destrava · impacto se não fizer · prioridade.
 
 ## 1. Ações pontuais (gates externos 🔴)
 
-### ✅ #0 — Allowlist *(SICONFI/IBGE/BCB abertos e validados)*
-- **Validado (2026-06-07, ADR-0028):** abertos e exercidos contra o dado real — `apidatalake.tesouro.gov.br`
-  (SICONFI), `servicodados.ibge.gov.br` (IBGE), `www4.bcb.gov.br` (BCB). Forma confirmada, fixtures
-  fiéis-à-forma, bugs corrigidos.
-- **Ainda 403 — adicionar ao allowlist** (Custom + "include default list" + salvar) p/ validar e tornar
-  vivos os conectores restantes: `download.inep.gov.br` (INEP) · `pncp.gov.br` (PNCP) ·
-  `ftp.datasus.gov.br` (DATASUS) · `ftp.mtps.gov.br` (CAGED — FTP do MTPS, host à parte do BCB).
-- **ESTBAN — vira gate de host (sondado 2026-06-07):** `www4.bcb.gov.br` está aberto, mas o BCB
-  **migrou o portal** do ESTBAN para `www.bcb.gov.br` / `dadosabertos.bcb.gov.br` — **ambos 403** no
-  ambiente. Para validar/tornar vivo o ESTBAN, **libere um desses dois hosts** no allowlist (não é mais
-  "achar a URL"; o dev já sondou e não há caminho aberto).
-- **Destrava:** tornar vivos INEP/PNCP/DATASUS/CAGED (já estão "vivo-pronto", só falta o dado real).
-- **▶ Como executar (copia-e-cola, host + comando + o que conferir, por conector):
-  `docs/RUNBOOK_DESTRAVE.md`.** Depois do flip, é ~2–5 min por conector — ou peça ao dev "valide os
-  conectores abertos".
+### ✅ #0 — Allowlist *(sondado 2× — 2026-06-07 ADR-0028 + 2026-06-08 ADR-0033)*
+
+**Validados e ao vivo (dado real na DB):**
+- ✅ **SICONFI** `apidatalake.tesouro.gov.br` — forma confirmada (ADR-0028); rate-limit adicionado;
+  **ingestão nacional 2024 executada** (~5.570 municípios × ~24 funções → `execucao_funcao`). OndeFoi
+  vai ao vivo com dados reais.
+- ✅ **IBGE** `servicodados.ibge.gov.br` — gzip fix aplicado; 5.571 municípios + 27 UFs carregados.
+- ✅ **PNCP** `pncp.gov.br` — **validado na sessão de 2026-06-08** (ADR-0033): API retorna 200; bug
+  de User-Agent corrigido (`FetcherPncpHTTP`); 35.910 contratos jan/2024 confirmados.
+
+**Gates que mudaram de natureza (não são mais "só allowlist"):**
+- ⚠️ **INEP** `download.inep.gov.br` — host acessível (503 sem `x-deny-reason`), mas **TLS falha**:
+  `CERTIFICATE_VERIFY_FAILED` (issuer não reconhecido). O problema está no **certificado do servidor
+  INEP**, não no allowlist. _(O que fazer: verificar se o INEP corrigiu o cert ou se há URL
+  alternativa com TLS válido; ou usar `ssl.create_default_context()` com `check_hostname=False`
+  apenas em dev — não recomendado em produção.)_
+- ⚠️ **ESTBAN/BCB** `www.bcb.gov.br` e `dadosabertos.bcb.gov.br` — **ambos 200** (desbloqueados em
+  2026-06-08). Gate mudou: a **URL do ZIP do ESTBAN não foi encontrada** — BCB usa SPA Angular; URLs
+  históricas (`/estabilidadefinanceira/cosif/ESTBAN*.zip`) retornam HTML; catálogo CKAN (4.225
+  datasets) não tem "estban". _(O que fazer: inspecionar bundle JS do SPA BCB para achar o endpoint
+  real, ou contatar BCB/COSIF para obter a URL direta.)_
+- ⚠️ **DATASUS** `ftp.datasus.gov.br` — timeout na porta 443 (FTP puro; proxy só suporta HTTP/HTTPS).
+  _(Sem caminho HTTP alternativo identificado para o SIH. Gate técnico de protocolo.)_
+- ❌ **CAGED** `ftp.mtps.gov.br` — `resolve_no_records` (DNS HTTPS não existe). O **novo CAGED** está
+  disponível via `api.bcb.gov.br` (PDET/BCB) — esse host não está no allowlist.
+  _(O que fazer: adicionar `api.bcb.gov.br` ao allowlist Custom para acessar novo CAGED via BCB.)_
+
+**Destrava:** com PNCP validado, o próximo produto sobre compras pode usar dado real. SICONFI/IBGE
+já estão ao vivo (OndeFoi). INEP/ESTBAN/DATASUS/CAGED têm bloqueios técnicos específicos acima.
 
 ### 🔴 OIDC do cidadão — *login real* — **PRIORIDADE ALTA**
 - **O que é:** provedor de identidade para o cidadão se autenticar (assinar alerta "Avise-me", área

@@ -1268,6 +1268,23 @@ section h2 {
   line-height: 1.5;
   margin: 0;
 }
+.home-acervo {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 15px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  background: var(--cor-superficie);
+  color: var(--cor-texto-suave);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.home-acervo strong {
+  color: var(--cor-marca);
+}
+.home-acervo:hover {
+  border-color: var(--cor-marca);
+}
 .home-produtos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

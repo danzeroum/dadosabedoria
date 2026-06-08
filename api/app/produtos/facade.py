@@ -1,7 +1,7 @@
 """Facade dos produtos que leem o acervo real (cache + ``meta`` de proveniência do banco).
 
-OndeFoi roda em grau-demo (fixture); o **Pulso Produtivo** lê o saldo CAGED **já no ar** via o
-mesmo Repository de ``/v1/valores`` — reusa, não duplica a consulta.
+**Pulso Produtivo** lê o saldo CAGED **já no ar** via o mesmo Repository de ``/v1/valores`` —
+reusa, não duplica a consulta. OndeFoi usa o seu próprio ``RepositorioOndeFoi``.
 """
 
 from __future__ import annotations

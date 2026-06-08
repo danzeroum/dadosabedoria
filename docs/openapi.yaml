@@ -562,10 +562,7 @@ components:
         de execução).
 
 
-        Os números são grau-demo (ilustrativos) até a 1ª busca real; a dupla-face
-        §17 mora aqui: nada
-
-        de leaderboard de valor provisório.'
+        Dupla-face §17: nada de leaderboard — dados reais da fato ``execucao_funcao``.'
       properties:
         dados:
           items:
@@ -1429,17 +1426,14 @@ paths:
       - ivm
   /v1/onde-foi:
     get:
-      description: 'Diretório dos municípios do OndeFoi — porta para o detalhe, ordenado
-        por NOME (não ranking).
+      description: 'Diretório dos municípios do OndeFoi — ordenado por nome (dupla-face
+        §17, não ranking).
 
 
-        GRAU-DEMO: números ilustrativos até a 1ª busca real no SICONFI. A ordenação
-        por nome (em vez de
+        Lista os municípios com dado real na fato ``execucao_funcao`` (SICONFI/Anexo
+        I-E). Retorna
 
-        por %) é a mitigação de dupla-face (§17): nada de leaderboard de execução
-        provisória. O go-live
-
-        listará os municípios com dado na fato `execucao_funcao`.'
+        lista vazia quando nenhum dado foi ingerido ainda.'
       operationId: onde_foi_lista_v1_onde_foi_get
       responses:
         '200':
@@ -1457,11 +1451,9 @@ paths:
         — ADR-0029).
 
 
-        GRAU-DEMO até o go-live ler a fato `execucao_funcao` (esteira viva do #0).
-        ``meta.metodologia``
+        ``meta.metodologia`` enquadra: é execução **orçamentária** (empenhar≠liquidar≠serviço
 
-        enquadra: é execução **orçamentária** (empenhar≠liquidar≠serviço), NÃO serviço
-        entregue.'
+        entregue). 404 quando não há dado para o município.'
       operationId: onde_foi_v1_onde_foi__codigo_ibge__get
       parameters:
       - in: path

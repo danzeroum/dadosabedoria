@@ -7,8 +7,7 @@ import { buscarListaOndeFoi } from "../../lib/api";
 export const dynamic = "force-dynamic";
 
 // Diretório do OndeFoi: porta para o detalhe por município. Busca server-side (sem JS), espelhando
-// o /ivm. Dupla-face §17 (números grau-demo): ordenado por NOME (não ranking), com aviso forte de
-// "ilustrativo" — nada de leaderboard de execução provisória; a ExecPill já enquadra "merece a
+// o /ivm. Dupla-face §17: ordenado por NOME (não ranking) — a ExecPill já enquadra "merece a
 // pergunta, não veredito".
 export default async function OndeFoiDiretorioPage({
   searchParams,
@@ -41,12 +40,6 @@ export default async function OndeFoiDiretorioPage({
         Execução orçamentária por função (liquidado ÷ empenhado) por município, no exercício. Escolha
         um município para ver o detalhe. Executar não é entregar — o número que merece a pergunta,
         nunca o veredito.
-      </p>
-
-      <p className="of-demo-aviso" role="note">
-        <strong>Números ilustrativos (grau-demo).</strong> Exemplos até a 1ª busca real no
-        SICONFI/DCA — <strong>não refletem a gestão real</strong> e estão ordenados por nome,{" "}
-        <strong>sem ranking</strong>.
       </p>
 
       <SeloConfianca meta={lista.meta} />
@@ -102,9 +95,7 @@ export default async function OndeFoiDiretorioPage({
         </ul>
       )}
 
-      <p className="metodologia">
-        {lista.meta.metodologia} · grau-demo até a 1ª busca real no SICONFI/DCA (#0).
-      </p>
+      <p className="metodologia">{lista.meta.metodologia}</p>
     </main>
   );
 }

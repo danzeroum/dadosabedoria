@@ -66,8 +66,7 @@ class OndeFoiResumo(BaseModel):
 class OndeFoiLista(BaseModel):
     """Diretório de municípios do OndeFoi, ordenado por NOME (não ranking de execução).
 
-    Os números são grau-demo (ilustrativos) até a 1ª busca real; a dupla-face §17 mora aqui: nada
-    de leaderboard de valor provisório."""
+    Dupla-face §17: nada de leaderboard — dados reais da fato ``execucao_funcao``."""
 
     dados: list[OndeFoiResumo]
     meta: MetaOndeFoi

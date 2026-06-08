@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AcoesIVM } from "../../../components/AcoesIVM";
 import { Comparador } from "../../../components/Comparador";
 import { Semaforo } from "../../../components/Semaforo";
 import { SeloConfianca } from "../../../components/SeloConfianca";
@@ -66,6 +67,8 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
           </ul>
         </section>
       )}
+
+      <AcoesIVM item={atual} meta={resp.meta} />
 
       <p className="ver-produto">
         <Link href={`/pulso/${atual.codigo_ibge}`}>

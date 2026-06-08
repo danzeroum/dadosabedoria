@@ -53,6 +53,26 @@ class OndeFoiOut(BaseModel):
     meta: MetaOndeFoi
 
 
+class OndeFoiResumo(BaseModel):
+    """Resumo por município para o diretório (lista) do OndeFoi — sem detalhe por função."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str
+    pct: int
+    banda: Banda
+
+
+class OndeFoiLista(BaseModel):
+    """Diretório de municípios do OndeFoi, ordenado por NOME (não ranking de execução).
+
+    Os números são grau-demo (ilustrativos) até a 1ª busca real; a dupla-face §17 mora aqui: nada
+    de leaderboard de valor provisório."""
+
+    dados: list[OndeFoiResumo]
+    meta: MetaOndeFoi
+
+
 # ----------------------------------------------------------------- Pulso Produtivo (TRAB-01)
 
 

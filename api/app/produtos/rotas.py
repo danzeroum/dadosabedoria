@@ -10,10 +10,35 @@ from app.core.db import get_session
 from app.core.erros import NaoEncontradoError
 from app.produtos.dados_onde_foi import DEMO_MUNICIPIOS, META_DEMO
 from app.produtos.facade import PulsoProdutivoFacade
-from app.produtos.modelos import FuncaoOut, MetaOndeFoi, OndeFoiOut, PulsoProdutivoOut
+from app.produtos.modelos import (
+    FuncaoOut,
+    MetaOndeFoi,
+    OndeFoiLista,
+    OndeFoiOut,
+    OndeFoiResumo,
+    PulsoProdutivoOut,
+)
 from app.produtos.onde_foi import calcular
 
 router = APIRouter(prefix="/v1", tags=["produtos"])
+
+
+@router.get("/onde-foi", response_model=OndeFoiLista)
+async def onde_foi_lista() -> OndeFoiLista:
+    """Diretório dos municípios do OndeFoi — porta para o detalhe, ordenado por NOME (não ranking).
+
+    GRAU-DEMO: números ilustrativos até a 1ª busca real no SICONFI. A ordenação por nome (em vez de
+    por %) é a mitigação de dupla-face (§17): nada de leaderboard de execução provisória. O go-live
+    listará os municípios com dado na fato `execucao_funcao`.
+    """
+    resumos: list[OndeFoiResumo] = []
+    for cod, nome, uf, total, funcoes in DEMO_MUNICIPIOS:
+        r = calcular(cod, nome, uf, total, funcoes)
+        resumos.append(
+            OndeFoiResumo(codigo_ibge=r.codigo_ibge, nome=r.nome, uf=r.uf, pct=r.pct, banda=r.banda)
+        )
+    resumos.sort(key=lambda x: x.nome)  # por NOME — não ranking de execução (dupla-face §17)
+    return OndeFoiLista(dados=resumos, meta=MetaOndeFoi(**META_DEMO))
 
 
 @router.get("/onde-foi/{codigo_ibge}", response_model=OndeFoiOut)

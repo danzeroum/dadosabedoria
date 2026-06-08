@@ -1,5 +1,6 @@
 import type {
   FeatureCollectionIVM,
+  OndeFoiLista,
   OndeFoiProduto,
   Panorama,
   PerguntaInput,
@@ -72,6 +73,15 @@ export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | nu
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o Pulso Produtivo (${resp.status})`);
+  }
+  return resp.json();
+}
+
+// Diretório do OndeFoi (lista de municípios). Degrada para null em erro — a tela mostra o vazio.
+export async function buscarListaOndeFoi(): Promise<OndeFoiLista | null> {
+  const resp = await fetch(new URL("/v1/onde-foi", BASE), { next: { revalidate: REVALIDATE } });
+  if (!resp.ok) {
+    return null;
   }
   return resp.json();
 }

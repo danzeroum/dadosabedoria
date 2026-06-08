@@ -6,14 +6,13 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **16 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#70). **Handoff de design reconciliado** — a **superfície
-> de agir** (compartilhar/citar-ABNT/avise-me/a-quem-levar) cobre **OndeFoi (#68) e IVM (#70)**,
-> primitivo compartilhado (`lib/agir.ts` + estilos `.acoes`); os dois drill-downs-âncora têm o **funil
-> completo** (entender→comparar→agir→confiar). **Backlog ungated de PRODUTO esgotado:** o que resta é
-> **gate do dono** (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD) **+** um único item
-> de handoff **adiado por mim** (lista `/onde-foi` — rankear grau-demo cruza a dupla-face §17; 🟡 do
-> dono: esperar dado real ou referendar a lista rotulada). Entregue:
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08): estado = VERDE.** Autonomia ampliada exercida: **17 PRs
+> abertos, CI verde e mergeados sozinho** (#55–#71). **Handoff de design reconciliado por completo** — a
+> **superfície de agir** cobre **OndeFoi (#68) e IVM (#70)** (primitivo `lib/agir.ts` + estilos
+> `.acoes`); os drill-downs-âncora têm o **funil completo** (entender→comparar→agir→confiar); e a
+> **lista/índice `/onde-foi`** (#72) fechou o último item do handoff, **com mitigação de dupla-face**
+> (ordenada por nome, não ranking; aviso "ilustrativo"). **Backlog ungated de PRODUTO esgotado:** o que
+> resta é **TUDO gate do dono** (hosts 403, referendo do OndeFoi, OIDC/domínio/LLM/DataJud/PbD). Entregue:
 > 1. **#0 das fontes abertas validado** (ADR-0028): SICONFI ✅ + IBGE ✅ contra dado real; forma-verdade
 >    gravada, fixtures fiéis-à-forma, bugs de forma do `financas` corrigidos.
 > 2. **OndeFoi re-ancorado em Liquidado÷Empenhado** (ADR-0029 — default MODO DEV, pois "recebido por
@@ -113,14 +112,14 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   (ADR-0029: fato `execucao_funcao`/migração 0017, `executar_siconfi_funcoes`, `run_siconfi_funcoes`,
   Dagster `job_siconfi_funcoes`+`schedule_siconfi_funcoes_anual`). **Tela segue grau-demo** até o dono
   referendar. _(Falta dono: referendar a moldura → então endpoint/tela demo→vivo.)_
-- [~] **🟡 OndeFoi — lista/índice `/onde-foi` (próximo item do handoff, ADIADO por dupla-face):** o
-  design tem o `OFLista` (browse + busca + cards ordenados por % de execução). **Não construí de
-  propósito:** rankear execução orçamentária **em grau-demo** (números ilustrativos) cruza a dupla-face
-  §17 — uma lista ordenável convida a print/ranking de número **falso** por município, risco que o
-  drill-down único (rotulado "grau-demo") não tem. **Decisão do dono (🟡):** (a) esperar o dado real
-  (host SICONFI no allowlist → execução vira viva) **ou** (b) referendar a lista em grau-demo com
-  rótulo "ilustrativo" forte e sem ênfase de ranking. _Os drill-downs (IVM+OndeFoi) já têm o funil
-  completo (entender→comparar→agir→confiar); só a lista do OndeFoi fica pendente desta decisão._
+- [x] **🟡 OndeFoi — lista/índice `/onde-foi` (handoff `OFLista`): FEITO com mitigação de dupla-face.**
+  Pré-autorização dos 🟡 seguros → segui o default **com a mitigação no design** (§17, nunca retrofit),
+  em vez de adiar: endpoint `GET /v1/onde-foi` + tela `/onde-foi` (busca server-side, sem JS). A
+  dupla-face de rankear **grau-demo** mora no design: **ordenado por NOME (não por %)** — sem
+  leaderboard de número provisório — **+ aviso forte "ilustrativo, não reflete gestão real"**; a
+  ExecPill já enquadra "merece a pergunta, não veredito". Home re-ancorada (copy Liquidado÷Empenhado,
+  link à lista). **Reversível:** quando o dado for real (host SICONFI), a lista pode ordenar por % e
+  o aviso cai — _🟡 do dono só se quiser ordenar por execução já no grau-demo (default meu = por nome)._
 - [ ] **Conselho PbD:** constituir com Defensoria/ONGs antes de **HAB-04** e **DIR-01**.
 - [x] **Handoff de design (arquivos): RESOLVIDO** — o dono commitou o protótipo no repo
   (`docs/design/`, durável, sobrevive a reset). **Reconciliação em curso** (telas ↔ handoff, nos

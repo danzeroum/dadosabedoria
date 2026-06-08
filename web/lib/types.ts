@@ -131,6 +131,20 @@ export interface OndeFoiProduto {
   meta: MetaOndeFoi;
 }
 
+// Diretório do OndeFoi (/v1/onde-foi): resumo por município, ordenado por NOME (não ranking).
+export interface OndeFoiResumo {
+  codigo_ibge: string;
+  nome: string;
+  uf: string;
+  pct: number;
+  banda: Banda;
+}
+
+export interface OndeFoiLista {
+  dados: OndeFoiResumo[];
+  meta: MetaOndeFoi;
+}
+
 // ----------------------------------------------------------------- Panorama do município
 
 export interface IndicadorValor {

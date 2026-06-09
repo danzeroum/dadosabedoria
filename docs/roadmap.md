@@ -6,8 +6,7 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
-> **FIM DE SESSÃO — MODO DEV (2026-06-07/08 + 2026-06-08 #2): estado = VERDE.** Autonomia ampliada exercida: **32 PRs
-> abertos, CI verde e mergeados sozinho** (#55–#84; +#85 resumo da home; +#86 OndeFoi go-live; +#87 conectores reais).
+> **FIM DE SESSÃO — MODO DEV (2026-06-07/08 + 2026-06-08 #2 + **2026-06-09**): estado = VERDE.** 34 PRs mergeados.
 > **Sessão de 2026-06-08 (#2):** sonda dos 9 hosts (ADR-0033), conectores corrigidos e **ingestão nacional executada**:
 > - **PNCP ✅** — `pncp.gov.br` aberto; bug User-Agent corrigido (`FetcherPncpHTTP`); 35.910 contratos jan/2024.
 > - **IBGE ✅** — gzip fix (`FetcherIbgeHTTP`); 5.571 municípios + 27 UFs carregados da API real.
@@ -17,9 +16,22 @@ implementar com teste → push → PR → **CI verde** → merge → marcar `[x]
 > - **OndeFoi 🟢 ao vivo** — endpoint lê `execucao_funcao` (não DEMO_MUNICIPIOS); dado nacional real.
 > - **Gates qualificados (ADR-0033):** INEP ⚠️ TLS cert, ESTBAN ⚠️ URL via SPA Angular, DATASUS ⚠️ FTP
 >   protocolo, CAGED ❌ DNS HTTPS não resolve (`api.bcb.gov.br` seria o caminho novo).
-> **O que resta:** **(a)** OndeFoi — referendo da ancoragem Liquidado/Empenhado (🟡 do dono); **(b)**
-> INEP/ESTBAN/DATASUS/CAGED têm bloqueios técnicos específicos (ver PENDENCIAS_DO_DONO); **(c)**
-> OIDC/domínio/LLM/DataJud/PbD (ver Lista de desbloqueio). _Pausa, não bloqueio — tudo verde._
+>
+> **Sessão de 2026-06-09 (PASSOs 1–3):**
+> - **PASSO 1 ✅ — Bug de escala investigado e fechado (ADR-0034, PRs #88+#89):** R$ 1,5 bi era a seed
+>   `financas.transferencias.correntes` (Anexo I-C), não o OndeFoi (Anexo I-E). API → DB → endpoint:
+>   todos coerentes. Testes de pipeline isolados (`_limpar()`) + guardas de escala (`>10e9`,
+>   `empenhado≠liquidado`) adicionados.
+> - **PASSO 3 ✅ — Banda calibrada com dado real (ADR-0035, PR #90):** limiares 80/55 → **95/90**
+>   com a distribuição real de 5.541 municípios (p5=89%, p10=92%, p50=98%; antigo: 99,5% em "alta").
+>   Novos limiares: alta≥95% (81%), parcial 90–94% (13%), baixa<90% (5%).
+> - **PASSO 2** — mesmos resultados da sessão anterior (ADR-0033 vigente).
+>
+> **O que resta (PASSOs 4–5 + gates):** hardening do deploy (host compartilhado, subnets, Traefik sem
+> duplicar, pre-flight .env) e runbook do go-live do OndeFoi no prod (VPS do dono). **(a)** OndeFoi —
+> referendo da ancoragem Liquidado/Empenhado ainda aguarda **🟡 do dono**; **(b)** INEP/ESTBAN/DATASUS/CAGED
+> têm bloqueios técnicos (ver PENDENCIAS_DO_DONO); **(c)** OIDC/domínio/LLM/DataJud/PbD (ver Lista de
+> desbloqueio). _Pausa, não bloqueio — tudo verde._
 
 ## Como usar (legenda)
 

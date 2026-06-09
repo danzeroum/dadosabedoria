@@ -6,19 +6,16 @@ fica parado** em nenhum destes — ele **anota e continua**, acumulando o que fo
 desbloqueio* do repo (ver §3). Quando você voltar, revise **este documento + a Lista de desbloqueio
 atualizada no `roadmap.md`** (o dev pode ter acrescentado itens).
 
-> **MODO DEV (2026-06-07 + 2026-06-08):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI
+> **MODO DEV (2026-06-07 + 2026-06-08 + 2026-06-09):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI
 > e mergeia no verde sozinho** (barra inalterada: só verde genuíno). **O que mudou desde o último
-> checkpoint (sessão de 2026-06-08):**
-> - **PNCP aberto e validado**: `pncp.gov.br` retorna 200 na API (bug de User-Agent corrigido; ADR-0033).
-> - **IBGE gzip fix**: `FetcherIbgeHTTP` agora descomprime; 5.571 municípios + 27 UFs carregados (ADR-0033).
-> - **SICONFI nacional 2024**: ingestão completa de ~5.570 municípios executada; OndeFoi go-live com
->   dados reais (endpoint lê `execucao_funcao`, não DEMO_MUNICIPIOS). ADR-0033.
-> - **INEP TLS cert**: host acessível mas certificado do servidor falha. Gate mudou de "allowlist" para
->   "certificado INEP". Bloqueio técnico do lado do INEP.
-> - **ESTBAN URL gate**: `www.bcb.gov.br` / `dadosabertos.bcb.gov.br` respondem 200, mas a URL do ZIP
->   do ESTBAN está embutida no SPA Angular (não encontrada no catálogo CKAN). Gate mudou de "host" para "URL".
-> - **DATASUS FTP**: timeout na porta 443; protocolo FTP puro não é acessível via proxy HTTP.
-> - **CAGED DNS**: `ftp.mtps.gov.br` não resolve para HTTPS; novo CAGED via `api.bcb.gov.br` (fora do allowlist).
+> checkpoint (sessão de 2026-06-09):**
+> - **Bug de escala OndeFoi FECHADO** (ADR-0034): R$ 1,5 bi era seed Anexo I-C (Transferências), não
+>   OndeFoi (Anexo I-E). SP/Saúde/2024 no DB e no endpoint: empenhado = R$ 22,7 bi, liquidado =
+>   R$ 21,9 bi, pct = 96%. SP total (24 funções): liquidado = R$ 106 bi, pct = 94%. Valores
+>   reconciliados com o SICONFI real. O R$ 17–18 bi da referência pública refere-se ao **Fundo
+>   Municipal de Saúde** (um fundo); o SICONFI consolida toda a função Saúde (Secretaria + Fundo +
+>   autarquias), daí a diferença — escala correta em ambos os casos.
+> - **Banda calibrada** (ADR-0035): limiares 80/55 → 95/90 com distribuição real de 5.541 municípios.
 
 Ordenado por **impacto** (o que destrava mais primeiro). Cada item: o que é · o que fazer · o que
 destrava · impacto se não fizer · prioridade.
@@ -41,8 +38,8 @@ destrava · impacto se não fizer · prioridade.
 - ⚠️ **INEP** `download.inep.gov.br` — host acessível (503 sem `x-deny-reason`), mas **TLS falha**:
   `CERTIFICATE_VERIFY_FAILED` (issuer não reconhecido). O problema está no **certificado do servidor
   INEP**, não no allowlist. _(O que fazer: verificar se o INEP corrigiu o cert ou se há URL
-  alternativa com TLS válido; ou usar `ssl.create_default_context()` com `check_hostname=False`
-  apenas em dev — não recomendado em produção.)_
+  alternativa com TLS válido. **Não desabilitar verificação TLS** — seria burlar a segurança, não
+  resolver o problema.)_
 - ⚠️ **ESTBAN/BCB** `www.bcb.gov.br` e `dadosabertos.bcb.gov.br` — **ambos 200** (desbloqueados em
   2026-06-08). Gate mudou: a **URL do ZIP do ESTBAN não foi encontrada** — BCB usa SPA Angular; URLs
   históricas (`/estabilidadefinanceira/cosif/ESTBAN*.zip`) retornam HTML; catálogo CKAN (4.225
@@ -50,9 +47,13 @@ destrava · impacto se não fizer · prioridade.
   real, ou contatar BCB/COSIF para obter a URL direta.)_
 - ⚠️ **DATASUS** `ftp.datasus.gov.br` — timeout na porta 443 (FTP puro; proxy só suporta HTTP/HTTPS).
   _(Sem caminho HTTP alternativo identificado para o SIH. Gate técnico de protocolo.)_
-- ❌ **CAGED** `ftp.mtps.gov.br` — `resolve_no_records` (DNS HTTPS não existe). O **novo CAGED** está
-  disponível via `api.bcb.gov.br` (PDET/BCB) — esse host não está no allowlist.
-  _(O que fazer: adicionar `api.bcb.gov.br` ao allowlist Custom para acessar novo CAGED via BCB.)_
+- ❌ **CAGED** `ftp.mtps.gov.br` — `resolve_no_records` (DNS HTTPS não existe; o arquivo CAGEDMOV
+  fica em FTP puro na porta 21, protocolo não suportado pelo contêiner). `api.bcb.gov.br` (API
+  de séries temporais do BCB) **não é substituto**: disponibiliza CAGED agregado
+  nacional/UF, não o microdata CAGEDMOV municipal que o conector precisa.
+  _(O que fazer: localizar URL HTTPS alternativa do PDET/MTE para o CAGEDMOV municipal —
+  candidatos: `dadosabertos.mte.gov.br` ou `bi.mte.gov.br` — **não confirmados**; ou aceitar
+  que CAGED municipal via HTTP não existe nesta geração e aguardar o MTE disponibilizar via HTTPS.)_
 
 **Destrava:** com PNCP validado, o próximo produto sobre compras pode usar dado real. SICONFI/IBGE
 já estão ao vivo (OndeFoi). INEP/ESTBAN/DATASUS/CAGED têm bloqueios técnicos específicos acima.

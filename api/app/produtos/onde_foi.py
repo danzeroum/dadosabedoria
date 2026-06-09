@@ -27,14 +27,20 @@ Banda = Literal["alta", "parcial", "baixa", "indef"]
 
 
 def banda(pct: int | None) -> Banda:
-    """Banda de execução = sinal de **atenção** ("merece a pergunta"), não veredito (ADR-0026)."""
+    """Banda de execução = sinal de **atenção** ("merece a pergunta"), não veredito (ADR-0026/0035).
+
+    Limiares calibrados com distribuição real de 5.541 municípios (ADR-0035):
+    - ≥95%: "alta"   — 81% dos municípios (execução típica brasileira)
+    - ≥90%: "parcial" — 13% (execução abaixo da mediana, merece atenção)
+    - <90%:  "baixa"  — 5% (outliers de baixa execução)
+    """
     if pct is None:
         return "indef"
-    if pct >= 80:
-        return "alta"  # liquidou quase tudo que empenhou — confira se virou serviço
-    if pct >= 55:
+    if pct >= 95:
+        return "alta"
+    if pct >= 90:
         return "parcial"
-    return "baixa"  # liquidou pouco do que empenhou — merece a pergunta
+    return "baixa"  # abaixo de 90% — outlier de baixa execução, merece a pergunta
 
 
 @dataclass(frozen=True)

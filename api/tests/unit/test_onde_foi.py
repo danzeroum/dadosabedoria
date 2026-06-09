@@ -16,11 +16,12 @@ def _calc(cod: str) -> ExecucaoMunicipio:
 
 
 def test_banda_limiares() -> None:
-    assert banda(95) == "alta"
-    assert banda(80) == "alta"  # limiar
-    assert banda(79) == "parcial"
-    assert banda(55) == "parcial"  # limiar
-    assert banda(54) == "baixa"
+    # Limiares calibrados com dado real: 95/90 (ADR-0035)
+    assert banda(100) == "alta"
+    assert banda(95) == "alta"  # limiar inferior da alta
+    assert banda(94) == "parcial"
+    assert banda(90) == "parcial"  # limiar inferior da parcial
+    assert banda(89) == "baixa"
     assert banda(0) == "baixa"
     assert banda(None) == "indef"
 
@@ -32,7 +33,7 @@ def test_denominador_base_unica_sp() -> None:
     assert sp.liquidado == 47800
     assert sp.pct == 88  # round(47800/54200*100)
     assert sp.empenhado_fora_base == 78900 - 54200  # 24700: sem liquidação por função, explícito
-    assert sp.banda == "alta"
+    assert sp.banda == "baixa"  # 88 < 90 (dados demo fictícios; real SP/2024 ≈ 96% → alta)
 
 
 def test_sem_cobertura_fica_fora_da_base_e_explicita_rio() -> None:
@@ -43,7 +44,7 @@ def test_sem_cobertura_fica_fora_da_base_e_explicita_rio() -> None:
     assert rio.pct == 76  # round(19780/26000*100)
     # parcela fora = total − base (sem cobertura + não detalhado), NUNCA silenciosamente fora do %.
     assert rio.empenhado_fora_base == 41200 - 26000  # 15200
-    assert rio.banda == "parcial"
+    assert rio.banda == "baixa"  # 76 < 90 (dados demo fictícios)
     sem = [f for f in rio.funcoes if f.exe_estado == "sem_cobertura"]
     assert {f.funcao for f in sem} == {"Saneamento", "Cultura"}
     assert all(f.liquidado is None and f.pct is None for f in sem)

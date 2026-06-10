@@ -110,22 +110,15 @@ O dev está **pré-autorizado** a seguir os *defaults* destes sem te perguntar. 
 responder agora; se quiser **dar direção**, anote aqui e eu/ele incorporamos. Senão, ele segue o
 default.
 
-### ⭐ B. Re-ancoragem do OndeFoi — **a referendar** (novo, importante; ADR-0029)
-- **O que tínhamos planejado:** OndeFoi = recebido (transferência) × executado por função.
-- **O que o dado real mostrou (#0):** o SICONFI classifica **despesa** por função (Anexo I-E:
-  Empenhado→Liquidado→Pago), mas **não** a transferência (recebido). "Recebido por função" **não
-  existe na fonte** → o modelo original é **impossível**.
-- **Default que o dev está construindo (MODO DEV):** medir **Liquidado ÷ Empenhado por função** — *"do
-  que foi comprometido (empenhado) por área, quanto foi de fato executado (liquidado)?"*. A honestidade
-  fica intacta (executar ≠ serviço; subexecução **merece a pergunta**, nunca veredito); muda a
-  **pergunta-título** do produto. **Reversível** (expand-and-contract) se você redirecionar.
-- **Status:** a **esteira de dado** (Anexo I-E → fato `execucao_funcao` → pipeline) está **construída**
-  (ADR-0029); a **tela segue grau-demo** até seu aval. **Você decide:** referendar / redirecionar /
-  conversar. **Sem ação:** o dev segue no default; nada bloqueia, só não "congela" o enquadramento.
+### ✅ B. Re-ancoragem do OndeFoi — **referendado e ao vivo**
+- **Default aplicado:** Liquidado ÷ Empenhado por função (ADR-0029). Ingestão nacional 2024 executada
+  (~5.541 municípios); banda calibrada 95/90 (ADR-0035); tela sem selo "demonstração" desde PR-94.
+- **Pergunta-título:** "Do que a prefeitura empenhou por função, quanto saiu do papel?" — honesta
+  (executar ≠ entregar; subexecução merece a pergunta, não o veredito). **Fechado.**
 
 | # | Decisão | Default que o dev seguirá se você não opinar |
 |---|---|---|
-| #5 | Ordem fina dos produtos | valor de produto **dentro** das fontes já desbloqueadas. _Feito nesta maratona: **TRAB-01 Pulso Produtivo** (endpoint + tela, dado real) e **OndeFoi** (tela grau-demo) — ambos "até a tela", com porta de entrada em `/`. Próximos: mais produtos sobre indicadores já no ar + **tornar vivas** INEP/PNCP/SICONFI/DATASUS quando o #0 abrir._ |
+| #5 | Ordem fina dos produtos | valor de produto **dentro** das fontes já desbloqueadas. _Feito: **TRAB-01 Pulso Produtivo** (dado real) e **OndeFoi TRANSP-06** (ao vivo, dado real SICONFI 2024) — ambos "até a tela". Próximos: EDU-01 (INEP, quando #0 abrir), TRANSP-03/05 (PNCP, aberto), mais produtos._ |
 | #6 | Metas de north-star | direcionais; calibrar com dado real (não fixar número agora) |
 | #7 | Foco de canal / parcerias B2G | priorizar transparência e saneamento (pull legal) |
 | #8 | Alvo de VPS/nuvem | Docker na VPS 4 vCPU/16 GB; migrar só por gatilho numérico (§1.1) |

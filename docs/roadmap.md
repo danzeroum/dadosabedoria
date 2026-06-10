@@ -304,9 +304,10 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [ ] 🔵 Demais adaptadores 2A (DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
   e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
 - [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.
-- [ ] 🔵 TRANSP-06 OndeFoi (SICONFI) — **tela no ar em grau-demo** (ver 2A acima); falta só o dado
-  vivo (#0) para fechar. TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud); TRANSP-05
-  ObraViva (PNCP/SIOP/SIAFI+CAGED+OSM).
+- [x] 🔵 **TRANSP-06 OndeFoi (SICONFI)** — tela **ao vivo** com dado real (SICONFI Anexo I-E,
+  exercício 2024, ~5.541 municípios); banda calibrada 95/90 (ADR-0035); meta "sem dados
+  disponíveis" quando tabela vazia (ADR-0033/PR-93). Lacunas adiantadas:
+  TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud); TRANSP-05 ObraViva.
 - [x] 🟢 IVM **completo** (multidomínio) — incorpora o subíndice de **saúde** (SIH) a emprego+finanças
   (`versao_metodologia=v1.1`, min-max; z-score=v2 ao atingir cobertura nacional) — ADR-0025. Os
   indicadores **neutros** (matrículas, transferências, contratos) seguem descritivos (fora do índice

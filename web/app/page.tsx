@@ -45,7 +45,7 @@ const PRODUTOS: {
       "Liquidado × empenhado por função do orçamento municipal (SICONFI). Empenhar não é liquidar, liquidar não é entregar — o número que merece a pergunta, nunca o veredito.",
     href: "/onde-foi",
     cta: "Explorar municípios",
-    selo: "demonstração",
+    selo: null,
   },
   {
     titulo: "Panorama do município",
@@ -129,7 +129,7 @@ export default async function Home() {
 
       <p className="home-nota">
         Dados abertos (IBGE · Novo CAGED · BCB/ESTBAN · DATASUS/SIH · SICONFI/STN · INEP · PNCP). Cada
-        tela traz sua metodologia e a fonte. O OndeFoi roda em demonstração até o dado vivo do Tesouro.{" "}
+        tela traz sua metodologia e a fonte. O OndeFoi usa dados reais do SICONFI/STN (Anexo I-E, exercício 2024).{" "}
         <Link href="/fontes">De onde vêm os dados e como protegemos →</Link>
       </p>
     </main>

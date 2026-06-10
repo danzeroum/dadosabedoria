@@ -12,6 +12,7 @@ semeiam explicitamente; os que precisam de vazio usam a coleção admin para lim
 from __future__ import annotations
 
 import os
+from datetime import date
 
 import pytest
 from sqlalchemy import text
@@ -56,7 +57,11 @@ async def test_onde_foi_lista_vazia_sem_dado(client, db_pronto: None) -> None:
     await _limpar()
     r = await client.get("/v1/onde-foi")
     assert r.status_code == 200
-    assert r.json()["dados"] == []
+    b = r.json()
+    assert b["dados"] == []
+    # Tabela vazia: meta NÃO deve mostrar o ano corrente (default=date.today() era o bug).
+    assert str(date.today().year) not in b["meta"]["periodo_rotulo"]
+    assert "sem dados" in b["meta"]["periodo_rotulo"]
 
 
 async def test_onde_foi_contrato_sp(client, db_pronto: None) -> None:

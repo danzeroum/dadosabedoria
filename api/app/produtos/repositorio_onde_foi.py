@@ -40,12 +40,12 @@ _METODOLOGIA = (
 )
 
 
-def _meta(periodo: date) -> MetaOndeFoi:
+def _meta(periodo: date | None) -> MetaOndeFoi:
     return MetaOndeFoi(
         metodologia=_METODOLOGIA,
         versao_metodologia="v1",
-        periodo=periodo.isoformat(),
-        periodo_rotulo=f"exercício {periodo.year}",
+        periodo=periodo.isoformat() if periodo else "",
+        periodo_rotulo=f"exercício {periodo.year}" if periodo else "sem dados disponíveis",
         atraso_dias=75,
         licenca="Dados públicos (SICONFI) · Licença aberta · Atribuição: DadoSabedoria.",
         fontes=[_FONTE_SICONFI],
@@ -182,7 +182,7 @@ class RepositorioOndeFoi:
         )
         linhas = (await session.execute(stmt)).mappings().all()
 
-        max_periodo = max((r["periodo"] for r in linhas), default=date.today())
+        max_periodo = max((r["periodo"] for r in linhas), default=None)
         resumos: list[OndeFoiResumo] = []
         for row in linhas:
             emp_base = _to_int(row["empenhado_base"])

@@ -257,8 +257,9 @@ networks:
   net_core:
     ipam:
       config:
-        - subnet: 172.28.0.0/16
+        # Configurável via CORE_SUBNET (evita conflito em host compartilhado).
+        - subnet: ${CORE_SUBNET:-172.28.0.0/16}
   net_consentimento:
     ipam:
       config:
-        - subnet: 172.29.0.0/16
+        - subnet: ${CONSENT_SUBNET:-172.29.0.0/16}

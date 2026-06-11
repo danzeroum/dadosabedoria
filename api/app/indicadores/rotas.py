@@ -14,6 +14,7 @@ from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     IndicadorOut,
     PanoramaOut,
+    RespostaBuscaTerritorios,
     RespostaFontes,
     RespostaIndicadores,
     RespostaIVM,
@@ -85,6 +86,17 @@ async def listar_fontes(session: AsyncSession = Depends(get_session)) -> Respost
     indicadores **públicos**.
     """
     return await IndicadoresFacade(session).listar_fontes()
+
+
+@router.get("/territorios", response_model=RespostaBuscaTerritorios)
+async def buscar_territorios(
+    q: str = Query(..., min_length=2, description="nome ou prefixo do código IBGE"),
+    nivel: str = Query("municipio", description="nível territorial (municipio | uf)"),
+    limit: int = Query(20, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
+) -> RespostaBuscaTerritorios:
+    """Busca municípios por nome ou prefixo de código IBGE — campo de busca das telas."""
+    return await IndicadoresFacade(session).buscar_territorios(q=q, nivel=nivel, limit=limit)
 
 
 @router.get("/territorios/{codigo_ibge}", response_model=TerritorioOut)

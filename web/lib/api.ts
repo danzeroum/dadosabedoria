@@ -6,6 +6,7 @@ import type {
   Panorama,
   PerguntaInput,
   PulsoProduto,
+  RespostaBuscaTerritorios,
   RespostaFontes,
   RespostaIA,
   RespostaIVM,
@@ -98,6 +99,17 @@ export async function buscarOndeFoi(codigoIbge: string): Promise<OndeFoiProduto 
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o OndeFoi (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarTerritorios(q: string): Promise<RespostaBuscaTerritorios> {
+  const url = new URL("/v1/territorios", BASE);
+  url.searchParams.set("q", q);
+  url.searchParams.set("limit", "20");
+  const resp = await fetch(url, { cache: "no-store" });
+  if (!resp.ok) {
+    return { dados: [], total: 0 };
   }
   return resp.json();
 }

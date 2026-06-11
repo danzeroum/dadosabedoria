@@ -34,6 +34,17 @@ export interface Paginacao {
   total: number;
 }
 
+export interface TerritorioSimples {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+}
+
+export interface RespostaBuscaTerritorios {
+  dados: TerritorioSimples[];
+  total: number;
+}
+
 export interface RespostaIVM {
   dados: IVMItem[];
   meta: MetaIVM;

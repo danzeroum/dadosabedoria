@@ -238,7 +238,7 @@ def baixar_dbc(ftp: ftplib.FTP, caminho: str) -> bytes | None:
 def decodificar_e_analisar(dbc_bytes: bytes, nome_arquivo: str) -> bytes | None:
     """Decodifica DBC → CSV bytes via datasus_dbc + dbfread + polars (sem pysus/pandas)."""
     import polars as pl
-    from datasus_dbc import expand_dbc_to_dbf
+    from datasus_dbc import decompress
     from dbfread import DBF
 
     _sep("4. DECODIFICAÇÃO DBC E FORMA")
@@ -253,7 +253,7 @@ def decodificar_e_analisar(dbc_bytes: bytes, nome_arquivo: str) -> bytes | None:
         with open(tmp_dbc, "wb") as f:
             f.write(dbc_bytes)
         print("  Decodificando DBC → DBF (datasus_dbc) ...")
-        expand_dbc_to_dbf(tmp_dbc, tmp_dbf)
+        decompress(tmp_dbc, tmp_dbf)
         print("  Lendo DBF (dbfread) → polars DataFrame ...")
         table = DBF(tmp_dbf, encoding="latin-1")
         df = pl.DataFrame(list(table))

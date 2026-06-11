@@ -1,13 +1,16 @@
-"""Adaptador do DATASUS/SIH — internações respiratórias por município, domínio ``saude``.
+"""Adaptador do DATASUS/SIH — internações respiratórias por município/mês, domínio ``saude``.
 
-Bronze (parse): lê o tabular do SIH-RD (uma linha por AIH) num DataFrame Polars. Prata: filtra o
-diagnóstico principal do grupo J (CID-10 respiratório) e normaliza ``MUNIC_RES`` (IBGE de 6 dígitos
-do DATASUS). Ouro: conta as AIH por município — a contagem é também o ``n_amostra`` da supressão.
+Forma confirmada no ADR-0024 (2026-06-11, RDRO2604):
+  - ``MUNIC_RES``: município de RESIDÊNCIA (6 dígitos DATASUS; mapa 6→7 no pipeline).
+  - ``DIAG_PRINC``: diagnóstico principal (CID-10 J00–J99 = respiratório).
+  - ``DT_INTER``: data de internação (YYYY-MM-DD após DBF→polars→CSV). Determina o mês do evento.
+    **Não usar ANO_CMPT/MES_CMPT**: é competência de faturamento e mistura meses.
 
-Origem **sensível** (saúde): a contagem entra pelo caminho ouro, onde a regra de k-anonimato suprime
-células abaixo do piso (ADR-0004). Contrato (ASSUNÇÕES a confirmar contra o RD real do SIH): o
-arquivo traz ``MUNIC_RES`` e ``DIAG_PRINC``. Fonte aberta (dado já anonimizado), sem credencial.
-O IBGE do SIH tem 6 dígitos (sem dígito verificador); o mapa 6→7 é responsabilidade do pipeline.
+Prata: filtra DIAG_PRINC 'J%', deriva ``mes_internacao`` do 1.º dia do mês de DT_INTER.
+Ouro: conta AIH por (município, mês) — a contagem é também o ``n_amostra`` da supressão k-anon.
+
+Origem **sensível** (saúde): a contagem entra pelo caminho ouro, onde o k-anonimato com
+``n_minimo=5`` suprime células abaixo do piso antes de gravar (ADR-0004).
 """
 
 from __future__ import annotations
@@ -22,14 +25,15 @@ from app.ingestao.contratos import ContratoFonte
 #: Indicador alimentado por este adaptador (origem sensível — k-anon no caminho ouro).
 CODIGO_INDICADOR = "saude.resp.internacoes_j"
 
-COL_MUNICIPIO = "MUNIC_RES"
+COL_MUNICIPIO = "MUNIC_RES"  # residência do paciente (NÃO MUNIC_MOV = local da internação)
 COL_DIAG = "DIAG_PRINC"
-GRUPO_RESPIRATORIO = "J"  # CID-10 J00–J99 (doenças do aparelho respiratório)
+COL_DATA = "DT_INTER"  # data de internação → mês do evento
+GRUPO_RESPIRATORIO = "J"  # CID-10 J00–J99
 
-#: Contrato do bruto SIH-RD: cada AIH precisa do município de residência e do diagnóstico principal.
+#: Contrato do bruto SIH-RD: forma real confirmada no ADR-0024 (RDRO2604, 2026-06-11).
 CONTRATO = ContratoFonte(
     fonte="datasus_sih",
-    colunas_obrigatorias=frozenset({COL_MUNICIPIO, COL_DIAG}),
+    colunas_obrigatorias=frozenset({COL_MUNICIPIO, COL_DIAG, COL_DATA}),
 )
 
 
@@ -55,25 +59,38 @@ class AdaptadorDatasus:
         return df
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
+        # DT_INTER → "YYYY-MM-DD" após DBF→polars→CSV; slice primeiros 7 chars = "YYYY-MM".
+        # Concatena "-01" para obter "YYYY-MM-01" e parseia como date (1.º dia do mês).
         return df.select(
             pl.col(COL_MUNICIPIO).cast(pl.Utf8).str.strip_chars().alias("cod_munres"),
             pl.col(COL_DIAG).cast(pl.Utf8).str.strip_chars().alias("diag"),
+            pl.concat_str(
+                pl.col(COL_DATA).cast(pl.Utf8).str.slice(0, 7),
+                pl.lit("-01"),
+            )
+            .str.to_date(format="%Y-%m-%d", strict=False)
+            .alias("mes_internacao"),
         ).filter(
             pl.col("cod_munres").is_not_null()
             & (pl.col("cod_munres") != "")
             & pl.col("diag").str.starts_with(GRUPO_RESPIRATORIO)
+            & pl.col("mes_internacao").is_not_null()
         )
 
     def agregar(self, df_prata: pl.DataFrame) -> pl.DataFrame:
-        """Internações respiratórias = contagem de AIH (grupo J) por município (= n_amostra)."""
-        return df_prata.group_by("cod_munres").agg(pl.len().alias("internacoes")).sort("cod_munres")
+        """AIH respiratórias = contagem por (município, mês de internação) — o n_amostra."""
+        return (
+            df_prata.group_by("cod_munres", "mes_internacao")
+            .agg(pl.len().alias("internacoes"))
+            .sort("cod_munres", "mes_internacao")
+        )
 
 
 class FetcherDatasusFTP:
     """Fetcher real: baixa o RD<UF><AAMM>.dbc do FTP do DATASUS e decodifica DBC→tabular.
 
     Não exercitado em teste (rede/DBC); parse/transformação são cobertos por fixture.
-    Decoder: datasus_dbc (Rust wheel, sem pyarrow) + dbfread → polars.
+    Decoder: datasus_dbc (Rust wheel) — ``decompress(src, dst)`` — + dbfread → polars.
     """
 
     HOST = "ftp.datasus.gov.br"
@@ -85,7 +102,7 @@ class FetcherDatasusFTP:
         import os
         import tempfile
 
-        from datasus_dbc import expand_dbc_to_dbf  # type: ignore[attr-defined]
+        from datasus_dbc import decompress
         from dbfread import DBF
 
         comp = f"{janela.ano % 100:02d}{janela.mes:02d}"
@@ -101,7 +118,7 @@ class FetcherDatasusFTP:
                 ftp.cwd(self.CAMINHO)
                 with open(tmp_dbc, "wb") as f:
                     ftp.retrbinary(f"RETR {nome}", f.write)
-            expand_dbc_to_dbf(tmp_dbc, tmp_dbf)
+            decompress(tmp_dbc, tmp_dbf)
             df = pl.DataFrame(list(DBF(tmp_dbf, encoding="latin-1")))
         finally:
             for p in (tmp_dbc, tmp_dbf):

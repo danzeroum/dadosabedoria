@@ -555,7 +555,7 @@ async def executar_datasus(
             CelulaOuro(
                 indicador_id=ind.id,
                 territorio_id=territorio_id,
-                periodo=janela.periodo,
+                periodo=row["mes_internacao"],  # data de internação (DT_INTER), não competência
                 atualizacao="mensal",
                 valor=Decimal(contagem),
                 n_amostra=contagem,  # a contagem É o n_amostra → k-anon protege contagens pequenas

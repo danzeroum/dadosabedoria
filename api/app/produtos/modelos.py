@@ -1,4 +1,4 @@
-"""Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo e Giro Local."""
+"""Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local e Salário Radar."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from app.indicadores.modelos import MetaProveniencia
 from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
+from app.produtos.salario_radar import NivelSalario
 
 
 class FuncaoOut(BaseModel):
@@ -124,3 +125,19 @@ class GiroLocalOut(BaseModel):
     nota: str
     meta_emprego: MetaProveniencia | None
     meta_credito: MetaProveniencia | None
+
+
+# ----------------------------------------------------------------- Salário Radar (TRAB-02)
+
+
+class SalarioRadarOut(BaseModel):
+    """Nível salarial das novas contratações formais (Novo CAGED) por município/mês."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    periodo: str | None  # YYYY-MM do último dado disponível
+    salario_medio: float | None  # média R$ das admissões; None se sem dado
+    nivel: NivelSalario
+    nota: str
+    meta: MetaProveniencia

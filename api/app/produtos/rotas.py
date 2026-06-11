@@ -1,4 +1,5 @@
-"""Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03)."""
+"""Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
+Salário Radar (TRAB-02)."""
 
 from __future__ import annotations
 
@@ -6,12 +7,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
-from app.produtos.facade import GiroLocalFacade, PulsoProdutivoFacade
+from app.produtos.facade import GiroLocalFacade, PulsoProdutivoFacade, SalarioRadarFacade
 from app.produtos.modelos import (
     GiroLocalOut,
     OndeFoiLista,
     OndeFoiOut,
     PulsoProdutivoOut,
+    SalarioRadarOut,
 )
 from app.produtos.repositorio_onde_foi import RepositorioOndeFoi
 
@@ -62,3 +64,16 @@ async def giro_local(
     portes diferentes. 404 quando não há nenhum dado disponível para o município.
     """
     return await GiroLocalFacade(session).giro_local(codigo_ibge=codigo_ibge)
+
+
+@router.get("/salario-radar/{codigo_ibge}", response_model=SalarioRadarOut)
+async def salario_radar(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> SalarioRadarOut:
+    """Nível salarial das novas contratações formais no município (Salário Radar — TRAB-02).
+
+    Salário médio declarado nas admissões do Novo CAGED do último mês disponível. Revela o
+    patamar salarial da demanda por trabalho formal local — não o salário médio da população.
+    404 quando não há dado para o município.
+    """
+    return await SalarioRadarFacade(session).salario_radar(codigo_ibge=codigo_ibge)

@@ -23,7 +23,7 @@ def test_parse_le_colunas() -> None:
 def test_prata_normaliza_e_filtra() -> None:
     a = _adaptador()
     df = a.transformar_prata(a.parse(AMOSTRA_UNIT))
-    assert set(df.columns) == {"competencia", "municipio", "saldo_mov"}
+    assert set(df.columns) == {"competencia", "municipio", "saldo_mov", "salario_brl"}
     assert df.height == 8
 
 

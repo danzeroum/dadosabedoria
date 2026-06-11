@@ -267,6 +267,21 @@ export interface PerguntaInput {
   ate?: string;
 }
 
+// ----------------------------------------------------------------- Salário Radar (TRAB-02)
+
+export type NivelSalario = "alto" | "medio" | "baixo" | "sem_dado";
+
+export interface SalarioRadarProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  periodo: string | null; // YYYY-MM
+  salario_medio: number | null; // R$ médio das admissões; null se sem dado
+  nivel: NivelSalario;
+  nota: string;
+  meta: MetaProveniencia;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

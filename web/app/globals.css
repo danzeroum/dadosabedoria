@@ -1818,3 +1818,80 @@ section h2 {
 .giro-meta dd {
   margin: 2px 0 0 0;
 }
+
+/* ------------------------------------------------------------------ Salário Radar (TRAB-02) */
+
+.salario-painel {
+  margin: 24px 0;
+}
+
+.salario-bloco {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  max-width: 480px;
+}
+
+.salario-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 12px 0;
+}
+
+.salario-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 10px 0;
+}
+
+.salario-numero strong {
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.salario-rotulo-numero {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.salario-nivel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.salario-sem-dado {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.salario-referencia {
+  margin-top: 32px;
+}
+
+.salario-ref-lista {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0 0;
+}
+
+.salario-ref-lista dt {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.salario-ref-lista dd {
+  font-size: 0.9rem;
+  margin: 2px 0 0 0;
+}

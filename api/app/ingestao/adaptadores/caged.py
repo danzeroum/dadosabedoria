@@ -1,8 +1,9 @@
-"""Adaptador do Novo CAGED (MTE/PDET) — saldo de emprego formal por município/mês.
+"""Adaptador do Novo CAGED (MTE/PDET) — saldo e salário de admissão por município/mês.
 
 Bronze (extrair/parse): lê o arquivo CAGEDMOV (texto ``;``-delimitado) em um DataFrame Polars.
 Prata (transformar_prata): normaliza colunas/tipos e filtra linhas inválidas.
 Ouro (agregar_saldo): soma ``saldomovimentação`` (+1 admissão / -1 desligamento) por município.
+Ouro (agregar_salario_medio): média salarial das admissões (saldo_mov==1) por município.
 
 A carga em ``valor`` é feita pelo ``app.ingestao.pipeline`` via ``escrever_ouro`` (regra única de
 supressão + linhagem) — este adaptador não escreve no banco.
@@ -17,18 +18,20 @@ import polars as pl
 from app.ingestao.adaptadores.base import FetcherFonte, Janela
 from app.ingestao.contratos import ContratoFonte
 
-#: Código do indicador alimentado por este adaptador.
+#: Código dos indicadores alimentados por este adaptador.
 CODIGO_INDICADOR = "trabalho.emprego.saldo_caged"
+CODIGO_SALARIO = "trabalho.emprego.salario_medio_admissao"
 
 # Nomes de coluna do layout CAGEDMOV (Novo CAGED).
 COL_COMPETENCIA = "competênciamov"
 COL_MUNICIPIO = "município"
 COL_SALDO = "saldomovimentação"
+COL_SALARIO = "salário"
 
 #: Contrato de dados do bruto CAGEDMOV — checado na borda bronze (extrair).
 CONTRATO = ContratoFonte(
     fonte="caged",
-    colunas_obrigatorias=frozenset({COL_COMPETENCIA, COL_MUNICIPIO, COL_SALDO}),
+    colunas_obrigatorias=frozenset({COL_COMPETENCIA, COL_MUNICIPIO, COL_SALDO, COL_SALARIO}),
 )
 
 
@@ -64,6 +67,12 @@ class AdaptadorCaged:
             pl.col(COL_COMPETENCIA).cast(pl.Utf8).str.strip_chars().alias("competencia"),
             pl.col(COL_MUNICIPIO).cast(pl.Utf8).str.strip_chars().alias("municipio"),
             pl.col(COL_SALDO).cast(pl.Int64, strict=False).alias("saldo_mov"),
+            # salário: "XXXX,XX" (BR) → float; strict=False para linhas sem valor
+            pl.col(COL_SALARIO)
+            .cast(pl.Utf8)
+            .str.replace(",", ".", literal=True)
+            .cast(pl.Float64, strict=False)
+            .alias("salario_brl"),
         ).filter(
             pl.col("municipio").is_not_null()
             & (pl.col("municipio") != "")
@@ -75,6 +84,15 @@ class AdaptadorCaged:
         return (
             df_prata.group_by("municipio")
             .agg(pl.col("saldo_mov").sum().alias("saldo"))
+            .sort("municipio")
+        )
+
+    def agregar_salario_medio(self, df_prata: pl.DataFrame) -> pl.DataFrame:
+        """Salário médio das admissões (saldo_mov==1) por município."""
+        return (
+            df_prata.filter(pl.col("saldo_mov") == 1)
+            .group_by("municipio")
+            .agg(pl.col("salario_brl").mean().alias("salario_medio"))
             .sort("municipio")
         )
 

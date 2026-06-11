@@ -186,6 +186,31 @@ INDICADORES: list[dict[str, Any]] = [
         "metodologia": "Soma de admissões menos desligamentos do Novo CAGED por município/mês.",
     },
     {
+        "codigo": "trabalho.emprego.salario_medio_admissao",
+        "nome": "Salário médio de admissão",
+        "descricao": (
+            "Salário médio declarado nas admissões formais do mês (CAGEDMOV). "
+            "Não inclui desligamentos."
+        ),
+        "dominio": "trabalho",
+        "subdominio": "emprego_formal",
+        "unidade": "reais",
+        "polaridade": "maior_melhor",
+        "atualizacao": "mensal",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "novo_caged",
+        "codigo_externo": "salário",
+        "metodologia": (
+            "Média dos salários declarados nos registros de admissão (saldomovimentação=1) "
+            "do Novo CAGED por município/mês."
+        ),
+    },
+    {
         "codigo": "credito.operacoes.saldo_total",
         "nome": "Saldo de operações de crédito",
         "descricao": "Saldo total de operações de crédito do SFN por município/mês (ESTBAN).",
@@ -365,6 +390,24 @@ async def _semear_fatos(
         caged_cels,
         meta,
         ContextoLinhagem(f_caged, caged, "seed Onda 1: prata->ouro (saldo CAGED)", "seed"),
+    )
+
+    # SALÁRIO MÉDIO DE ADMISSÃO (Novo CAGED): reais; n_minimo 0.
+    sal = ind_ids["trabalho.emprego.salario_medio_admissao"]
+    sal_cels = [
+        CelulaOuro(sal, sp, date(2026, 2, 1), "mensal", Decimal("2380.00"), None, 5, f_caged),
+        CelulaOuro(sal, sp, date(2026, 3, 1), "mensal", Decimal("2410.00"), None, 5, f_caged),
+        CelulaOuro(sal, sp, date(2026, 4, 1), "mensal", Decimal("2450.00"), None, 5, f_caged),
+        CelulaOuro(sal, cps, date(2026, 2, 1), "mensal", Decimal("2750.00"), None, 5, f_caged),
+        CelulaOuro(sal, cps, date(2026, 3, 1), "mensal", Decimal("2800.00"), None, 5, f_caged),
+        CelulaOuro(sal, cps, date(2026, 4, 1), "mensal", Decimal("2820.00"), None, 5, f_caged),
+    ]
+    await grav.escrever_ouro(
+        sal_cels,
+        meta,
+        ContextoLinhagem(
+            f_caged, sal, "seed Onda 3: prata->ouro (salário médio admissão CAGED)", "seed"
+        ),
     )
 
     # CRÉDITO (ESTBAN): reais; n_minimo 0.

@@ -652,6 +652,47 @@ components:
       - licenca
       title: MetaProveniencia
       type: object
+    MunicipioEmpregoOut:
+      description: Saldo de emprego formal de um município no período regional.
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        nivel:
+          enum:
+          - criando
+          - estavel
+          - reduzindo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        per_1000:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Per 1000
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        saldo:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Saldo
+      required:
+      - codigo_ibge
+      - nome
+      - populacao
+      - saldo
+      - per_1000
+      - nivel
+      title: MunicipioEmpregoOut
+      type: object
     OndeFoiLista:
       description: 'Diretório de municípios do OndeFoi, ordenado por NOME (não ranking
         de execução).
@@ -913,6 +954,76 @@ components:
       - nota
       - meta
       title: PulsoProdutivoOut
+      type: object
+    RegiaoEmpregaOut:
+      description: Retrato regional do emprego formal (Novo CAGED) — TRAB-04.
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          $ref: '#/components/schemas/MetaProveniencia'
+        municipios:
+          items:
+            $ref: '#/components/schemas/MunicipioEmpregoOut'
+          title: Municipios
+          type: array
+        municipios_criando:
+          title: Municipios Criando
+          type: integer
+        municipios_estaveis:
+          title: Municipios Estaveis
+          type: integer
+        municipios_reduzindo:
+          title: Municipios Reduzindo
+          type: integer
+        municipios_sem_dado:
+          title: Municipios Sem Dado
+          type: integer
+        municipios_total:
+          title: Municipios Total
+          type: integer
+        nivel:
+          enum:
+          - criando
+          - estavel
+          - reduzindo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        saldo_total:
+          title: Saldo Total
+          type: integer
+        uf:
+          title: Uf
+          type: string
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - saldo_total
+      - municipios_criando
+      - municipios_estaveis
+      - municipios_reduzindo
+      - municipios_sem_dado
+      - municipios_total
+      - nivel
+      - municipios
+      - nota
+      - meta
+      title: RegiaoEmpregaOut
       type: object
     RespostaBuscaTerritorios:
       properties:
@@ -1722,6 +1833,44 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Pulso Produtivo
+      tags:
+      - produtos
+  /v1/regiao-emprega/{codigo_ibge}:
+    get:
+      description: 'Retrato do emprego formal de toda a UF no último mês disponível
+        (Região Emprega — TRAB-04).
+
+
+        Aceita o código IBGE de uma UF (ex.: ``35`` para SP) ou de um município (ex.:
+        ``3550308``).
+
+        Agrega o saldo CAGED de todos os municípios da UF no mesmo período, revelando
+        se a criação ou
+
+        destruição de empregos é local ou regional. 404 quando não há dado para a
+        UF.'
+      operationId: regiao_emprega_v1_regiao_emprega__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegiaoEmpregaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Regiao Emprega
       tags:
       - produtos
   /v1/salario-radar/{codigo_ibge}:

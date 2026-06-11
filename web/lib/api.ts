@@ -7,6 +7,7 @@ import type {
   Panorama,
   PerguntaInput,
   PulsoProduto,
+  RegiaoEmpregaProduto,
   RespostaBuscaTerritorios,
   RespostaFontes,
   RespostaIA,
@@ -79,6 +80,21 @@ export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | nu
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o Pulso Produtivo (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarRegiaoEmprega(
+  codigoIbge: string,
+): Promise<RegiaoEmpregaProduto | null> {
+  const resp = await fetch(new URL(`/v1/regiao-emprega/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar Região Emprega (${resp.status})`);
   }
   return resp.json();
 }

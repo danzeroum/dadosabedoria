@@ -195,6 +195,83 @@ class RepositorioIndicadores:
         )
         return list((await session.execute(stmt)).mappings().all())
 
+    async def saldos_por_uf(
+        self,
+        session: AsyncSession,
+        *,
+        uf_codigo_ibge: str,
+        indicador_codigo: str,
+    ) -> list[RowMapping]:
+        """Último saldo de um indicador por município da UF — uma consulta, sem N+1.
+
+        Retorna todos os municípios filhos da UF (``pai_id = id da UF``), com o valor do
+        período mais recente disponível. Municípios sem dado têm ``valor=None``/``periodo=None``.
+        Ordenado por valor desc (municípios que mais criam empregos primeiro), NULLs por último.
+        """
+        uf_alias = territorio.alias("uf_t")
+        t_mun = territorio.alias("mun_t")
+
+        # Subquery: UF id a partir do codigo_ibge
+        uf_id_sub = (
+            select(uf_alias.c.id)
+            .where(
+                uf_alias.c.codigo_ibge == uf_codigo_ibge,
+                uf_alias.c.nivel == "uf",
+            )
+            .scalar_subquery()
+        )
+
+        # Subquery: max periodo por município filho (só com dado)
+        max_periodo = (
+            select(
+                valor.c.territorio_id,
+                func.max(valor.c.periodo).label("max_periodo"),
+            )
+            .join(t_mun, t_mun.c.id == valor.c.territorio_id)
+            .join(indicador, indicador.c.id == valor.c.indicador_id)
+            .where(
+                indicador.c.codigo == indicador_codigo,
+                indicador.c.publico.is_(True),
+                t_mun.c.pai_id == uf_id_sub,
+                t_mun.c.nivel == "municipio",
+                valor.c.suprimido.is_(False),
+            )
+            .group_by(valor.c.territorio_id)
+            .subquery("max_p")
+        )
+
+        # Todos os municípios da UF + left-join com o saldo mais recente
+        stmt = (
+            select(
+                t_mun.c.codigo_ibge,
+                t_mun.c.nome,
+                t_mun.c.populacao,
+                case((valor.c.suprimido, None), else_=valor.c.valor).label("valor"),
+                valor.c.periodo,
+            )
+            .select_from(t_mun)
+            .outerjoin(max_periodo, max_periodo.c.territorio_id == t_mun.c.id)
+            .outerjoin(
+                indicador,
+                and_(
+                    indicador.c.codigo == indicador_codigo,
+                    indicador.c.publico.is_(True),
+                ),
+            )
+            .outerjoin(
+                valor,
+                and_(
+                    valor.c.territorio_id == t_mun.c.id,
+                    valor.c.periodo == max_periodo.c.max_periodo,
+                    valor.c.indicador_id == indicador.c.id,
+                    valor.c.suprimido.is_(False),
+                ),
+            )
+            .where(t_mun.c.pai_id == uf_id_sub, t_mun.c.nivel == "municipio")
+            .order_by(valor.c.valor.desc().nulls_last(), t_mun.c.nome)
+        )
+        return list((await session.execute(stmt)).mappings().all())
+
     async def obter_territorio(self, session: AsyncSession, codigo_ibge: str) -> RowMapping | None:
         pai = territorio.alias("pai")
         j = territorio.outerjoin(pai, pai.c.id == territorio.c.pai_id)

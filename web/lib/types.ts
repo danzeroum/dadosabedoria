@@ -267,6 +267,34 @@ export interface PerguntaInput {
   ate?: string;
 }
 
+// ----------------------------------------------------------------- Região Emprega (TRAB-04)
+
+export interface MunicipioEmpregoProduto {
+  codigo_ibge: string;
+  nome: string;
+  populacao: number | null;
+  saldo: number | null;
+  per_1000: number | null;
+  nivel: NivelEmprego;
+}
+
+export interface RegiaoEmpregaProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string;
+  periodo: string | null;
+  saldo_total: number;
+  municipios_criando: number;
+  municipios_estaveis: number;
+  municipios_reduzindo: number;
+  municipios_sem_dado: number;
+  municipios_total: number;
+  nivel: NivelEmprego; // reuse — mesmo literal
+  municipios: MunicipioEmpregoProduto[];
+  nota: string;
+  meta: MetaProveniencia;
+}
+
 // ----------------------------------------------------------------- Salário Radar (TRAB-02)
 
 export type NivelSalario = "alto" | "medio" | "baixo" | "sem_dado";

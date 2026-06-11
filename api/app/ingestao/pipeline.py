@@ -135,9 +135,8 @@ async def executar_caged(
     """
     bruto, url = adaptador.baixar_bruto(janela)
     hash_origem = gravar_bronze(store, f"caged/{janela.competencia}.txt", bruto)
-    df_prata = adaptador.transformar_prata(adaptador.parse(bruto))
-    saldos = adaptador.agregar_saldo(df_prata)
-    salarios = adaptador.agregar_salario_medio(df_prata)
+    # Agregação nacional em uma única passagem lazy (streaming) — ver ADR-0036
+    saldos, salarios = adaptador.agregar_nacional(bruto)
     # Indexar salários por município para lookup O(1)
     sal_por_mun = {str(r["municipio"]): r["salario_medio"] for r in salarios.iter_rows(named=True)}
 

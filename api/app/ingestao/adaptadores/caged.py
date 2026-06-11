@@ -96,6 +96,54 @@ class AdaptadorCaged:
             .sort("municipio")
         )
 
+    def agregar_nacional(self, bruto: bytes) -> tuple[pl.DataFrame, pl.DataFrame]:
+        """Agrega saldo e salário em UMA passagem lazy (streaming), sem carregar tudo em RAM.
+
+        Escreve bytes em arquivo temporário, usa pl.scan_csv + collect(engine='streaming').
+        Retorna (saldos, salarios_medio) — mesmo contrato de agregar_saldo/agregar_salario_medio.
+        """
+        import os
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
+            f.write(bruto)
+            tmp = f.name
+        try:
+            resultado = (
+                pl.scan_csv(tmp, separator=";", encoding="utf8-lossy", infer_schema=False)
+                .select(
+                    pl.col(COL_MUNICIPIO).str.strip_chars().alias("municipio"),
+                    pl.col(COL_SALDO).cast(pl.Int64, strict=False).alias("saldo_mov"),
+                    pl.col(COL_SALARIO)
+                    .str.replace(",", ".", literal=True)
+                    .cast(pl.Float64, strict=False)
+                    .alias("salario_brl"),
+                )
+                .filter(
+                    pl.col("municipio").is_not_null()
+                    & (pl.col("municipio") != "")
+                    & pl.col("saldo_mov").is_not_null()
+                )
+                .group_by("municipio")
+                .agg(
+                    pl.col("saldo_mov").sum().alias("saldo"),
+                    pl.col("salario_brl")
+                    .filter(pl.col("saldo_mov") == 1)
+                    .mean()
+                    .alias("salario_medio"),
+                )
+                .sort("municipio")
+                .collect(engine="streaming")
+            )
+        finally:
+            os.unlink(tmp)
+
+        saldos = resultado.select(["municipio", "saldo"])
+        salarios = resultado.filter(pl.col("salario_medio").is_not_null()).select(
+            ["municipio", "salario_medio"]
+        )
+        return saldos, salarios
+
 
 class FetcherCagedFTP:
     """Fetcher real: baixa o CAGEDMOV<competência>.7z do FTP do PDET e descompacta.
@@ -120,6 +168,7 @@ class FetcherCagedFTP:
         buf = io.BytesIO()
         with ftplib.FTP(self.HOST, timeout=120, encoding="latin-1") as ftp:  # noqa: S321  # nosec B321
             ftp.login()
+            ftp.set_pasv(True)  # modo passivo obrigatório em containers (NAT/firewall)
             ftp.cwd(caminho)
             ftp.retrbinary(f"RETR {nome}", buf.write)
         buf.seek(0)

@@ -85,8 +85,8 @@ class FetcherDatasusFTP:
         import os
         import tempfile
 
-        from datasus_dbc import expand_dbc_to_dbf
-        from dbfread import DBF
+        from datasus_dbc import expand_dbc_to_dbf  # type: ignore[attr-defined]
+        from dbfread import DBF  # type: ignore[import-untyped]
 
         comp = f"{janela.ano % 100:02d}{janela.mes:02d}"
         nome = f"RD{self.UF}{comp}.dbc"

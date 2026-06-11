@@ -20,8 +20,17 @@ from app.produtos.giro_local import (
 from app.produtos.giro_local import (
     calcular as calcular_giro,
 )
-from app.produtos.modelos import GiroLocalOut, MesSaldoOut, PulsoProdutivoOut, SalarioRadarOut
+from app.produtos.modelos import (
+    GiroLocalOut,
+    MesSaldoOut,
+    MunicipioEmpregoOut,
+    PulsoProdutivoOut,
+    RegiaoEmpregaOut,
+    SalarioRadarOut,
+)
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
+from app.produtos.regiao_emprega import NOTA_HONESTA as NOTA_REGIAO
+from app.produtos.regiao_emprega import calcular as calcular_regiao
 from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
 
@@ -217,5 +226,88 @@ class SalarioRadarFacade:
             salario_medio=s.salario_medio,
             nivel=s.nivel,
             nota=NOTA_SALARIO,
+            meta=_meta(meta_row),
+        )
+
+
+class RegiaoEmpregaFacade:
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:regiao")
+    async def regiao_emprega(self, *, codigo_ibge: str) -> RegiaoEmpregaOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        # Resolve UF: o código pode ser uma UF (nivel='uf') ou um município (nivel='municipio')
+        if terr["nivel"] == "uf":
+            uf_codigo = terr["codigo_ibge"]
+            uf_nome = terr["nome"]
+            uf_sigla = terr["uf"] or ""
+        elif terr["nivel"] == "municipio" and terr["pai_codigo_ibge"]:
+            uf_codigo = terr["pai_codigo_ibge"]
+            uf_row = await self._repo.obter_territorio(self._s, uf_codigo)
+            if uf_row is None:
+                raise NaoEncontradoError(f"UF para município '{codigo_ibge}'")
+            uf_nome = uf_row["nome"]
+            uf_sigla = uf_row["uf"] or terr["uf"] or ""
+        else:
+            raise NaoEncontradoError(f"território '{codigo_ibge}' não é UF nem município")
+
+        # Saldos de todos os municípios da UF (uma consulta, sem N+1)
+        linhas = await self._repo.saldos_por_uf(
+            self._s,
+            uf_codigo_ibge=uf_codigo,
+            indicador_codigo=CODIGO_CAGED,
+        )
+        if not linhas:
+            raise NaoEncontradoError(f"Região Emprega para UF '{uf_codigo}'")
+
+        municipios_raw: list[tuple[str, str, int | None, int | None]] = []
+        periodo: str | None = None
+        for r in linhas:
+            saldo = int(r["valor"]) if r["valor"] is not None else None
+            if r["periodo"] is not None and periodo is None:
+                periodo = r["periodo"].strftime("%Y-%m")
+            municipios_raw.append((r["codigo_ibge"], r["nome"], r["populacao"], saldo))
+
+        reg = calcular_regiao(
+            uf_codigo,
+            uf_nome,
+            uf_sigla,
+            periodo=periodo,
+            municipios_raw=municipios_raw,
+        )
+
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_CAGED)
+        if meta_row is None:  # pragma: no cover - indicador sempre semeado
+            raise NaoEncontradoError(f"indicador '{CODIGO_CAGED}'")
+
+        return RegiaoEmpregaOut(
+            codigo_ibge=reg.codigo_ibge,
+            nome=reg.nome,
+            uf=reg.uf,
+            periodo=reg.periodo,
+            saldo_total=reg.saldo_total,
+            municipios_criando=reg.municipios_criando,
+            municipios_estaveis=reg.municipios_estaveis,
+            municipios_reduzindo=reg.municipios_reduzindo,
+            municipios_sem_dado=reg.municipios_sem_dado,
+            municipios_total=reg.municipios_total,
+            nivel=reg.nivel,
+            municipios=[
+                MunicipioEmpregoOut(
+                    codigo_ibge=m.codigo_ibge,
+                    nome=m.nome,
+                    populacao=m.populacao,
+                    saldo=m.saldo,
+                    per_1000=m.per_1000,
+                    nivel=m.nivel,
+                )
+                for m in reg.municipios
+            ],
+            nota=NOTA_REGIAO,
             meta=_meta(meta_row),
         )

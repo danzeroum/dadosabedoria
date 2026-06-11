@@ -1895,3 +1895,96 @@ section h2 {
   font-size: 0.9rem;
   margin: 2px 0 0 0;
 }
+
+/* ------------------------------------------------------------------ Região Emprega (TRAB-04) */
+
+.regiao-resumo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+@media (max-width: 600px) {
+  .regiao-resumo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.regiao-total,
+.regiao-contagens {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+}
+
+.regiao-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 10px 0;
+}
+
+.regiao-numero strong {
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.regiao-dist {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0 0;
+}
+
+.regiao-dist dt {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.regiao-dist dd {
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  margin: 0;
+}
+
+.regiao-tabela-wrapper {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.regiao-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.regiao-tabela th,
+.regiao-tabela td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.regiao-tabela th {
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.regiao-tabela tr:last-child td {
+  border-bottom: none;
+}
+
+.regiao-tabela td.tnum,
+.regiao-tabela th.tnum {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

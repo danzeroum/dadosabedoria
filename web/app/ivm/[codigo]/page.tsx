@@ -133,6 +133,10 @@ export default async function MunicipioPage({
           Ver o Salário Radar (patamar salarial das novas contratações) →
         </Link>
         <br />
+        <Link href={`/regiao-emprega/${atual.codigo_ibge}`}>
+          Ver a Região Emprega{atual.uf ? ` (${atual.uf})` : ""} — local ou regional? →
+        </Link>
+        <br />
         <Link href={`/municipio/${atual.codigo_ibge}`}>
           Ver o panorama completo do município →
         </Link>

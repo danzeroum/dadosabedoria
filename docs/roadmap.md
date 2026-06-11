@@ -248,7 +248,11 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
 - [x] 🔵 **TRAB-03 Giro Local** — dinamismo econômico per capita (CAGED+IBGE+ESTBAN): saldo CAGED/1000 hab
   + crédito ESTBAN/hab; endpoint `GET /v1/giro-local/{ibge}` + tela `/giro-local/{ibge}`; degrada
   honestamente sem ESTBAN; cross-link do IVM drill-down e do Pulso Produtivo.
-- [ ] 🔵 TRAB-02 Salário Radar; TRAB-04 Região Emprega.
+- [x] 🔵 **TRAB-02 Salário Radar** — nível salarial das novas contratações formais (CAGED):
+  adaptador estendido com `salario_brl`/`agregar_salario_medio`; indicador
+  `trabalho.emprego.salario_medio_admissao`; endpoint `GET /v1/salario-radar/{ibge}` + tela
+  `/salario-radar/{codigo}`; níveis alto/medio/baixo/sem_dado; 19 novos testes unitários.
+- [ ] 🔵 TRAB-04 Região Emprega.
 
 **Frontend (design system):**
 - [x] 🟢 App `web/` Next.js: **mapa semafórico do IVM** + drill-down — ADR-0009/0010.

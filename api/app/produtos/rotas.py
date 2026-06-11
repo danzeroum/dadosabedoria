@@ -1,5 +1,5 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
-Salário Radar (TRAB-02)."""
+Salário Radar (TRAB-02), Região Emprega (TRAB-04)."""
 
 from __future__ import annotations
 
@@ -7,12 +7,18 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
-from app.produtos.facade import GiroLocalFacade, PulsoProdutivoFacade, SalarioRadarFacade
+from app.produtos.facade import (
+    GiroLocalFacade,
+    PulsoProdutivoFacade,
+    RegiaoEmpregaFacade,
+    SalarioRadarFacade,
+)
 from app.produtos.modelos import (
     GiroLocalOut,
     OndeFoiLista,
     OndeFoiOut,
     PulsoProdutivoOut,
+    RegiaoEmpregaOut,
     SalarioRadarOut,
 )
 from app.produtos.repositorio_onde_foi import RepositorioOndeFoi
@@ -77,3 +83,16 @@ async def salario_radar(
     404 quando não há dado para o município.
     """
     return await SalarioRadarFacade(session).salario_radar(codigo_ibge=codigo_ibge)
+
+
+@router.get("/regiao-emprega/{codigo_ibge}", response_model=RegiaoEmpregaOut)
+async def regiao_emprega(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> RegiaoEmpregaOut:
+    """Retrato do emprego formal de toda a UF no último mês disponível (Região Emprega — TRAB-04).
+
+    Aceita o código IBGE de uma UF (ex.: ``35`` para SP) ou de um município (ex.: ``3550308``).
+    Agrega o saldo CAGED de todos os municípios da UF no mesmo período, revelando se a criação ou
+    destruição de empregos é local ou regional. 404 quando não há dado para a UF.
+    """
+    return await RegiaoEmpregaFacade(session).regiao_emprega(codigo_ibge=codigo_ibge)

@@ -8,6 +8,7 @@ from app.indicadores.modelos import MetaProveniencia
 from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
+from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.salario_radar import NivelSalario
 
 
@@ -139,5 +140,38 @@ class SalarioRadarOut(BaseModel):
     periodo: str | None  # YYYY-MM do último dado disponível
     salario_medio: float | None  # média R$ das admissões; None se sem dado
     nivel: NivelSalario
+    nota: str
+    meta: MetaProveniencia
+
+
+# ----------------------------------------------------------------- Região Emprega (TRAB-04)
+
+
+class MunicipioEmpregoOut(BaseModel):
+    """Saldo de emprego formal de um município no período regional."""
+
+    codigo_ibge: str
+    nome: str
+    populacao: int | None
+    saldo: int | None  # None = sem dado
+    per_1000: float | None
+    nivel: NivelEmprego
+
+
+class RegiaoEmpregaOut(BaseModel):
+    """Retrato regional do emprego formal (Novo CAGED) — TRAB-04."""
+
+    codigo_ibge: str  # código IBGE da UF (ex.: "35" para SP)
+    nome: str
+    uf: str  # sigla (ex.: "SP")
+    periodo: str | None  # YYYY-MM do período agregado
+    saldo_total: int
+    municipios_criando: int
+    municipios_estaveis: int
+    municipios_reduzindo: int
+    municipios_sem_dado: int
+    municipios_total: int
+    nivel: NivelRegiao
+    municipios: list[MunicipioEmpregoOut]
     nota: str
     meta: MetaProveniencia

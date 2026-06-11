@@ -219,6 +219,77 @@ Checklist antes do go-live:
 
 ---
 
+## CAGED go-live (ingestão de emprego municipal)
+
+### Pré-requisito: allowlist FTP
+
+O worker precisa de acesso FTP à rede do PDET/MTE. Liberar no firewall da VPS:
+
+- Host: `ftp.mtps.gov.br`
+- Porta: 21 (controle FTP) + range de portas passivas (tipicamente 1024–65535 saindo do servidor)
+
+Verifique com:
+
+```bash
+nc -zv ftp.mtps.gov.br 21
+# Connection to ftp.mtps.gov.br 21 port [tcp/ftp] succeeded! → porta aberta
+```
+
+### Diagnóstico com volume montado
+
+Execute o diagnóstico no worker (salva a amostra diretamente no host via volume):
+
+```bash
+docker compose --profile ingestion run --rm \
+  -v /opt/btv/dadosabedoria/api/tests/fixtures:/app/tests/fixtures \
+  worker python scripts/diagnostico_caged.py
+```
+
+O script imprime a forma do arquivo (colunas, encoding, shape) e salva
+`api/tests/fixtures/caged_amostra_real.csv` no host via volume montado.
+
+### Commit da amostra
+
+Após o diagnóstico (ou com a fixture já commitada):
+
+```bash
+cd /opt/btv/dadosabedoria
+git add api/tests/fixtures/caged_amostra_real.csv
+git commit -m 'fixture: amostra real CAGEDMOV <competencia>'
+git push
+```
+
+### Ingestão FTP na VPS (em tmux)
+
+```bash
+tmux new -s caged
+docker compose --profile ingestion run --rm worker \
+  python -m app.ingestao.run_caged <ano> <mes>
+# ex.: python -m app.ingestao.run_caged 2026 4
+```
+
+O processo pode demorar alguns minutos (arquivo ~300 MB comprimido). O tmux garante que o
+processo não seja interrompido por desconexão SSH.
+
+### Verificação de cobertura
+
+```bash
+curl https://dadosabedoria.buildtovalue.cloud/v1/cobertura/caged | jq .
+# Esperado: { "n_municipios": ~5500, "demo": false, "competencia": "202604" }
+```
+
+`demo: false` confirma que o dado é real (não fixture/seed).
+
+### Spot-check de município
+
+```bash
+# São Paulo (IBGE 3550308 → 6 dígitos: 355030)
+curl https://dadosabedoria.buildtovalue.cloud/v1/pulso-produtivo/3550308 | jq .
+# Deve retornar saldo_caged e salario_medio_admissao com valores reais
+```
+
+---
+
 ## OIDC (futuro — 🔴 gate externo)
 
 O provedor OIDC ainda não está configurado. Quando disponível:

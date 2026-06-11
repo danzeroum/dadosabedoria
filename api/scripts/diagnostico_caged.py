@@ -316,6 +316,12 @@ def salvar_amostra(csv_bytes: bytes, nome_arquivo: str, sep: str = ";") -> None:
     print(f"  Linhas: {n} + 1 cabeçalho")
     print(f"  Commit sugerido: git add {AMOSTRA_PATH.relative_to(REPO_ROOT)}")
     print()
+    # Caminho no HOST com volume montado (-v /opt/btv/dadosabedoria/api/tests/fixtures:/app/tests/fixtures)
+    print("  Commit no host (após docker cp ou com volume montado):")
+    print("    cd /opt/btv/dadosabedoria")
+    print("    git add api/tests/fixtures/caged_amostra_real.csv")
+    print(f"    git commit -m 'fixture: amostra real CAGEDMOV <competencia>'")
+    print()
     print("  PRÓXIMO PASSO: commitar a amostra e colar a saída deste script no chat.")
     print("  O dev valida o parser, promove a fixture e fecha o ADR.")
 

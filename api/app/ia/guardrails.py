@@ -87,6 +87,33 @@ def identificar_indicador(pergunta: str, catalogo: list[tuple[str, str]]) -> str
     return melhor if melhor_score >= 2 else None
 
 
+# --- Extração de candidatos de lugar para resolução de território ----------------------------
+# Procura sequências de 1-4 palavras iniciando com maiúscula (nomes próprios) depois de
+# preposições comuns: "em Salvador", "no Rio de Janeiro", "de Manaus".
+_PREP_LUGAR = re.compile(
+    r"(?:^|[\s,])"
+    r"(?:em|no|na|nos|nas|de|do|da|dos|das|sobre|para)"
+    r"\s+((?:[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ][^\s,;.!?]{0,30}(?:\s+[A-Za-záéíóúâêîôûãõç]{1,30}){0,3}))",
+    re.IGNORECASE | re.UNICODE,
+)
+
+
+def candidatos_lugar(pergunta: str) -> list[str]:
+    """Candidatos a nome de lugar na pergunta — substrings de 1-4 palavras após preposições.
+
+    Retorna do mais longo para o mais curto para preferir "Rio de Janeiro" a "Rio".
+    """
+    resultado: list[str] = []
+    for m in _PREP_LUGAR.finditer(pergunta):
+        frase = m.group(1).strip()
+        palavras = frase.split()
+        for n in range(len(palavras), 0, -1):
+            cand = " ".join(palavras[:n])
+            if cand not in resultado:
+                resultado.append(cand)
+    return resultado
+
+
 # --- Ancoragem numérica (invariante 3: o narrador NÃO inventa números) -------------------------
 _SEP_NUM = re.compile(r"(?<=\d)[.,](?=\d)")  # separador de milhar/decimal entre dígitos
 _NUM = re.compile(r"\d{2,}")  # números com 2+ dígitos (onde moram valores que não podem surgir)

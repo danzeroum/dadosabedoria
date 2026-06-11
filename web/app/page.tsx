@@ -57,6 +57,15 @@ const PRODUTOS: {
     selo: null,
   },
   {
+    titulo: "Bússola Educação-Trabalho",
+    pergunta: "Como está a base educacional e o emprego formal no município?",
+    descricao:
+      "Matrículas no ensino fundamental (INEP/Censo Escolar) + saldo de emprego formal + salário médio das admissões (CAGED). Contexto para enquadrar — não causalidade: mais matrículas não é garantia de mais empregos.",
+    href: "/bussola-edu-trabalho/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
     titulo: "Comparar municípios",
     pergunta: "Como meu município se compara a outro?",
     descricao:

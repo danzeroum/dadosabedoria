@@ -1,4 +1,5 @@
 import type {
+  BussolaEduTrabProduto,
   CoberturaCAGED,
   FeatureCollectionIVM,
   GiroLocalProduto,
@@ -206,6 +207,21 @@ export async function buscarFontes(): Promise<RespostaFontes | null> {
   const resp = await fetch(new URL("/v1/fontes", BASE), { next: { revalidate: REVALIDATE } });
   if (!resp.ok) {
     return null;
+  }
+  return resp.json();
+}
+
+export async function buscarBussolaEduTrab(
+  codigoIbge: string,
+): Promise<BussolaEduTrabProduto | null> {
+  const resp = await fetch(new URL(`/v1/bussola-edu-trabalho/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar a Bússola Educação-Trabalho (${resp.status})`);
   }
   return resp.json();
 }

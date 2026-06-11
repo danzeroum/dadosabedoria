@@ -1,10 +1,12 @@
-"""Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local e Salário Radar."""
+"""Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
+Bússola Educação-Trabalho (EDU-01)."""
 
 from __future__ import annotations
 
 from pydantic import BaseModel
 
 from app.indicadores.modelos import MetaProveniencia
+from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
@@ -175,3 +177,35 @@ class RegiaoEmpregaOut(BaseModel):
     municipios: list[MunicipioEmpregoOut]
     nota: str
     meta: MetaProveniencia
+
+
+# ------------------------------------------------- Bússola Educação-Trabalho (EDU-01)
+
+
+class BussolaEduTrabOut(BaseModel):
+    """Bússola Educação-Trabalho: base educacional (INEP) + mercado de trabalho formal (CAGED)."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    # Educação (INEP — anual)
+    periodo_educacao: str | None  # YYYY
+    matriculas: int | None
+    matriculas_por_mil: float | None
+    nivel_educacao: NivelEducacao
+
+    # Emprego formal (CAGED — mensal)
+    periodo_emprego: str | None  # YYYY-MM
+    saldo_emprego: int | None
+    nivel_emprego: NivelEmprego
+
+    # Salário médio das admissões (CAGED — mensal)
+    salario_medio: float | None
+    nivel_salario: NivelSalario
+
+    nota: str
+    meta_educacao: MetaProveniencia | None
+    meta_emprego: MetaProveniencia | None
+    meta_salario: MetaProveniencia | None

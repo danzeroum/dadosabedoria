@@ -14,6 +14,8 @@ from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import MetaProveniencia
 from app.indicadores.repositorio import RepositorioIndicadores
+from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
+from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
 from app.produtos.giro_local import (
     NOTA_HONESTA as NOTA_GIRO,
 )
@@ -21,6 +23,7 @@ from app.produtos.giro_local import (
     calcular as calcular_giro,
 )
 from app.produtos.modelos import (
+    BussolaEduTrabOut,
     GiroLocalOut,
     MesSaldoOut,
     MunicipioEmpregoOut,
@@ -37,6 +40,7 @@ from app.produtos.salario_radar import calcular as calcular_salario
 CODIGO_CAGED = "trabalho.emprego.saldo_caged"
 CODIGO_ESTBAN = "credito.operacoes.saldo_total"
 CODIGO_SALARIO = "trabalho.emprego.salario_medio_admissao"
+CODIGO_EDUCACAO = "educacao.matriculas.fundamental"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -310,4 +314,106 @@ class RegiaoEmpregaFacade:
             ],
             nota=NOTA_REGIAO,
             meta=_meta(meta_row),
+        )
+
+
+class BussolaEduTrabFacade:
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:bussola-edu")
+    async def bussola_edu_trabalho(self, *, codigo_ibge: str) -> BussolaEduTrabOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        # Educação: último valor anual disponível
+        linhas_edu, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_EDUCACAO,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=_POR_PAGINA,
+        )
+        edu_rows = [r for r in linhas_edu if r["valor"] is not None]
+        matriculas: int | None = None
+        periodo_educacao: str | None = None
+        if edu_rows:
+            ultimo_edu = edu_rows[-1]
+            matriculas = int(ultimo_edu["valor"])
+            periodo_educacao = ultimo_edu["periodo"].strftime("%Y")
+
+        # Emprego formal: último mês disponível
+        linhas_caged, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_CAGED,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=_POR_PAGINA,
+        )
+        caged_rows = [r for r in linhas_caged if r["valor"] is not None]
+        saldo_emprego: int | None = None
+        periodo_emprego: str | None = None
+        if caged_rows:
+            ultimo_caged = caged_rows[-1]
+            saldo_emprego = int(ultimo_caged["valor"])
+            periodo_emprego = ultimo_caged["periodo"].strftime("%Y-%m")
+
+        # Salário médio das admissões: último mês disponível
+        linhas_sal, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_SALARIO,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=_POR_PAGINA,
+        )
+        sal_rows = [r for r in linhas_sal if r["valor"] is not None]
+        salario_medio: float | None = None
+        if sal_rows:
+            salario_medio = float(sal_rows[-1]["valor"])
+
+        if matriculas is None and saldo_emprego is None:
+            raise NaoEncontradoError(f"Bússola Educação-Trabalho para município '{codigo_ibge}'")
+
+        b = calcular_bussola(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            periodo_educacao=periodo_educacao,
+            matriculas=matriculas,
+            periodo_emprego=periodo_emprego,
+            saldo_emprego=saldo_emprego,
+            salario_medio=salario_medio,
+        )
+
+        meta_edu = await self._repo.meta_indicador(self._s, CODIGO_EDUCACAO)
+        meta_caged = await self._repo.meta_indicador(self._s, CODIGO_CAGED)
+        meta_sal = await self._repo.meta_indicador(self._s, CODIGO_SALARIO)
+
+        return BussolaEduTrabOut(
+            codigo_ibge=b.codigo_ibge,
+            nome=b.nome,
+            uf=b.uf,
+            populacao=b.populacao,
+            periodo_educacao=b.periodo_educacao,
+            matriculas=b.matriculas,
+            matriculas_por_mil=b.matriculas_por_mil,
+            nivel_educacao=b.nivel_educacao,
+            periodo_emprego=b.periodo_emprego,
+            saldo_emprego=b.saldo_emprego,
+            nivel_emprego=b.nivel_emprego,
+            salario_medio=b.salario_medio,
+            nivel_salario=b.nivel_salario,
+            nota=NOTA_BUSSOLA,
+            meta_educacao=_meta(meta_edu) if meta_edu else None,
+            meta_emprego=_meta(meta_caged) if meta_caged else None,
+            meta_salario=_meta(meta_sal) if meta_sal else None,
         )

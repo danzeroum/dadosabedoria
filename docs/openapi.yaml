@@ -1,5 +1,114 @@
 components:
   schemas:
+    BussolaEduTrabOut:
+      description: 'Bússola Educação-Trabalho: base educacional (INEP) + mercado de
+        trabalho formal (CAGED).'
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        matriculas:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Matriculas
+        matriculas_por_mil:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Matriculas Por Mil
+        meta_educacao:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        meta_emprego:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        meta_salario:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel_educacao:
+          enum:
+          - alto
+          - medio
+          - baixo
+          - sem_dado
+          title: Nivel Educacao
+          type: string
+        nivel_emprego:
+          enum:
+          - criando
+          - estavel
+          - reduzindo
+          - sem_dado
+          title: Nivel Emprego
+          type: string
+        nivel_salario:
+          enum:
+          - alto
+          - medio
+          - baixo
+          - sem_dado
+          title: Nivel Salario
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo_educacao:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo Educacao
+        periodo_emprego:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo Emprego
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        salario_medio:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Salario Medio
+        saldo_emprego:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Saldo Emprego
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - periodo_educacao
+      - matriculas
+      - matriculas_por_mil
+      - nivel_educacao
+      - periodo_emprego
+      - saldo_emprego
+      - nivel_emprego
+      - salario_medio
+      - nivel_salario
+      - nota
+      - meta_educacao
+      - meta_emprego
+      - meta_salario
+      title: BussolaEduTrabOut
+      type: object
     Citacao:
       properties:
         fonte:
@@ -1417,6 +1526,43 @@ paths:
       summary: Health
       tags:
       - infra
+  /v1/bussola-edu-trabalho/{codigo_ibge}:
+    get:
+      description: 'Base educacional e mercado de trabalho formal do município (Bússola
+        EDU-01).
+
+
+        Combina matrículas do ensino fundamental (INEP/Censo Escolar, anual) com o
+        saldo de emprego
+
+        formal e o salário médio das admissões (CAGED, mensal). A relação é de CONTEXTO,
+        não causal.
+
+        404 quando não há nenhum dado disponível para o município.'
+      operationId: bussola_edu_trabalho_v1_bussola_edu_trabalho__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BussolaEduTrabOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Bussola Edu Trabalho
+      tags:
+      - produtos
   /v1/cobertura/caged:
     get:
       description: 'Cobertura atual do CAGED no acervo.

@@ -287,10 +287,15 @@ Região Emprega e o subíndice `v_emprego` do IVM** mostram hoje apenas o seed d
 O endpoint `GET /v1/cobertura/caged` sinaliza automaticamente `demo=true` enquanto `n_municipios < 50`;
 as telas exibem o aviso "Demonstração" e ele cai sozinho após a ingestão — sem hardcode.
 **Construído ≠ com dado.** Desbloquear: liberar FTP `ftp.mtps.gov.br` (porta 21) no allowlist da
-VPS e rodar `python -m app.ingestao.run_caged 2026 4` (ver `RUNBOOK_DEPLOY.md §CAGED go-live`).
+VPS e rodar `python -m app.ingestao.run_caged 2026 4` (competência única) ou
+`python -m app.ingestao.run_caged 2025 1 2026 4` (backfill de série histórica).
 **✅ Fase 1 completa (PR #111, 2026-06-11):** fixture fiel-à-forma (ADR-0036), fetcher passivo
 (`set_pasv(True)`), streaming nacional (`agregar_nacional()`, single scan 443 MB), runbook + 4 testes
 de forma. **PASSO 4 aguarda allowlist FTP da VPS + corrida do dono.**
+**✅ Hardening pós-validação (PR #113, 2026-06-11):** seed idempotente (nunca sobrescreve dado real
+no redeploy — `_tem_dados_reais()`); 5 testes de `cobertura_caged()` (limiar 49/50, demo=True com
+zero dados); `run_caged` aceita intervalo de competências; `NOTA_HONESTA` documenta CAGEDMOV-only
+(CAGEDFOR = ajuste retroativo, refinamento futuro).
 
 **Guardrail (vigente):** não adicionar produto novo sobre fonte ainda não validada. Toda fonte nova
 passa primeiro pelo ciclo: sonda real → confirma forma → fixture fiel → fecha o ADR. Dado seed não
@@ -352,8 +357,11 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   `saude.resp.internacoes_j` pelo caminho ouro (k-anon). **Pipeline VIVO-PRONTO:** `executar_datasus`
   (a contagem É o `n_amostra` → **k-anon suprime ANTES de gravar** contagens <5; teste prova SP=3 e
   Campinas=2 protegidas) + `run_datasus` + **Dagster** (`job_datasus` + `schedule_datasus_mensal`,
-  com `refrescar_ivm` — saúde é subíndice do IVM). _Falta: dado real (#0, `ftp.datasus.gov.br`),
-  DBC→Parquet robusto, produtos SAUDE com dupla face §17._
+  com `refrescar_ivm` — saúde é subíndice do IVM). **✅ Decoder baked-in (PR #113):**
+  `datasus-dbc` (Rust wheel, sem pyarrow) + `dbfread` substituem pysus; `diagnostico_datasus.py`
+  roda nativo na imagem do worker (sem instalação extra). _Falta: dado real (#0, dono roda
+  `diagnostico_datasus.py` na VPS com FTP aberto → fixture → ADR), DBC→Parquet robusto, produtos
+  SAUDE com dupla face §17._
 - [ ] 🔵 Adaptador DATASUS **robusto** (DBC→Parquet, incremental/idempotente, mapa IBGE 6→7) +
   Dagster; demais sistemas (SIA/CNES/SINAN/SINASC/SIM) — o de maior atrito.
 - [ ] 🔵 SAUDE-04 Fila Visível; SAUDE-06 Receita Cidadã; SAUDE-05 Navegador de Acesso.

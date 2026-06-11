@@ -5,7 +5,7 @@ A IA narra apenas sobre o ``ContextoIA`` recuperado aqui — nunca sobre conheci
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 from sqlalchemy import RowMapping
@@ -19,6 +19,7 @@ class ContextoIA:
     indicador: RowMapping  # linha completa do indicador (inclui origem_sensivel) + meta da fonte
     valores: list[RowMapping]  # série pública (suprimidos marcados, valor já NULL)
     territorio: str | None
+    territorio_nome: str | None = field(default=None)  # nome legível do território (se resolvido)
 
 
 async def catalogo(session: AsyncSession) -> list[tuple[str, str]]:
@@ -48,4 +49,16 @@ async def recuperar(
         pagina=1,
         por_pagina=100,
     )
-    return ContextoIA(indicador=ind, valores=linhas, territorio=territorio)
+    # Resolve nome do território para exibição legível no narrador.
+    territorio_nome: str | None = None
+    if territorio:
+        terr = await repo.obter_territorio(session, territorio)
+        if terr is not None:
+            uf = terr["uf"]
+            territorio_nome = f"{terr['nome']}{f' ({uf})' if uf else ''}"
+    return ContextoIA(
+        indicador=ind,
+        valores=linhas,
+        territorio=territorio,
+        territorio_nome=territorio_nome,
+    )

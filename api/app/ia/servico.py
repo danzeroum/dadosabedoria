@@ -10,10 +10,11 @@ from datetime import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ia.guardrails import identificar_indicador, sanitizar
+from app.ia.guardrails import candidatos_lugar, identificar_indicador, sanitizar
 from app.ia.modelos import Citacao, PerguntaIA, RespostaIA
 from app.ia.narrador import Narrador, narrador_padrao
 from app.ia.recuperacao import ContextoIA, catalogo, recuperar
+from app.indicadores.repositorio import RepositorioIndicadores
 
 
 def _parse_mes(valor: str | None) -> date | None:
@@ -27,6 +28,20 @@ class ServicoIA:
     def __init__(self, session: AsyncSession, narrador: Narrador | None = None) -> None:
         self._s = session
         self._narrador = narrador or narrador_padrao()
+        self._repo = RepositorioIndicadores()
+
+    async def _resolver_territorio(self, pergunta: str) -> str | None:
+        """Tenta encontrar um município único na pergunta por nome.
+
+        Extrai candidatos de lugar (após preposições) e busca na tabela territorio.
+        Retorna o codigo_ibge se exatamente 1 resultado exato; None se ambíguo ou não encontrado.
+        """
+        for cand in candidatos_lugar(pergunta):
+            rows = await self._repo.buscar_territorios(self._s, q=cand, nivel="municipio", limit=5)
+            exatos = [r for r in rows if r["nome"].lower() == cand.lower()]
+            if len(exatos) == 1:
+                return str(exatos[0]["codigo_ibge"])
+        return None
 
     async def perguntar(self, p: PerguntaIA) -> RespostaIA:
         pergunta = sanitizar(p.pergunta)
@@ -43,14 +58,25 @@ class ServicoIA:
         except (ValueError, TypeError):
             return self._abster("período inválido; use o formato YYYY-MM.")
 
+        # Resolve território pelo nome na pergunta se não foi fornecido explicitamente.
+        territorio = p.territorio or await self._resolver_territorio(pergunta)
+
         contexto = await recuperar(
-            self._s, indicador=indicador, territorio=p.territorio, de=de, ate=ate
+            self._s, indicador=indicador, territorio=territorio, de=de, ate=ate
         )
         if contexto is None:
             return self._abster(f"não há o indicador '{indicador}' no repositório.")
         if not contexto.valores:
             return self._abster(
                 f"não há dado público para '{indicador}' no recorte pedido (território/período)."
+            )
+
+        # Se sem território e resultado com muitos territórios distintos → pede precisão.
+        if territorio is None and len(contexto.valores) > 20:
+            return self._abster(
+                "a pergunta retornou dados de muitos municípios ao mesmo tempo. "
+                "Informe o nome do município no campo 'Município' ou adicione o código IBGE "
+                "(ex.: '3304557' para Rio de Janeiro-RJ)."
             )
 
         return RespostaIA(

@@ -54,11 +54,20 @@ class NarradorTemplate:
     id = "template-v1"
 
     async def narrar(self, contexto: ContextoIA) -> str:
-        nome = contexto.indicador["nome"]
+        nome_ind = contexto.indicador["nome"]
         fonte = contexto.indicador["fonte_nome"]
-        local = f" em {contexto.territorio}" if contexto.territorio else ""
-        corpo = "; ".join(_pontos(contexto))
-        return f"{nome}{local} — {corpo}. Fonte: {fonte}."
+        # Usa o nome do território (resolvido na recuperação) ou o código como fallback.
+        nome_local = contexto.territorio_nome or contexto.territorio
+        local = f" em {nome_local}" if nome_local else ""
+        pontos = _pontos(contexto)
+        # Limita a 12 pontos para não inundar a resposta
+        if len(pontos) > 12:
+            pontos = pontos[-12:]
+            prefixo = f"(mostrando os {len(pontos)} períodos mais recentes) "
+        else:
+            prefixo = ""
+        corpo = "; ".join(pontos)
+        return f"{nome_ind}{local} — {prefixo}{corpo}. Fonte: {fonte}."
 
 
 class NarradorLLM:

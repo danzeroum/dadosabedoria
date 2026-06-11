@@ -80,7 +80,7 @@ def _testar_porta_ftp() -> bool:
 
 def _conectar_ftp() -> ftplib.FTP | None:
     """Tenta conectar ao FTP; retorna FTP ou None se bloqueado."""
-    ftp = ftplib.FTP()  # noqa: S321
+    ftp = ftplib.FTP(encoding="latin-1")  # noqa: S321 — servidor MTPS usa Windows-1252
     try:
         ftp.connect(FTP_HOST, 21, timeout=FTP_TIMEOUT)
         ftp.login()  # anônimo

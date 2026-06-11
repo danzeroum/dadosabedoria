@@ -246,6 +246,101 @@ components:
       - pct
       title: FuncaoOut
       type: object
+    GiroLocalOut:
+      description: 'Dinamismo econômico local per capita: emprego formal (CAGED) +
+        crédito bancário (ESTBAN).'
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta_credito:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        meta_emprego:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel_credito:
+          enum:
+          - alto
+          - medio
+          - baixo
+          - sem_dado
+          title: Nivel Credito
+          type: string
+        nivel_emprego:
+          enum:
+          - criando
+          - estavel
+          - reduzindo
+          - sem_dado
+          title: Nivel Emprego
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo_credito:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo Credito
+        periodo_emprego:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo Emprego
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        saldo_credito:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Saldo Credito
+        saldo_credito_per_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Saldo Credito Per Hab
+        saldo_emprego:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Saldo Emprego
+        saldo_emprego_per_1000:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Saldo Emprego Per 1000
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - periodo_emprego
+      - saldo_emprego
+      - saldo_emprego_per_1000
+      - nivel_emprego
+      - periodo_credito
+      - saldo_credito
+      - saldo_credito_per_hab
+      - nivel_credito
+      - nota
+      - meta_emprego
+      - meta_credito
+      title: GiroLocalOut
+      type: object
     HTTPValidationError:
       properties:
         detail:
@@ -1191,6 +1286,40 @@ paths:
       tags:
       - indicadores
       - proveniencia
+  /v1/giro-local/{codigo_ibge}:
+    get:
+      description: 'Dinamismo econômico local per capita: criação de emprego formal
+        + crédito bancário.
+
+
+        Combina CAGED (saldo/1000 hab) e ESTBAN (crédito/hab) para comparação entre
+        municípios de
+
+        portes diferentes. 404 quando não há nenhum dado disponível para o município.'
+      operationId: giro_local_v1_giro_local__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GiroLocalOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Giro Local
+      tags:
+      - produtos
   /v1/ia/perguntar:
     post:
       description: Responde SÓ com o que recupera do repositório, com citação; sem

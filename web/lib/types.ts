@@ -122,6 +122,31 @@ export interface PulsoProduto {
   meta: MetaProveniencia;
 }
 
+// ----------------------------------------------------------------- Giro Local (TRAB-03)
+
+export type NivelEmprego = "criando" | "estavel" | "reduzindo" | "sem_dado";
+export type NivelCredito = "alto" | "medio" | "baixo" | "sem_dado";
+
+export interface GiroLocalProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  // Emprego formal (CAGED)
+  periodo_emprego: string | null;
+  saldo_emprego: number | null;
+  saldo_emprego_per_1000: number | null;
+  nivel_emprego: NivelEmprego;
+  // Crédito bancário (ESTBAN)
+  periodo_credito: string | null;
+  saldo_credito: number | null;
+  saldo_credito_per_hab: number | null;
+  nivel_credito: NivelCredito;
+  nota: string;
+  meta_emprego: MetaProveniencia | null;
+  meta_credito: MetaProveniencia | null;
+}
+
 // ----------------------------------------------------------------- OndeFoi (TRANSP-06)
 
 export type Banda = "alta" | "parcial" | "baixa" | "indef";

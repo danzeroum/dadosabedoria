@@ -1743,3 +1743,78 @@ section h2 {
   font-size: 0.92rem;
   line-height: 1.5;
 }
+
+/* Giro Local (TRAB-03) */
+.giro-populacao {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin: 0 0 16px;
+}
+.giro-painel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+  max-width: 640px;
+}
+.giro-bloco {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 16px;
+}
+.giro-label {
+  color: var(--cor-texto-suave);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px;
+}
+.giro-numero {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.giro-numero strong {
+  font-size: 1.6rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.giro-rotulo-numero {
+  color: var(--cor-texto-suave);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+.giro-per-capita {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin: 6px 0 4px;
+}
+.giro-nivel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 6px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.giro-sem-dado {
+  color: var(--cor-texto-suave);
+  font-style: italic;
+  font-size: 0.9rem;
+  margin: 8px 0 0;
+}
+.giro-meta {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+  max-width: 640px;
+}
+.giro-meta dt {
+  font-weight: 600;
+  color: var(--cor-texto);
+  margin-top: 8px;
+}
+.giro-meta dd {
+  margin: 2px 0 0 0;
+}

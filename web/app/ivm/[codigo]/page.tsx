@@ -125,6 +125,10 @@ export default async function MunicipioPage({
           Ver o Pulso Produtivo (saldo de emprego formal) →
         </Link>
         <br />
+        <Link href={`/giro-local/${atual.codigo_ibge}`}>
+          Ver o Giro Local (emprego + crédito per capita) →
+        </Link>
+        <br />
         <Link href={`/municipio/${atual.codigo_ibge}`}>
           Ver o panorama completo do município →
         </Link>

@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { EstadoSupressao } from "../../components/EstadoSupressao";
-import { buscarIVM, buscarPanorama } from "../../lib/api";
+import { buscarPanorama, buscarTerritorios } from "../../lib/api";
 import { agruparPorDominio, alinharIndicadores, type LinhaComparacao } from "../../lib/comparar";
 import { formatarValor } from "../../lib/formato";
 import type { IndicadorValor } from "../../lib/types";
@@ -18,7 +17,6 @@ const ROTULO_DOMINIO: Record<string, string> = {
   compras: "Compras",
 };
 
-// Célula de valor (reusa o tratamento do panorama): protegido → cadeado; sem valor → travessão.
 function Celula({ ind }: { ind: IndicadorValor | null }) {
   if (!ind) {
     return <span className="cmp-vazio">sem indicador</span>;
@@ -39,42 +37,27 @@ function Celula({ ind }: { ind: IndicadorValor | null }) {
 export default async function CompararPage({
   searchParams,
 }: {
-  searchParams: { a?: string; b?: string };
+  searchParams: { a?: string; b?: string; qa?: string; qb?: string };
 }) {
-  let municipios: { codigo_ibge: string; nome: string; uf?: string | null }[] = [];
-  try {
-    municipios = (await buscarIVM()).dados;
-  } catch {
-    municipios = [];
-  }
-  if (municipios.length < 2) {
-    return (
-      <main className="pagina">
-        <Link href="/" className="voltar">
-          ← Início
-        </Link>
-        <h1>Comparar municípios</h1>
-        <p className="vazio">
-          Preciso de pelo menos dois municípios no acervo para comparar. Volte quando houver mais
-          cobertura.
-        </p>
-      </main>
-    );
-  }
+  const codA = searchParams.a?.trim() ?? "";
+  const codB = searchParams.b?.trim() ?? "";
+  const qa = (searchParams.qa ?? "").trim();
+  const qb = (searchParams.qb ?? "").trim();
 
-  const codA = municipios.find((m) => m.codigo_ibge === searchParams.a)?.codigo_ibge ?? municipios[0].codigo_ibge;
-  const codB =
-    municipios.find((m) => m.codigo_ibge === searchParams.b && m.codigo_ibge !== codA)?.codigo_ibge ??
-    municipios.find((m) => m.codigo_ibge !== codA)!.codigo_ibge;
+  // Busca de candidatos para A e B (server-side, sem JS)
+  const [resA, resB] = await Promise.all([
+    qa.length >= 2 ? buscarTerritorios(qa) : Promise.resolve(null),
+    qb.length >= 2 ? buscarTerritorios(qb) : Promise.resolve(null),
+  ]);
 
-  const [pa, pb] = await Promise.all([buscarPanorama(codA), buscarPanorama(codB)]);
-  if (!pa || !pb) {
-    notFound();
-  }
-  const grupos = agruparPorDominio(alinharIndicadores(pa.indicadores, pb.indicadores));
+  // Se ambos os códigos estão definidos, carrega o panorama para comparação
+  const [pa, pb] =
+    codA && codB
+      ? await Promise.all([buscarPanorama(codA), buscarPanorama(codB)])
+      : [null, null];
 
-  const linkPicker = (lado: "a" | "b", codigo: string) =>
-    lado === "a" ? `/comparar?a=${codigo}&b=${codB}` : `/comparar?a=${codA}&b=${codigo}`;
+  const grupos =
+    pa && pb ? agruparPorDominio(alinharIndicadores(pa.indicadores, pb.indicadores)) : [];
 
   return (
     <main className="pagina">
@@ -88,46 +71,108 @@ export default async function CompararPage({
         por baixo. É descritivo: contexto para perguntar, não um ranking de melhor/pior.
       </p>
 
-      <nav className="cmp-picker" aria-label="Escolher municípios">
+      <div className="cmp-picker">
+        {/* Picker A */}
         <div className="cmp-picker-lado">
           <span className="cmp-picker-rotulo">Município A</span>
-          {municipios.map((m) => (
-            <Link
-              key={`a-${m.codigo_ibge}`}
-              href={linkPicker("a", m.codigo_ibge)}
-              className={m.codigo_ibge === codA ? "picker-ativo" : ""}
-              aria-current={m.codigo_ibge === codA ? "true" : undefined}
-            >
-              {m.nome}
-            </Link>
-          ))}
+          {pa && (
+            <p className="picker-ativo-nome">
+              <strong>{pa.nome}</strong>
+              {pa.uf ? ` · ${pa.uf}` : ""}
+              <Link href={`/comparar?b=${codB}&qb=${qb}`} className="picker-trocar-link">
+                {" "}trocar
+              </Link>
+            </p>
+          )}
+          <form method="get" className="picker-busca-form">
+            <input type="hidden" name="b" value={codB} />
+            <input type="hidden" name="a" value={codA} />
+            <label htmlFor="busca-a">Buscar A</label>
+            <input
+              id="busca-a"
+              name="qa"
+              type="search"
+              defaultValue={qa}
+              placeholder="nome do município"
+            />
+            <button type="submit">Buscar</button>
+          </form>
+          {resA && resA.dados.length === 0 && qa && (
+            <p className="vazio">Nenhum município para &ldquo;{qa}&rdquo;.</p>
+          )}
+          {resA && resA.dados.length > 0 && (
+            <ul className="busca-resultados">
+              {resA.dados.map((t) => (
+                <li key={t.codigo_ibge}>
+                  <Link href={`/comparar?a=${t.codigo_ibge}&b=${codB}`}>
+                    {t.nome}
+                    {t.uf ? ` · ${t.uf}` : ""}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+
+        {/* Picker B */}
         <div className="cmp-picker-lado">
           <span className="cmp-picker-rotulo">Município B</span>
-          {municipios.map((m) => (
-            <Link
-              key={`b-${m.codigo_ibge}`}
-              href={linkPicker("b", m.codigo_ibge)}
-              className={m.codigo_ibge === codB ? "picker-ativo" : ""}
-              aria-current={m.codigo_ibge === codB ? "true" : undefined}
-            >
-              {m.nome}
-            </Link>
-          ))}
+          {pb && (
+            <p className="picker-ativo-nome">
+              <strong>{pb.nome}</strong>
+              {pb.uf ? ` · ${pb.uf}` : ""}
+              <Link href={`/comparar?a=${codA}&qa=${qa}`} className="picker-trocar-link">
+                {" "}trocar
+              </Link>
+            </p>
+          )}
+          <form method="get" className="picker-busca-form">
+            <input type="hidden" name="a" value={codA} />
+            <input type="hidden" name="b" value={codB} />
+            <label htmlFor="busca-b">Buscar B</label>
+            <input
+              id="busca-b"
+              name="qb"
+              type="search"
+              defaultValue={qb}
+              placeholder="nome do município"
+            />
+            <button type="submit">Buscar</button>
+          </form>
+          {resB && resB.dados.length === 0 && qb && (
+            <p className="vazio">Nenhum município para &ldquo;{qb}&rdquo;.</p>
+          )}
+          {resB && resB.dados.length > 0 && (
+            <ul className="busca-resultados">
+              {resB.dados.map((t) => (
+                <li key={t.codigo_ibge}>
+                  <Link href={`/comparar?a=${codA}&b=${t.codigo_ibge}`}>
+                    {t.nome}
+                    {t.uf ? ` · ${t.uf}` : ""}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <p className="cmp-trocar">
-          <Link href={`/comparar?a=${codB}&b=${codA}`}>trocar A ↔ B</Link>
-        </p>
-      </nav>
 
-      {grupos.length === 0 ? (
+        {codA && codB && (
+          <p className="cmp-trocar">
+            <Link href={`/comparar?a=${codB}&b=${codA}`}>trocar A ↔ B</Link>
+          </p>
+        )}
+      </div>
+
+      {!codA || !codB ? (
+        <p className="vazio">Busque e selecione dois municípios acima para ver a comparação.</p>
+      ) : grupos.length === 0 ? (
         <p className="vazio">Sem indicadores em comum no acervo para estes municípios.</p>
       ) : (
         <div className="cmp-tabela">
           <div className="cmp-linha cmp-cabeca">
             <span>Indicador</span>
-            <span>{pa.nome}</span>
-            <span>{pb.nome}</span>
+            <span>{pa!.nome}</span>
+            <span>{pb!.nome}</span>
           </div>
           {grupos.map(([dominio, linhas]: [string, LinhaComparacao[]]) => (
             <div key={dominio} className="cmp-grupo">

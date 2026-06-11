@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from sqlalchemy import RowMapping, and_, case, distinct, func, select
+from sqlalchemy import RowMapping, and_, case, distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.tables import base_legal, fonte, indicador, territorio, valor
@@ -165,6 +165,33 @@ class RepositorioIndicadores:
             .select_from(j)
             .group_by(fonte.c.id, base_legal.c.id)
             .order_by(fonte.c.nome)
+        )
+        return list((await session.execute(stmt)).mappings().all())
+
+    async def buscar_territorios(
+        self,
+        session: AsyncSession,
+        *,
+        q: str,
+        nivel: str = "municipio",
+        limit: int = 20,
+    ) -> list[RowMapping]:
+        stmt = (
+            select(
+                territorio.c.codigo_ibge,
+                territorio.c.nome,
+                territorio.c.uf,
+                territorio.c.nivel,
+            )
+            .where(
+                territorio.c.nivel == nivel,
+                or_(
+                    territorio.c.nome.ilike(f"%{q}%"),
+                    territorio.c.codigo_ibge.like(f"{q}%"),
+                ),
+            )
+            .order_by(territorio.c.nome)
+            .limit(limit)
         )
         return list((await session.execute(stmt)).mappings().all())
 

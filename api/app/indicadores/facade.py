@@ -16,11 +16,13 @@ from app.indicadores.modelos import (
     MetaProveniencia,
     Paginacao,
     PanoramaOut,
+    RespostaBuscaTerritorios,
     RespostaFontes,
     RespostaIndicadores,
     RespostaValores,
     TerritorioOut,
     TerritorioRef,
+    TerritorioSimples,
     ValorOut,
 )
 from app.indicadores.repositorio import RepositorioIndicadores
@@ -171,6 +173,19 @@ class IndicadoresFacade:
             for r in linhas
         ]
         return RespostaFontes(dados=dados, total=len(dados))
+
+    async def buscar_territorios(
+        self, *, q: str, nivel: str = "municipio", limit: int = 20
+    ) -> RespostaBuscaTerritorios:
+        q = q.strip()
+        if not q:
+            return RespostaBuscaTerritorios(dados=[], total=0)
+        rows = await self._repo.buscar_territorios(self._s, q=q, nivel=nivel, limit=limit)
+        dados = [
+            TerritorioSimples(codigo_ibge=r["codigo_ibge"], nome=r["nome"], uf=r["uf"])
+            for r in rows
+        ]
+        return RespostaBuscaTerritorios(dados=dados, total=len(dados))
 
     @cache_leitura("v1:territorio")
     async def obter_territorio(self, *, codigo_ibge: str) -> TerritorioOut:

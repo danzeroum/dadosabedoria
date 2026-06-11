@@ -938,6 +938,67 @@ section h2 {
   color: #fff;
   border-color: var(--cor-marca);
 }
+/* Resultados de busca de território (IVM + Comparar) */
+.busca-resultados {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.busca-resultados li a {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--cor-marca);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+.busca-resultados li a:hover {
+  border-color: var(--cor-marca);
+}
+/* Formulário de busca nos pickers do Comparar */
+.picker-busca-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.picker-busca-form label {
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+}
+.picker-busca-form input {
+  padding: 5px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  min-width: 180px;
+  font: inherit;
+  font-size: 0.9rem;
+}
+.picker-busca-form button {
+  padding: 5px 10px;
+  border: 1px solid var(--cor-marca);
+  background: var(--cor-marca);
+  color: #fff;
+  border-radius: var(--raio);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.picker-ativo-nome {
+  font-size: 0.9rem;
+  margin: 0 0 4px;
+}
+.picker-trocar-link {
+  color: var(--cor-marca);
+  font-size: 0.8rem;
+  text-decoration: none;
+  margin-left: 6px;
+}
 .cmp-trocar {
   margin: 0;
   font-size: 0.85rem;

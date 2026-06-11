@@ -4,10 +4,9 @@ import { Coropleta } from "../../components/Coropleta";
 import { Legenda } from "../../components/Legenda";
 import { MapaSemaforico } from "../../components/MapaSemaforico";
 import { SeloConfianca } from "../../components/SeloConfianca";
-import { buscarIVM, buscarMalhaIVM } from "../../lib/api";
+import { buscarIVM, buscarMalhaIVM, buscarTerritorios } from "../../lib/api";
 import type { FeatureCollectionIVM } from "../../lib/types";
 
-// Renderiza por requisição (busca dado vivo da API; não pré-renderiza no build).
 export const dynamic = "force-dynamic";
 
 const UFS = ["SP", "RJ", "MG"];
@@ -33,12 +32,21 @@ export default async function IVMPage({
   }
 
   const uf = searchParams.uf?.toUpperCase();
-  // Busca server-side (sem JS no cliente): filtra a lista por nome ou código IBGE.
   const q = (searchParams.q ?? "").trim();
+
+  // Busca server-side contra todos os territórios (não só os com IVM).
+  let resultadosBusca: { codigo_ibge: string; nome: string; uf: string | null }[] = [];
+  if (q.length >= 2) {
+    const r = await buscarTerritorios(q);
+    resultadosBusca = r.dados;
+  }
+
+  // Lista de IVM filtrada pelo nome (exibida quando não há busca ou a busca está vazia)
   const ql = q.toLowerCase();
   const dadosFiltrados = q
     ? dados.filter((d) => d.nome.toLowerCase().includes(ql) || d.codigo_ibge.includes(q))
     : dados;
+
   let malha: FeatureCollectionIVM | null = null;
   if (uf) {
     try {
@@ -47,6 +55,9 @@ export default async function IVMPage({
       malha = null;
     }
   }
+
+  // Quais municípios da busca já têm IVM (para diferenciar o link)
+  const ibgesComIVM = new Set(dados.map((d) => d.codigo_ibge));
 
   return (
     <main className="pagina">
@@ -115,13 +126,30 @@ export default async function IVMPage({
           </Link>
         ) : null}
       </form>
-      {q && dadosFiltrados.length === 0 ? (
-        <p className="vazio">Nenhum município encontrado para “{q}”.</p>
-      ) : (
-        <MapaSemaforico itens={dadosFiltrados} />
+
+      {q && resultadosBusca.length === 0 && (
+        <p className="vazio">Nenhum município encontrado para &ldquo;{q}&rdquo;.</p>
       )}
+
+      {q && resultadosBusca.length > 0 && (
+        <ul className="busca-resultados">
+          {resultadosBusca.map((t) => (
+            <li key={t.codigo_ibge}>
+              <Link href={ibgesComIVM.has(t.codigo_ibge) ? `/ivm/${t.codigo_ibge}` : `/municipio/${t.codigo_ibge}`}>
+                {t.nome}
+                {t.uf ? ` · ${t.uf}` : ""}
+                {ibgesComIVM.has(t.codigo_ibge) ? "" : " · ver panorama"}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!q && <MapaSemaforico itens={dadosFiltrados} />}
+
       <p className="nota">
         O mapa usa as malhas territoriais do IBGE; municípios sem IVM no período aparecem em cinza.
+        Municípios fora do IVM abrem o panorama com os indicadores disponíveis.
       </p>
     </main>
   );

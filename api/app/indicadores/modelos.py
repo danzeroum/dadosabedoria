@@ -73,6 +73,17 @@ class TerritorioOut(BaseModel):
     pai: TerritorioRef | None = None
 
 
+class TerritorioSimples(BaseModel):
+    codigo_ibge: str
+    nome: str
+    uf: str | None = None
+
+
+class RespostaBuscaTerritorios(BaseModel):
+    dados: list[TerritorioSimples]
+    total: int
+
+
 # ----------------------------------------- Panorama (todos os indicadores de um território)
 
 

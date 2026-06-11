@@ -345,6 +345,33 @@ export interface BussolaEduTrabProduto {
   meta_salario: MetaProveniencia | null;
 }
 
+// ---------------------------------------------- Sentinela Respiratória (SAUDE-01)
+
+export type NivelSentinela = "elevado" | "moderado" | "baixo" | "suprimido" | "sem_dado";
+export type TendenciaSentinela = "subindo" | "estavel" | "caindo";
+
+export interface MesInternacoesProduto {
+  periodo: string; // YYYY-MM
+  internacoes: number | null; // null quando suprimido (k-anonimato)
+  suprimido: boolean;
+}
+
+export interface SentinelaRespProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  periodo: string | null; // YYYY-MM do dado mais recente
+  internacoes: number | null; // null se suprimido ou sem dado
+  internacoes_por_100k: number | null; // null se suprimido ou sem população
+  suprimido: boolean;
+  nivel: NivelSentinela;
+  tendencia: TendenciaSentinela | null; // null com < 2 meses reais
+  meses: MesInternacoesProduto[]; // série histórica (inclui meses suprimidos)
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

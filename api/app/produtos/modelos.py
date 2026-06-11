@@ -1,5 +1,5 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
-Bússola Educação-Trabalho (EDU-01)."""
+Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01)."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
 from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.salario_radar import NivelSalario
+from app.produtos.sentinela_resp import NivelSentinela, TendenciaSentinela
 
 
 class FuncaoOut(BaseModel):
@@ -209,3 +210,32 @@ class BussolaEduTrabOut(BaseModel):
     meta_educacao: MetaProveniencia | None
     meta_emprego: MetaProveniencia | None
     meta_salario: MetaProveniencia | None
+
+
+# ---------------------------------------------- Sentinela Respiratória (SAUDE-01)
+
+
+class MesInternacoesOut(BaseModel):
+    periodo: str  # YYYY-MM
+    internacoes: int | None  # None = suprimido (k-anonimato)
+    suprimido: bool
+
+
+class SentinelaRespOut(BaseModel):
+    """Internações respiratórias SUS por município/mês com supressão honesta (SAUDE-01)."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    periodo: str | None  # YYYY-MM do dado mais recente
+    internacoes: int | None  # None se suprimido ou sem dado
+    internacoes_por_100k: float | None  # None se suprimido ou sem população
+    suprimido: bool
+    nivel: NivelSentinela
+    tendencia: TendenciaSentinela | None  # None com < 2 meses reais
+
+    meses: list[MesInternacoesOut]  # série histórica (inclui meses suprimidos)
+    nota: str
+    meta: MetaProveniencia | None

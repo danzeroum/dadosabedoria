@@ -66,6 +66,15 @@ const PRODUTOS: {
     selo: null,
   },
   {
+    titulo: "Sentinela Respiratória",
+    pergunta: "Como estão as internações por doenças respiratórias no município?",
+    descricao:
+      "Contagem de AIH com diagnóstico no grupo J do CID-10 (J00–J99) no SIH/SUS por mês. Cobre só o SUS público; células com menos de 5 internações são protegidas pelo k-anonimato e aparecem como 'Protegido' — nunca como zero.",
+    href: "/sentinela-resp/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
     titulo: "Comparar municípios",
     pergunta: "Como meu município se compara a outro?",
     descricao:

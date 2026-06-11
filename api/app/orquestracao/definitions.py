@@ -50,7 +50,17 @@ async def _rodar_caged(janela: Janela) -> None:  # pragma: no cover - rede/S3
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
     await refrescar_ivm()
-    await invalidar("v1:cobertura:caged")
+    _CACHES_CAGED = (
+        "v1:cobertura:caged",
+        "v1:pulso",
+        "v1:giro",
+        "v1:salario",
+        "v1:regiao",
+        "v1:panorama",
+        "v1:valores",
+    )
+    for prefixo in _CACHES_CAGED:
+        await invalidar(prefixo)
 
 
 async def _rodar_estban(janela: Janela) -> None:  # pragma: no cover - rede/S3

@@ -103,9 +103,10 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
     provavelmente está no bundle JS do SPA — investigar ou solicitar ao BCB/COSIF.)_
   - ⚠️ **DATASUS** `ftp.datasus.gov.br` — timeout na porta 443 (FTP puro na porta 21, não acessível
     via HTTPS; sem URL HTTP alternativa identificada para o SIH). _(Protocolo FTP não suportado.)_
-  - ❌ **CAGED** `ftp.mtps.gov.br` — `x-deny-reason: resolve_no_records` (DNS não resolve para
-    HTTPS; o CAGEDMOV está exclusivamente no FTP). _(Desbloqueio: liberar FTP `ftp.mtps.gov.br`
-    porta 21 no allowlist do ambiente — ver `scripts/diagnostico_caged.py`.)_
+  - ⚠️ **CAGED** `ftp.mtps.gov.br` — FTP não acessível neste contêiner (porta 21 bloqueada). **Fase 1
+    completa (PR #111, ADR-0036):** fixture fiel-à-forma, fetcher passivo, streaming nacional, runbook.
+    Falta apenas liberar `ftp.mtps.gov.br:21` no allowlist da **VPS** (não deste contêiner) e rodar
+    `python -m app.ingestao.run_caged 2026 4` em tmux (ver `RUNBOOK_DEPLOY.md §CAGED go-live`).
 - [~] **🟡 OndeFoi — re-ancoragem do número (a referendar; ADR-0028 §5 + ADR-0029):** o #0 mostrou que
   **"recebido por função" NÃO existe na fonte** (transferências [I-C] não são classificadas por
   função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). **Em MODO DEV o dev
@@ -285,8 +286,11 @@ Região Emprega e o subíndice `v_emprego` do IVM** mostram hoje apenas o seed d
 (SP + Campinas, n=2). O acervo precisa da **ingestão nacional do CAGED** para refletir dado real.
 O endpoint `GET /v1/cobertura/caged` sinaliza automaticamente `demo=true` enquanto `n_municipios < 50`;
 as telas exibem o aviso "Demonstração" e ele cai sozinho após a ingestão — sem hardcode.
-**Construído ≠ com dado.** Desbloquear: liberar FTP `ftp.mtps.gov.br` (porta 21) no allowlist do
-ambiente e rodar `scripts/diagnostico_caged.py` para confirmar a forma antes de ingerir.
+**Construído ≠ com dado.** Desbloquear: liberar FTP `ftp.mtps.gov.br` (porta 21) no allowlist da
+VPS e rodar `python -m app.ingestao.run_caged 2026 4` (ver `RUNBOOK_DEPLOY.md §CAGED go-live`).
+**✅ Fase 1 completa (PR #111, 2026-06-11):** fixture fiel-à-forma (ADR-0036), fetcher passivo
+(`set_pasv(True)`), streaming nacional (`agregar_nacional()`, single scan 443 MB), runbook + 4 testes
+de forma. **PASSO 4 aguarda allowlist FTP da VPS + corrida do dono.**
 
 **Guardrail (vigente):** não adicionar produto novo sobre fonte ainda não validada. Toda fonte nova
 passa primeiro pelo ciclo: sonda real → confirma forma → fixture fiel → fecha o ADR. Dado seed não

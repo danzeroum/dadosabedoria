@@ -31,13 +31,18 @@ _POR_100K_ELEVADO = 10.0  # ≥10/100k → carga elevada
 _POR_100K_MODERADO = 3.0  # 3–9/100k → carga moderada
 
 NOTA_HONESTA = (
-    "Internações com diagnóstico principal no grupo J do CID-10 (doenças do aparelho respiratório, "
-    "J00–J99) no SIH/SUS por município/mês. Cobre apenas internações no SUS (público); hospitais "
-    "privados não estão incluídos (~30% das internações nacionais). Fluxo mensal sujeito a "
-    "sazonalidade (inverno → mais casos), capacidade hospitalar e subregistro de AIH — não é "
-    "apenas incidência real. Células com menos de 5 internações são protegidas (k-anonimato, "
-    "ADR-0004): aparecem como 'protegido', nunca como zero. 'Protegido' indica que houve "
-    "internações — em número pequeno demais para divulgar com segurança. Lag típico: ~90 dias."
+    "Internações com diagnóstico principal no Capítulo X do CID-10 (doenças do aparelho "
+    "respiratório, J00–J99) no SIH/SUS por município/mês. "
+    "Município = MUNIC_RES (residência do paciente) — não onde a internação ocorreu. "
+    "Mês = data de internação (DT_INTER), não a competência de faturamento. "
+    "Atenção: os últimos 1–2 meses podem estar incompletos porque AIH recentes ainda estão sendo "
+    "processadas pelo faturamento hospitalar. "
+    "Cobre apenas internações no SUS (público); hospitais privados não estão incluídos "
+    "(~30% das internações nacionais). Fluxo mensal sujeito a sazonalidade (inverno → mais casos), "
+    "capacidade hospitalar e subregistro de AIH — não é apenas incidência real. "
+    "Células com menos de 5 internações são protegidas (k-anonimato, ADR-0004): aparecem como "
+    "'protegido', nunca como zero. 'Protegido' indica que houve internações — em número pequeno "
+    "demais para divulgar com segurança. Lag típico: ~90 dias."
 )
 
 

@@ -1,7 +1,8 @@
 # ADR-0024 — Domínio `saude` via DATASUS/SIH (1ª fonte de origem sensível; Onda 2B)
 
-- **Status:** aceito
+- **Status:** aceito — forma real confirmada
 - **Data:** 2026-06-06
+- **Atualização:** 2026-06-11 — forma real validada contra RDRO2604 (Rondônia, 2026-04)
 
 ## Contexto
 Concluída a sequência de fontes abertas de menor atrito da Onda 2A (SICONFI/INEP/PNCP), a Onda 2B
@@ -23,11 +24,23 @@ agora ganha seu adaptador e módulo de domínio.
 - **`domains/saude`** (`ModuloSaude`): registra o adaptador + o catálogo do indicador existente.
   A API genérica já serve (`/v1/indicadores?dominio=saude`) — zero rota nova (Open/Closed).
 
-## ASSUNÇÕES a confirmar (lacuna sinalizada)
-O caminho/nome do RD no FTP (`/dissemin/publicos/SIHSUS/200801_/Dados/RD<UF><AAMM>.dbc`), a
-decodificação DBC→tabular (PySUS) e os nomes de coluna (`MUNIC_RES`, `DIAG_PRINC`) são **assunções**
-— a confirmar contra o arquivo real. O **IBGE do SIH tem 6 dígitos** (sem dígito verificador); o
-mapa 6→7 para casar com `territorio` é responsabilidade do pipeline (não do adaptador).
+## Forma real confirmada (2026-06-11, RDRO2604 — Rondônia 2026-04)
+
+Diagnóstico executado na VPS com `scripts/diagnostico_datasus.py`: 9670 linhas × 114 colunas.
+Decoder: `datasus_dbc.decompress` (Rust wheel, substitui `expand_dbc_to_dbf`) + dbfread + polars.
+
+**Confirmados:**
+- Caminho FTP: `/dissemin/publicos/SIHSUS/200801_/Dados/RD<UF><AAMM>.dbc` ✅
+- `MUNIC_RES` presente (município de residência, 6 dígitos) ✅
+- `DIAG_PRINC` presente (CID-10; grupo J confirmado na distribuição) ✅
+- `DT_INTER` presente (data de internação, YYYY-MM-DD após decode) ✅
+- IBGE do SIH tem 6 dígitos → mapa 6→7 no pipeline ✅
+
+**Decisões decorrentes da forma real:**
+- **Mês = DT_INTER (1.º dia do mês), NÃO `ANO_CMPT`/`MES_CMPT`** (competência de faturamento mistura meses). Ajustado no adaptador (`transformar_prata`) e no pipeline (`executar_datasus`).
+- **Município = `MUNIC_RES`** (residência). `MUNIC_MOV` (local de internação) zeraria municípios sem hospital. Confirmado na nota honesta do produto.
+- **Meses recentes incompletos**: AIH recentes ainda em faturamento → os últimos 1–2 meses do SIH são parciais. Caveat obrigatório no `NOTA_HONESTA` e na tela.
+- **Fixture mínima** (`tests/fixtures/datasus.py`): `MUNIC_RES`, `MUNIC_MOV`, `DIAG_PRINC`, `DT_INTER`, `ANO_CMPT`, `MES_CMPT` — sem quasi-identificadores. Amostra bruta não comitada no repo.
 
 ## Consequências / a evoluir
 - 1ª fonte sensível com adaptador no ar; a supressão passa a ser exercida sobre uma fonte externa

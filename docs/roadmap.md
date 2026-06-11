@@ -340,7 +340,10 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   _Falta: dado real (#0), produtos TRANSP-03/05 (telas, dupla face §17)._
 - [ ] 🔵 Demais adaptadores 2A (DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
   e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
-- [ ] 🔵 EDU-01 Bússola Educação-Trabalho (INEP+CAGED+IBGE); EDU-02 Radar de Evasão.
+- [x] 🔵 **EDU-01 Bússola Educação-Trabalho** (INEP+CAGED+IBGE) — endpoint
+  `GET /v1/bussola-edu-trabalho/{ibge}` + tela `/bussola-edu-trabalho/{ibge}`; matrículas
+  fundamental + saldo emprego + salário médio; CONTEXTO explícito (não causal); degrada com dado
+  parcial; 12 testes unitários; PR #114, 2026-06-11. _EDU-02 Radar de Evasão: próxima fatia._
 - [x] 🔵 **TRANSP-06 OndeFoi (SICONFI)** — tela **ao vivo** com dado real (SICONFI Anexo I-E,
   exercício 2024, ~5.541 municípios); banda calibrada 95/90 (ADR-0035); meta "sem dados
   disponíveis" quando tabela vazia (ADR-0033/PR-93). Lacunas adiantadas:

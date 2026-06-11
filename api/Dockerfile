@@ -8,11 +8,9 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # asyncpg traz wheels manylinux (sem build). Sem libpq necessário.
-# build-essential necessário para compilar a extensão C do pysus (datasus-dbc/DBC decoder).
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
+# pysus (DBC do DATASUS) requer build-essential + setuptools — instalar SEPARADAMENTE na VPS:
+#   apt-get install build-essential && pip install setuptools && pip install pysus
+# Não incluído aqui: pyarrow==7.0.0 (dep transitiva do pysus) não tem wheel para Py3.12-slim.
 COPY pyproject.toml ./
 COPY app ./app
 COPY alembic ./alembic

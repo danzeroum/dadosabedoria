@@ -24,8 +24,6 @@ dependencies = [
     "polars>=1.0,<2.0",
     "minio>=7.2,<8.0",
     "py7zr>=0.21,<1.0",
-    # Decodificador de DBC do DATASUS/SIH (requer build-essential no contêiner para compilar).
-    "pysus>=0.5,<1.0",
     # --- consentimento (PII isolada): cifragem de campo + JWT do cidadão ---
     "cryptography>=46.0.7,<47",  # 46.0.7 corrige PYSEC-2026-35/36 e CVE-2026-26007
     "PyJWT>=2.8,<3.0",
@@ -38,6 +36,12 @@ dependencies = [
 orquestracao = [
     "dagster>=1.8,<2.0",
     "dagster-webserver>=1.8,<2.0",
+]
+# Decodificador DBC do DATASUS/SIH — pyarrow 7.x exige setuptools e build-essential no host.
+# Instalar SEPARADAMENTE na VPS: pip install setuptools && pip install pysus
+# Não incluir em deps principais: pyarrow==7.0.0 (sem wheel para Py3.12) quebra o CI.
+datasus = [
+    "pysus>=0.5,<1.0",
 ]
 dev = [
     "pytest>=8.2,<9.0",

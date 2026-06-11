@@ -263,6 +263,11 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
   `ESTADOS`, `CORES`, `COR_SEM_DADO`; CSS vars em `globals.css`), componente `Legenda` reutilizável,
   semáforo acessível (cor redundante com texto + `sr-only` + `:focus-visible`; coropleta com
   `role=img`/`<title>`). Default aplicado: DS mínimo neutro, não comunica só por cor.
+  **Refinamentos (2026-06-11, PRs #101–103):** busca de território `GET /v1/territorios?q=`
+  (5.571 municípios); resolução automática de território por texto da pergunta (`candidatos_lugar` +
+  exact-match); narrador template legível (12 pontos máx, nome "Rio de Janeiro (RJ)"); campo de
+  busca por nome no `/perguntar` (substituiu o campo IBGE numérico); IVM e Comparar usam a mesma
+  busca (fim do "Nenhum município encontrado" com seed parcial).
 
 **Critério de saída:** ingestão reexecutável/idempotente; IVM no ar com proveniência; mapa navegável;
 cobertura mantida (100% supressão/IVM). **Núcleo ✅; resta produtos TRAB e contratos formais.**

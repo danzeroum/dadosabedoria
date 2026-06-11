@@ -1649,6 +1649,16 @@ section h2 {
   margin: 0 0 8px;
   max-width: 70ch;
 }
+.ia-opcional {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--cor-texto-suave);
+}
+.busca-codigo {
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+  margin-left: 4px;
+}
 /* Fontes & confiança (/fontes) — proveniência consolidada: o ativo confiança como fato. */
 .fonte-grid {
   display: grid;

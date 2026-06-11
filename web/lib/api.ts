@@ -211,9 +211,9 @@ export async function buscarFontes(): Promise<RespostaFontes | null> {
 }
 
 export async function buscarCoberturaCAGED(): Promise<CoberturaCAGED | null> {
-  const resp = await fetch(new URL("/v1/cobertura/caged", BASE), {
-    next: { revalidate: REVALIDATE },
-  });
+  // no-store: após ingestão o pipeline invalida o cache Redis do backend e a tela reflete
+  // imediatamente — sem necessidade de rebuild. Backend Redis (300 s) absorve o custo.
+  const resp = await fetch(new URL("/v1/cobertura/caged", BASE), { cache: "no-store" });
   if (!resp.ok) return null;
   return resp.json();
 }

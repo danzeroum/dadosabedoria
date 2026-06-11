@@ -13,6 +13,7 @@ import type {
   RespostaIVM,
   RespostaIVMSerie,
   RespostaValores,
+  SalarioRadarProduto,
 } from "./types";
 
 // Fetch server-side (sem CORS). Em compose, API_URL = http://api:8000 (rede interna).
@@ -78,6 +79,19 @@ export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | nu
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o Pulso Produtivo (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarSalarioRadar(codigoIbge: string): Promise<SalarioRadarProduto | null> {
+  const resp = await fetch(new URL(`/v1/salario-radar/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar Salário Radar (${resp.status})`);
   }
   return resp.json();
 }

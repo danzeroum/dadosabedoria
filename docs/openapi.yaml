@@ -1088,6 +1088,55 @@ components:
       - indicador
       title: ResultadoLote
       type: object
+    SalarioRadarOut:
+      description: Nível salarial das novas contratações formais (Novo CAGED) por
+        município/mês.
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          $ref: '#/components/schemas/MetaProveniencia'
+        nivel:
+          enum:
+          - alto
+          - medio
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        salario_medio:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Salario Medio
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - salario_medio
+      - nivel
+      - nota
+      - meta
+      title: SalarioRadarOut
+      type: object
     TerritorioOut:
       properties:
         codigo_ibge:
@@ -1673,6 +1722,43 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Pulso Produtivo
+      tags:
+      - produtos
+  /v1/salario-radar/{codigo_ibge}:
+    get:
+      description: 'Nível salarial das novas contratações formais no município (Salário
+        Radar — TRAB-02).
+
+
+        Salário médio declarado nas admissões do Novo CAGED do último mês disponível.
+        Revela o
+
+        patamar salarial da demanda por trabalho formal local — não o salário médio
+        da população.
+
+        404 quando não há dado para o município.'
+      operationId: salario_radar_v1_salario_radar__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarioRadarOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Salario Radar
       tags:
       - produtos
   /v1/territorios:

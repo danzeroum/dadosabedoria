@@ -21,6 +21,7 @@ from app.core.tables import execucao_funcao as t_execucao_funcao
 from app.core.tables import linhagem as t_linhagem
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import CODIGO_INDICADOR as CODIGO_CAGED
+from app.ingestao.adaptadores.caged import CODIGO_SALARIO as CODIGO_SALARIO_CAGED
 from app.ingestao.adaptadores.caged import AdaptadorCaged
 from app.ingestao.adaptadores.datasus import CODIGO_INDICADOR as CODIGO_DATASUS
 from app.ingestao.adaptadores.datasus import CONTRATO as CONTRATO_DATASUS
@@ -127,38 +128,64 @@ async def executar_caged(
     *,
     responsavel: str = "ingestao",
 ) -> ResumoCarga:
-    """Esteira CAGED de uma competência. Requer ``conn`` numa transação aberta."""
+    """Esteira CAGED de uma competência. Requer ``conn`` numa transação aberta.
+
+    Grava dois indicadores: saldo de emprego (CODIGO_CAGED) e salário médio de admissão
+    (CODIGO_SALARIO_CAGED) — ambos derivados do mesmo bruto CAGEDMOV.
+    """
     bruto, url = adaptador.baixar_bruto(janela)
     hash_origem = gravar_bronze(store, f"caged/{janela.competencia}.txt", bruto)
-    saldos = adaptador.agregar_saldo(adaptador.transformar_prata(adaptador.parse(bruto)))
+    df_prata = adaptador.transformar_prata(adaptador.parse(bruto))
+    saldos = adaptador.agregar_saldo(df_prata)
+    salarios = adaptador.agregar_salario_medio(df_prata)
+    # Indexar salários por município para lookup O(1)
+    sal_por_mun = {str(r["municipio"]): r["salario_medio"] for r in salarios.iter_rows(named=True)}
 
-    ind = await _carregar_indicador(conn, CODIGO_CAGED)
+    ind_saldo = await _carregar_indicador(conn, CODIGO_CAGED)
+    ind_sal = await _carregar_indicador(conn, CODIGO_SALARIO_CAGED)
     # CAGED usa IBGE de 6 dígitos (o de 7 sem o verificador).
     mapa6 = {k[:6]: v for k, v in (await _mapa_municipios(conn)).items()}
 
-    celulas: list[CelulaOuro] = []
+    celulas_saldo: list[CelulaOuro] = []
+    celulas_sal: list[CelulaOuro] = []
     ignorados = 0
     for row in saldos.iter_rows(named=True):
-        territorio_id = mapa6.get(str(row["municipio"]))
+        mun = str(row["municipio"])
+        territorio_id = mapa6.get(mun)
         if territorio_id is None:
             ignorados += 1
             continue
-        celulas.append(
+        celulas_saldo.append(
             CelulaOuro(
-                indicador_id=ind.id,
+                indicador_id=ind_saldo.id,
                 territorio_id=territorio_id,
                 periodo=janela.periodo,
                 atualizacao="mensal",
                 valor=Decimal(int(row["saldo"])),
                 n_amostra=None,  # saldo → n_minimo=0, sem supressão
                 confiabilidade=5,
-                fonte_id=ind.fonte_id,
+                fonte_id=ind_saldo.fonte_id,
             )
         )
-    return await _gravar_celulas(
+        sal_medio = sal_por_mun.get(mun)
+        if sal_medio is not None:
+            celulas_sal.append(
+                CelulaOuro(
+                    indicador_id=ind_sal.id,
+                    territorio_id=territorio_id,
+                    periodo=janela.periodo,
+                    atualizacao="mensal",
+                    valor=Decimal(str(round(float(sal_medio), 2))),
+                    n_amostra=None,
+                    confiabilidade=5,
+                    fonte_id=ind_sal.fonte_id,
+                )
+            )
+
+    resumo_saldo = await _gravar_celulas(
         conn,
-        ind,
-        celulas,
+        ind_saldo,
+        celulas_saldo,
         janela,
         fonte_codigo="novo_caged",
         transformacoes=f"caged {janela.competencia}: bronze->prata->ouro (saldo por município)",
@@ -167,6 +194,22 @@ async def executar_caged(
         responsavel=responsavel,
         ignorados=ignorados,
     )
+    if celulas_sal:
+        await _gravar_celulas(
+            conn,
+            ind_sal,
+            celulas_sal,
+            janela,
+            fonte_codigo="novo_caged",
+            transformacoes=(
+                f"caged {janela.competencia}: bronze->prata->ouro (salário médio admissão)"
+            ),
+            url=url,
+            hash_origem=hash_origem,
+            responsavel=responsavel,
+            ignorados=ignorados,
+        )
+    return resumo_saldo
 
 
 async def executar_estban(

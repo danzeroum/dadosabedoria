@@ -20,11 +20,14 @@ from app.produtos.giro_local import (
 from app.produtos.giro_local import (
     calcular as calcular_giro,
 )
-from app.produtos.modelos import GiroLocalOut, MesSaldoOut, PulsoProdutivoOut
+from app.produtos.modelos import GiroLocalOut, MesSaldoOut, PulsoProdutivoOut, SalarioRadarOut
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
+from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
+from app.produtos.salario_radar import calcular as calcular_salario
 
 CODIGO_CAGED = "trabalho.emprego.saldo_caged"
 CODIGO_ESTBAN = "credito.operacoes.saldo_total"
+CODIGO_SALARIO = "trabalho.emprego.salario_medio_admissao"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -168,4 +171,51 @@ class GiroLocalFacade:
             nota=NOTA_GIRO,
             meta_emprego=_meta(meta_caged) if meta_caged else None,
             meta_credito=_meta(meta_estban) if meta_estban else None,
+        )
+
+
+class SalarioRadarFacade:
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:salario")
+    async def salario_radar(self, *, codigo_ibge: str) -> SalarioRadarOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_SALARIO)
+        if meta_row is None:  # pragma: no cover - indicador sempre semeado
+            raise NaoEncontradoError(f"indicador '{CODIGO_SALARIO}'")
+
+        linhas, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_SALARIO,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=_POR_PAGINA,
+        )
+        rows = [r for r in linhas if r["valor"] is not None]
+        if not rows:
+            raise NaoEncontradoError(f"Salário Radar para município '{codigo_ibge}'")
+
+        ultimo = rows[-1]
+        s = calcular_salario(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            periodo=ultimo["periodo"].strftime("%Y-%m"),
+            salario_medio=float(ultimo["valor"]),
+        )
+        return SalarioRadarOut(
+            codigo_ibge=s.codigo_ibge,
+            nome=s.nome,
+            uf=s.uf,
+            periodo=s.periodo,
+            salario_medio=s.salario_medio,
+            nivel=s.nivel,
+            nota=NOTA_SALARIO,
+            meta=_meta(meta_row),
         )

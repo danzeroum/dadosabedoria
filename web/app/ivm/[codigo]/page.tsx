@@ -129,6 +129,10 @@ export default async function MunicipioPage({
           Ver o Giro Local (emprego + crédito per capita) →
         </Link>
         <br />
+        <Link href={`/salario-radar/${atual.codigo_ibge}`}>
+          Ver o Salário Radar (patamar salarial das novas contratações) →
+        </Link>
+        <br />
         <Link href={`/municipio/${atual.codigo_ibge}`}>
           Ver o panorama completo do município →
         </Link>

@@ -8,6 +8,11 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # asyncpg traz wheels manylinux (sem build). Sem libpq necessário.
+# build-essential necessário para compilar a extensão C do pysus (datasus-dbc/DBC decoder).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pyproject.toml ./
 COPY app ./app
 COPY alembic ./alembic

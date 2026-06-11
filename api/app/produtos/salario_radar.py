@@ -33,7 +33,9 @@ NOTA_HONESTA = (
     "saldomovimentação=1) no mês. Representa a demanda local por trabalho formal — não o "
     "salário médio da população em geral nem dos empregados em estoque. Cobre apenas empregos "
     "com carteira assinada; não capta salários informais (~40% da força de trabalho). "
-    "Referência: salário mínimo federal jan/2026 = R$ 1.518,00."
+    "Referência: salário mínimo federal jan/2026 = R$ 1.518,00. Usa apenas CAGEDMOV "
+    "(movimentações brutas, sem ajustes de fora do prazo); CAGEDFOR (ajustes retroativos) "
+    "não está incorporado — refinamento futuro."
 )
 
 

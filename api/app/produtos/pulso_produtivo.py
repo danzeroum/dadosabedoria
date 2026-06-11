@@ -30,7 +30,8 @@ NOTA_HONESTA = (
     "informal nem autônomo. É um fluxo mensal volátil e sazonal — uma batida não é veredito; saldo "
     "negativo merece a pergunta, não é diagnóstico. Por ser fluxo (não normalizado ao estoque de "
     "empregos), compara melhor no tempo dentro do município do que entre municípios de portes "
-    "diferentes."
+    "diferentes. Usa apenas CAGEDMOV (movimentações brutas, sem ajustes de fora do prazo); "
+    "CAGEDFOR (ajustes retroativos) não está incorporado — refinamento futuro."
 )
 
 

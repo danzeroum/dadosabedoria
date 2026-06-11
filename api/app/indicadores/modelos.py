@@ -208,3 +208,18 @@ class FonteAcervoOut(BaseModel):
 class RespostaFontes(BaseModel):
     dados: list[FonteAcervoOut]
     total: int
+
+
+# ------------------------------------------------ Cobertura / modo demonstração
+
+
+class CoberturaCAGED(BaseModel):
+    """Cobertura atual do CAGED no acervo — detecta modo demonstração automaticamente.
+
+    ``demo=true`` quando há menos de 50 municípios (seed de teste vs. ~5.500 nacional).
+    O rótulo cai sozinho após a ingestão nacional; não é hardcode.
+    """
+
+    n_municipios: int
+    demo: bool
+    aviso: str | None = None

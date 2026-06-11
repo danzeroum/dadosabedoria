@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import (
+    CoberturaCAGED,
     FonteAcervoOut,
     IndicadorOut,
     IndicadorValorOut,
@@ -186,6 +187,22 @@ class IndicadoresFacade:
             for r in rows
         ]
         return RespostaBuscaTerritorios(dados=dados, total=len(dados))
+
+    @cache_leitura("v1:cobertura:caged")
+    async def cobertura_caged(self) -> CoberturaCAGED:
+        """Cobertura atual do CAGED — detecta modo demonstração automaticamente."""
+        n = await self._repo.contar_municipios_caged(self._s)
+        demo = n < 50
+        aviso = (
+            (
+                f"Dados de demonstração: {n} município{'s' if n != 1 else ''} no acervo (seed de "
+                "teste). O aviso cai automaticamente após a ingestão nacional do CAGED (~5.500 "
+                "municípios)."
+            )
+            if demo
+            else None
+        )
+        return CoberturaCAGED(n_municipios=n, demo=demo, aviso=aviso)
 
     @cache_leitura("v1:territorio")
     async def obter_territorio(self, *, codigo_ibge: str) -> TerritorioOut:

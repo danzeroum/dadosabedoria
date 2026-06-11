@@ -1,4 +1,5 @@
 import type {
+  CoberturaCAGED,
   FeatureCollectionIVM,
   GiroLocalProduto,
   IndicadorDetalhe,
@@ -206,6 +207,14 @@ export async function buscarFontes(): Promise<RespostaFontes | null> {
   if (!resp.ok) {
     return null;
   }
+  return resp.json();
+}
+
+export async function buscarCoberturaCAGED(): Promise<CoberturaCAGED | null> {
+  const resp = await fetch(new URL("/v1/cobertura/caged", BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (!resp.ok) return null;
   return resp.json();
 }
 

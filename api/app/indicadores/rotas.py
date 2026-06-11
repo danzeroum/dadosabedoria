@@ -12,6 +12,7 @@ from app.core.erros import ValidacaoError
 from app.indicadores.facade import IndicadoresFacade
 from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
+    CoberturaCAGED,
     IndicadorOut,
     PanoramaOut,
     RespostaBuscaTerritorios,
@@ -151,6 +152,17 @@ async def ivm_similares(
 ) -> RespostaIVMSerie:
     """Cidades parecidas: mesma UF, IVM mais próximo no período recente — comparar no contexto."""
     return await IVMFacade(session).similares(codigo_ibge=codigo_ibge)
+
+
+@router.get("/cobertura/caged", response_model=CoberturaCAGED, tags=["cobertura"])
+async def cobertura_caged(session: AsyncSession = Depends(get_session)) -> CoberturaCAGED:
+    """Cobertura atual do CAGED no acervo.
+
+    Retorna quantos municípios têm dado CAGED e se o modo é demonstração (``demo=true`` quando
+    há menos de 50 municípios). O rótulo cai automaticamente após a ingestão nacional — não é
+    hardcode. Usado pelas telas da família CAGED (Pulso, Salário Radar, Região Emprega, IVM).
+    """
+    return await IndicadoresFacade(session).cobertura_caged()
 
 
 @router.get("/mapa/ivm", tags=["ivm"])

@@ -36,6 +36,31 @@ components:
       - metodologia
       title: Citacao
       type: object
+    CoberturaCAGED:
+      description: 'Cobertura atual do CAGED no acervo — detecta modo demonstração
+        automaticamente.
+
+
+        ``demo=true`` quando há menos de 50 municípios (seed de teste vs. ~5.500 nacional).
+
+        O rótulo cai sozinho após a ingestão nacional; não é hardcode.'
+      properties:
+        aviso:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Aviso
+        demo:
+          title: Demo
+          type: boolean
+        n_municipios:
+          title: N Municipios
+          type: integer
+      required:
+      - n_municipios
+      - demo
+      title: CoberturaCAGED
+      type: object
     ConsultaItem:
       properties:
         ate:
@@ -1392,6 +1417,31 @@ paths:
       summary: Health
       tags:
       - infra
+  /v1/cobertura/caged:
+    get:
+      description: 'Cobertura atual do CAGED no acervo.
+
+
+        Retorna quantos municípios têm dado CAGED e se o modo é demonstração (``demo=true``
+        quando
+
+        há menos de 50 municípios). O rótulo cai automaticamente após a ingestão nacional
+        — não é
+
+        hardcode. Usado pelas telas da família CAGED (Pulso, Salário Radar, Região
+        Emprega, IVM).'
+      operationId: cobertura_caged_v1_cobertura_caged_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoberturaCAGED'
+          description: Successful Response
+      summary: Cobertura Caged
+      tags:
+      - indicadores
+      - cobertura
   /v1/consultas-lote:
     post:
       description: 'Tier PROFUNDO: várias consultas de valores num só request. Mesmo

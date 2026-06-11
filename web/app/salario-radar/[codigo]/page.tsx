@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DemoAviso } from "../../../components/DemoAviso";
 import { buscarSalarioRadar } from "../../../lib/api";
 import type { NivelSalario } from "../../../lib/types";
 
@@ -35,6 +36,7 @@ export default async function SalarioRadarPage({ params }: { params: { codigo: s
       <Link href={`/ivm/${s.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Salário Radar — patamar salarial das novas contratações formais</p>
       <h1>
         {s.nome}

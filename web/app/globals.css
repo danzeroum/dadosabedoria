@@ -1988,3 +1988,24 @@ section h2 {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------------------------------------------------------------- Demo Aviso (família CAGED) */
+
+.demo-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  margin: 12px 0 20px;
+  border: 1px solid #b45309;
+  border-left: 4px solid #b45309;
+  border-radius: 6px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.demo-aviso strong {
+  color: #78350f;
+}

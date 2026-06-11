@@ -91,6 +91,7 @@ class FetcherDatasusFTP:
         with tempfile.NamedTemporaryFile(suffix=".dbc") as tmp:
             with ftplib.FTP(self.HOST, timeout=180) as ftp:  # noqa: S321  # nosec B321
                 ftp.login()
+                ftp.set_pasv(True)  # modo passivo obrigatório em containers (NAT/firewall)
                 ftp.cwd(self.CAMINHO)
                 ftp.retrbinary(f"RETR {nome}", tmp.write)
             tmp.flush()

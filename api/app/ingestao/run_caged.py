@@ -25,7 +25,18 @@ async def _main(ano: int, mes: int) -> None:  # pragma: no cover - rede/S3
     async with connect(settings.database_url) as conn:
         await executar_caged(Janela(ano, mes), conn, adaptador, store, responsavel="cli")
     await refrescar_ivm()
-    await invalidar("v1:cobertura:caged")
+    # Invalida todos os caches dependentes de CAGED (produto e cobertura).
+    _CACHES_CAGED = (
+        "v1:cobertura:caged",
+        "v1:pulso",
+        "v1:giro",
+        "v1:salario",
+        "v1:regiao",
+        "v1:panorama",
+        "v1:valores",
+    )
+    for prefixo in _CACHES_CAGED:
+        await invalidar(prefixo)
 
 
 def main() -> None:  # pragma: no cover - entrypoint

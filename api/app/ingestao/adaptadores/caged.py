@@ -100,7 +100,7 @@ class FetcherCagedFTP:
         url = f"ftp://{self.HOST}{caminho}{nome}"
 
         buf = io.BytesIO()
-        with ftplib.FTP(self.HOST, timeout=120) as ftp:  # noqa: S321  # nosec B321
+        with ftplib.FTP(self.HOST, timeout=120, encoding="latin-1") as ftp:  # noqa: S321  # nosec B321
             ftp.login()
             ftp.cwd(caminho)
             ftp.retrbinary(f"RETR {nome}", buf.write)

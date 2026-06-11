@@ -363,6 +363,18 @@ async def executar_seed(conn: AsyncConnection) -> dict[str, int]:
     return {"indicadores": len(ind_ids), "territorios": len(terr_ids), "fontes": len(fonte_ids)}
 
 
+async def _tem_dados_reais(conn: AsyncConnection, ind_id: int) -> bool:
+    """Retorna True se o indicador já tem linhagem de ingestão real (responsavel != 'seed')."""
+    from sqlalchemy import func, select
+
+    stmt = (
+        select(func.count())
+        .select_from(t.linhagem)
+        .where(t.linhagem.c.indicador_id == ind_id, t.linhagem.c.responsavel != "seed")
+    )
+    return int((await conn.execute(stmt)).scalar_one()) > 0
+
+
 async def _semear_fatos(
     conn: AsyncConnection,
     fonte_ids: dict[str, int],
@@ -378,112 +390,125 @@ async def _semear_fatos(
     # EMPREGO (saldo CAGED): n_amostra None, n_minimo 0 → nunca suprimido.
     caged = ind_ids["trabalho.emprego.saldo_caged"]
     f_caged = fonte_ids["novo_caged"]
-    caged_cels = [
-        CelulaOuro(caged, sp, date(2026, 2, 1), "mensal", Decimal(8200), None, 5, f_caged),
-        CelulaOuro(caged, sp, date(2026, 3, 1), "mensal", Decimal(-15400), None, 5, f_caged),
-        CelulaOuro(caged, sp, date(2026, 4, 1), "mensal", Decimal(-9100), None, 5, f_caged),
-        CelulaOuro(caged, cps, date(2026, 2, 1), "mensal", Decimal(1200), None, 5, f_caged),
-        CelulaOuro(caged, cps, date(2026, 3, 1), "mensal", Decimal(-800), None, 5, f_caged),
-        CelulaOuro(caged, cps, date(2026, 4, 1), "mensal", Decimal(-300), None, 5, f_caged),
-    ]
-    await grav.escrever_ouro(
-        caged_cels,
-        meta,
-        ContextoLinhagem(f_caged, caged, "seed Onda 1: prata->ouro (saldo CAGED)", "seed"),
-    )
+    if not await _tem_dados_reais(conn, caged):
+        caged_cels = [
+            CelulaOuro(caged, sp, date(2026, 2, 1), "mensal", Decimal(8200), None, 5, f_caged),
+            CelulaOuro(caged, sp, date(2026, 3, 1), "mensal", Decimal(-15400), None, 5, f_caged),
+            CelulaOuro(caged, sp, date(2026, 4, 1), "mensal", Decimal(-9100), None, 5, f_caged),
+            CelulaOuro(caged, cps, date(2026, 2, 1), "mensal", Decimal(1200), None, 5, f_caged),
+            CelulaOuro(caged, cps, date(2026, 3, 1), "mensal", Decimal(-800), None, 5, f_caged),
+            CelulaOuro(caged, cps, date(2026, 4, 1), "mensal", Decimal(-300), None, 5, f_caged),
+        ]
+        await grav.escrever_ouro(
+            caged_cels,
+            meta,
+            ContextoLinhagem(f_caged, caged, "seed Onda 1: prata->ouro (saldo CAGED)", "seed"),
+        )
 
     # SALÁRIO MÉDIO DE ADMISSÃO (Novo CAGED): reais; n_minimo 0.
     sal = ind_ids["trabalho.emprego.salario_medio_admissao"]
-    sal_cels = [
-        CelulaOuro(sal, sp, date(2026, 2, 1), "mensal", Decimal("2380.00"), None, 5, f_caged),
-        CelulaOuro(sal, sp, date(2026, 3, 1), "mensal", Decimal("2410.00"), None, 5, f_caged),
-        CelulaOuro(sal, sp, date(2026, 4, 1), "mensal", Decimal("2450.00"), None, 5, f_caged),
-        CelulaOuro(sal, cps, date(2026, 2, 1), "mensal", Decimal("2750.00"), None, 5, f_caged),
-        CelulaOuro(sal, cps, date(2026, 3, 1), "mensal", Decimal("2800.00"), None, 5, f_caged),
-        CelulaOuro(sal, cps, date(2026, 4, 1), "mensal", Decimal("2820.00"), None, 5, f_caged),
-    ]
-    await grav.escrever_ouro(
-        sal_cels,
-        meta,
-        ContextoLinhagem(
-            f_caged, sal, "seed Onda 3: prata->ouro (salário médio admissão CAGED)", "seed"
-        ),
-    )
+    if not await _tem_dados_reais(conn, sal):
+        sal_cels = [
+            CelulaOuro(sal, sp, date(2026, 2, 1), "mensal", Decimal("2380.00"), None, 5, f_caged),
+            CelulaOuro(sal, sp, date(2026, 3, 1), "mensal", Decimal("2410.00"), None, 5, f_caged),
+            CelulaOuro(sal, sp, date(2026, 4, 1), "mensal", Decimal("2450.00"), None, 5, f_caged),
+            CelulaOuro(sal, cps, date(2026, 2, 1), "mensal", Decimal("2750.00"), None, 5, f_caged),
+            CelulaOuro(sal, cps, date(2026, 3, 1), "mensal", Decimal("2800.00"), None, 5, f_caged),
+            CelulaOuro(sal, cps, date(2026, 4, 1), "mensal", Decimal("2820.00"), None, 5, f_caged),
+        ]
+        await grav.escrever_ouro(
+            sal_cels,
+            meta,
+            ContextoLinhagem(
+                f_caged, sal, "seed Onda 3: prata->ouro (salário médio admissão CAGED)", "seed"
+            ),
+        )
 
     # CRÉDITO (ESTBAN): reais; n_minimo 0.
     cred = ind_ids["credito.operacoes.saldo_total"]
     f_estban = fonte_ids["bcb_estban"]
-    # SP e Campinas nos mesmos meses → o IVM tem ≥2 municípios (mapa com contraste verde→vermelho).
-    # Campinas com crédito maior (menos vulnerável em finanças) — dado ilustrativo de seed.
-    cred_cels = [
-        CelulaOuro(cred, sp, date(2026, 2, 1), "mensal", Decimal("1.00e11"), None, 4, f_estban),
-        CelulaOuro(cred, sp, date(2026, 3, 1), "mensal", Decimal("1.01e11"), None, 4, f_estban),
-        CelulaOuro(cred, sp, date(2026, 4, 1), "mensal", Decimal("0.99e11"), None, 4, f_estban),
-        CelulaOuro(cred, cps, date(2026, 2, 1), "mensal", Decimal("2.00e11"), None, 4, f_estban),
-        CelulaOuro(cred, cps, date(2026, 3, 1), "mensal", Decimal("2.01e11"), None, 4, f_estban),
-        CelulaOuro(cred, cps, date(2026, 4, 1), "mensal", Decimal("1.99e11"), None, 4, f_estban),
-    ]
-    await grav.escrever_ouro(
-        cred_cels,
-        meta,
-        ContextoLinhagem(f_estban, cred, "seed Onda 1: prata->ouro (crédito ESTBAN)", "seed"),
-    )
+    if not await _tem_dados_reais(conn, cred):
+        # SP e Campinas nos mesmos meses → o IVM tem ≥2 municípios (mapa com contraste).
+        # Campinas com crédito maior (menos vulnerável em finanças) — dado ilustrativo de seed.
+        cred_cels = [
+            CelulaOuro(cred, sp, date(2026, 2, 1), "mensal", Decimal("1.00e11"), None, 4, f_estban),
+            CelulaOuro(cred, sp, date(2026, 3, 1), "mensal", Decimal("1.01e11"), None, 4, f_estban),
+            CelulaOuro(cred, sp, date(2026, 4, 1), "mensal", Decimal("0.99e11"), None, 4, f_estban),
+            CelulaOuro(
+                cred, cps, date(2026, 2, 1), "mensal", Decimal("2.00e11"), None, 4, f_estban
+            ),
+            CelulaOuro(
+                cred, cps, date(2026, 3, 1), "mensal", Decimal("2.01e11"), None, 4, f_estban
+            ),
+            CelulaOuro(
+                cred, cps, date(2026, 4, 1), "mensal", Decimal("1.99e11"), None, 4, f_estban
+            ),
+        ]
+        await grav.escrever_ouro(
+            cred_cels,
+            meta,
+            ContextoLinhagem(f_estban, cred, "seed Onda 1: prata->ouro (crédito ESTBAN)", "seed"),
+        )
 
     # SAÚDE (origem sensível): SP acima do limiar; Campinas n_amostra=3 < 5 → SUPRIMIDO.
     sau = ind_ids["saude.resp.internacoes_j"]
     f_sih = fonte_ids["datasus_sih"]
-    sau_cels = [
-        CelulaOuro(sau, sp, date(2026, 4, 1), "mensal", Decimal(310), 310, 4, f_sih),
-        CelulaOuro(sau, sp, date(2026, 5, 1), "mensal", Decimal(420), 420, 4, f_sih),
-        CelulaOuro(sau, sp, date(2026, 6, 1), "mensal", Decimal(660), 660, 4, f_sih),
-        CelulaOuro(sau, cps, date(2026, 4, 1), "mensal", Decimal(3), 3, 3, f_sih),  # < limiar
-    ]
-    await grav.escrever_ouro(
-        sau_cels,
-        meta,
-        ContextoLinhagem(f_sih, sau, "seed Onda 1: prata->ouro (internações resp.)", "seed"),
-    )
+    if not await _tem_dados_reais(conn, sau):
+        sau_cels = [
+            CelulaOuro(sau, sp, date(2026, 4, 1), "mensal", Decimal(310), 310, 4, f_sih),
+            CelulaOuro(sau, sp, date(2026, 5, 1), "mensal", Decimal(420), 420, 4, f_sih),
+            CelulaOuro(sau, sp, date(2026, 6, 1), "mensal", Decimal(660), 660, 4, f_sih),
+            CelulaOuro(sau, cps, date(2026, 4, 1), "mensal", Decimal(3), 3, 3, f_sih),  # < limiar
+        ]
+        await grav.escrever_ouro(
+            sau_cels,
+            meta,
+            ContextoLinhagem(f_sih, sau, "seed Onda 1: prata->ouro (internações resp.)", "seed"),
+        )
 
     # FINANÇAS (SICONFI/DCA, anual): transferências correntes por município/exercício. n_minimo 0.
     fin = ind_ids["financas.transferencias.correntes"]
     f_siconfi = fonte_ids["siconfi"]
-    fin_cels = [
-        CelulaOuro(fin, sp, date(2024, 1, 1), "anual", Decimal("1.50e9"), None, 4, f_siconfi),
-        CelulaOuro(fin, cps, date(2024, 1, 1), "anual", Decimal("2.50e8"), None, 4, f_siconfi),
-    ]
-    await grav.escrever_ouro(
-        fin_cels,
-        meta,
-        ContextoLinhagem(
-            f_siconfi, fin, "seed Onda 2A: prata->ouro (SICONFI transferências)", "seed"
-        ),
-    )
+    if not await _tem_dados_reais(conn, fin):
+        fin_cels = [
+            CelulaOuro(fin, sp, date(2024, 1, 1), "anual", Decimal("1.50e9"), None, 4, f_siconfi),
+            CelulaOuro(fin, cps, date(2024, 1, 1), "anual", Decimal("2.50e8"), None, 4, f_siconfi),
+        ]
+        await grav.escrever_ouro(
+            fin_cels,
+            meta,
+            ContextoLinhagem(
+                f_siconfi, fin, "seed Onda 2A: prata->ouro (SICONFI transferências)", "seed"
+            ),
+        )
 
-    # EDUCAÇÃO (INEP/Censo Escolar, anual): matrículas no fundamental por município/ano. n_minimo 0.
+    # EDUCAÇÃO (INEP/Censo Escolar, anual): matrículas no fundamental por município/ano.
     edu = ind_ids["educacao.matriculas.fundamental"]
     f_inep = fonte_ids["inep"]
-    edu_cels = [
-        CelulaOuro(edu, sp, date(2024, 1, 1), "anual", Decimal(980000), None, 4, f_inep),
-        CelulaOuro(edu, cps, date(2024, 1, 1), "anual", Decimal(150000), None, 4, f_inep),
-    ]
-    await grav.escrever_ouro(
-        edu_cels,
-        meta,
-        ContextoLinhagem(f_inep, edu, "seed Onda 2A: prata->ouro (INEP matrículas)", "seed"),
-    )
+    if not await _tem_dados_reais(conn, edu):
+        edu_cels = [
+            CelulaOuro(edu, sp, date(2024, 1, 1), "anual", Decimal(980000), None, 4, f_inep),
+            CelulaOuro(edu, cps, date(2024, 1, 1), "anual", Decimal(150000), None, 4, f_inep),
+        ]
+        await grav.escrever_ouro(
+            edu_cels,
+            meta,
+            ContextoLinhagem(f_inep, edu, "seed Onda 2A: prata->ouro (INEP matrículas)", "seed"),
+        )
 
     # COMPRAS (PNCP/contratos, anual): valor de contratos públicos por município/ano. n_minimo 0.
     com = ind_ids["compras.contratos.valor_total"]
     f_pncp = fonte_ids["pncp"]
-    com_cels = [
-        CelulaOuro(com, sp, date(2024, 1, 1), "anual", Decimal("2.00e9"), None, 4, f_pncp),
-        CelulaOuro(com, cps, date(2024, 1, 1), "anual", Decimal("3.00e8"), None, 4, f_pncp),
-    ]
-    await grav.escrever_ouro(
-        com_cels,
-        meta,
-        ContextoLinhagem(f_pncp, com, "seed Onda 2A: prata->ouro (PNCP contratos)", "seed"),
-    )
+    if not await _tem_dados_reais(conn, com):
+        com_cels = [
+            CelulaOuro(com, sp, date(2024, 1, 1), "anual", Decimal("2.00e9"), None, 4, f_pncp),
+            CelulaOuro(com, cps, date(2024, 1, 1), "anual", Decimal("3.00e8"), None, 4, f_pncp),
+        ]
+        await grav.escrever_ouro(
+            com_cels,
+            meta,
+            ContextoLinhagem(f_pncp, com, "seed Onda 2A: prata->ouro (PNCP contratos)", "seed"),
+        )
 
 
 async def main() -> None:

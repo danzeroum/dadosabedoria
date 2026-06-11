@@ -73,6 +73,7 @@ class FetcherDatasusFTP:
     """Fetcher real: baixa o RD<UF><AAMM>.dbc do FTP do DATASUS e decodifica DBC→tabular.
 
     Não exercitado em teste (rede/DBC); parse/transformação são cobertos por fixture.
+    Decoder: datasus_dbc (Rust wheel, sem pyarrow) + dbfread → polars.
     """
 
     HOST = "ftp.datasus.gov.br"
@@ -81,19 +82,31 @@ class FetcherDatasusFTP:
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede/dbc
         import ftplib  # nosec B402
+        import os
         import tempfile
 
-        from pysus.utilities.readdbc import read_dbc  # decodifica DBC→DataFrame
+        from datasus_dbc import expand_dbc_to_dbf  # type: ignore[attr-defined]
+        from dbfread import DBF
 
         comp = f"{janela.ano % 100:02d}{janela.mes:02d}"
         nome = f"RD{self.UF}{comp}.dbc"
         url = f"ftp://{self.HOST}{self.CAMINHO}{nome}"
-        with tempfile.NamedTemporaryFile(suffix=".dbc") as tmp:
+        fd, tmp_dbc = tempfile.mkstemp(suffix=".dbc")
+        os.close(fd)
+        tmp_dbf = tmp_dbc[:-4] + ".dbf"
+        try:
             with ftplib.FTP(self.HOST, timeout=180) as ftp:  # noqa: S321  # nosec B321
                 ftp.login()
                 ftp.set_pasv(True)  # modo passivo obrigatório em containers (NAT/firewall)
                 ftp.cwd(self.CAMINHO)
-                ftp.retrbinary(f"RETR {nome}", tmp.write)
-            tmp.flush()
-            df = read_dbc(tmp.name, encoding="latin-1")
-        return df.to_csv(index=False).encode("utf-8"), url
+                with open(tmp_dbc, "wb") as f:
+                    ftp.retrbinary(f"RETR {nome}", f.write)
+            expand_dbc_to_dbf(tmp_dbc, tmp_dbf)
+            df = pl.DataFrame(list(DBF(tmp_dbf, encoding="latin-1")))
+        finally:
+            for p in (tmp_dbc, tmp_dbf):
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
+        return df.write_csv().encode("utf-8"), url

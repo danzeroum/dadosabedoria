@@ -24,6 +24,9 @@ dependencies = [
     "polars>=1.0,<2.0",
     "minio>=7.2,<8.0",
     "py7zr>=0.21,<1.0",
+    # Decoder DBC do DATASUS/SIH: Rust wheel nativo (sem pyarrow/setuptools), Python 3.12 ok.
+    "datasus-dbc>=0.1,<1.0",
+    "dbfread>=2.0,<3.0",
     # --- consentimento (PII isolada): cifragem de campo + JWT do cidadão ---
     "cryptography>=46.0.7,<47",  # 46.0.7 corrige PYSEC-2026-35/36 e CVE-2026-26007
     "PyJWT>=2.8,<3.0",

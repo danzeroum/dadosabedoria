@@ -7,8 +7,8 @@ Roda dentro do worker da VPS e faz, numa execução:
   2. NAVEGA a árvore FTP /dissemin/publicos/SIHSUS/ e descobre o diretório
      e arquivo mais recente — sem hardcode de caminho.
   3. BAIXA um arquivo .dbc de uma UF pequena (RO — menor volume).
-  4. DECODIFICA DBC→DataFrame (via pysus) e IMPRIME A FORMA: colunas,
-     shape, encoding (SIH = sempre latin-1), primeiras linhas.
+  4. DECODIFICA DBC→DataFrame (datasus_dbc + dbfread + polars) e IMPRIME A FORMA:
+     colunas, shape, encoding (SIH = sempre latin-1), primeiras linhas.
      Verifica presença de MUNIC_RES e DIAG_PRINC (CONTRATO do adaptador).
      Imprime distribuição de CID-10 para confirmar grupo J.
   5. SALVA amostra (~2.000 linhas) em
@@ -21,9 +21,6 @@ NOTA DE PRIVACIDADE (ADR-0004):
   não agrega nem escreve — apenas inspeciona o bruto. Nenhum dado pessoal
   é persistido fora da fixture de teste (já agregada por município).
 
-Pré-requisito extra (não incluso no pyproject.toml padrão por exigir compilação):
-  pip install pysus
-
 Uso:
   docker compose --profile ingestion run --rm worker \\
     python scripts/diagnostico_datasus.py
@@ -33,8 +30,10 @@ from __future__ import annotations
 
 import ftplib
 import io
+import os
 import socket
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -63,24 +62,6 @@ def _sep(titulo: str) -> None:
     print(f"\n{SEP}")
     print(f"  {titulo}")
     print(SEP)
-
-
-# ---------------------------------------------------------------------------
-# Verificar pysus
-# ---------------------------------------------------------------------------
-
-
-def _importar_pysus() -> object:
-    try:
-        from pysus.utilities.readdbc import read_dbc  # type: ignore[import-untyped]
-
-        return read_dbc
-    except ImportError:
-        print("\n  ERRO: pysus não instalado.")
-        print("  Instale com:  pip install pysus")
-        print("  Ou via uv:    uv pip install pysus")
-        print("  (Requer compilador C — use a imagem Docker com build-essential)")
-        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -255,64 +236,73 @@ def baixar_dbc(ftp: ftplib.FTP, caminho: str) -> bytes | None:
 
 
 def decodificar_e_analisar(dbc_bytes: bytes, nome_arquivo: str) -> bytes | None:
-    """Decodifica DBC → CSV bytes e imprime a forma."""
-    import tempfile
-
-    import pandas as pd  # pysus já depende de pandas
-
-    read_dbc = _importar_pysus()
+    """Decodifica DBC → CSV bytes via datasus_dbc + dbfread + polars (sem pysus/pandas)."""
+    import polars as pl
+    from datasus_dbc import expand_dbc_to_dbf
+    from dbfread import DBF
 
     _sep("4. DECODIFICAÇÃO DBC E FORMA")
     print(f"  Arquivo: {nome_arquivo}")
     print(f"  Tamanho DBC: {len(dbc_bytes) / 1_048_576:.2f} MB")
+    print("  Decoder: datasus_dbc (Rust) + dbfread + polars")
 
-    with tempfile.NamedTemporaryFile(suffix=".dbc", delete=False) as tmp:
-        tmp.write(dbc_bytes)
-        tmp_path = tmp.name
-
-    import os
-
+    fd, tmp_dbc = tempfile.mkstemp(suffix=".dbc")
+    os.close(fd)
+    tmp_dbf = tmp_dbc[:-4] + ".dbf"
     try:
-        print("  Decodificando DBC → DataFrame (pysus) ...")
-        df_pd: pd.DataFrame = read_dbc(tmp_path, encoding="latin-1")
+        with open(tmp_dbc, "wb") as f:
+            f.write(dbc_bytes)
+        print("  Decodificando DBC → DBF (datasus_dbc) ...")
+        expand_dbc_to_dbf(tmp_dbc, tmp_dbf)
+        print("  Lendo DBF (dbfread) → polars DataFrame ...")
+        table = DBF(tmp_dbf, encoding="latin-1")
+        df = pl.DataFrame(list(table))
     except Exception as exc:
         print(f"  ERRO na decodificação DBC: {exc}")
         return None
     finally:
-        os.unlink(tmp_path)
+        for p in (tmp_dbc, tmp_dbf):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
 
-    n_linhas, n_colunas = df_pd.shape
+    n_linhas, n_colunas = df.shape
     print(f"\n  Shape: {n_linhas:,} linhas × {n_colunas} colunas")
     print(f"\n  Colunas ({n_colunas}):")
-    for col in df_pd.columns:
-        dtype = df_pd[col].dtype
-        n_nulos = df_pd[col].isna().sum()
-        vals = df_pd[col].dropna()
-        ex = str(vals.iloc[0]) if len(vals) > 0 else "—"
+    for col in df.columns:
+        dtype = df[col].dtype
+        n_nulos = df[col].null_count()
+        vals = df[col].drop_nulls()
+        ex = str(vals[0]) if len(vals) > 0 else "—"
         print(f"    {col!r:<45} {str(dtype):<15} nulos={n_nulos:<6} ex={ex!r:.30}")
 
     # Verificação do CONTRATO (MUNIC_RES + DIAG_PRINC obrigatórios)
     print("\n  Verificação do CONTRATO (app.ingestao.adaptadores.datasus):")
     for col_req in ("MUNIC_RES", "DIAG_PRINC"):
-        presente = col_req in df_pd.columns
+        presente = col_req in df.columns
         status = "✅ PRESENTE" if presente else "❌ AUSENTE — CONTRATO QUEBRADO"
         print(f"    {col_req}: {status}")
 
     # Distribuição CID-10 (DIAG_PRINC)
-    if "DIAG_PRINC" in df_pd.columns:
+    if "DIAG_PRINC" in df.columns:
         print("\n  Distribuição CID-10 (DIAG_PRINC) — grupo J = respiratório:")
-        diag = df_pd["DIAG_PRINC"].astype(str).str[:1]
-        dist = diag.value_counts().head(10)
-        for letra, contagem in dist.items():
+        dist = (
+            df.select(pl.col("DIAG_PRINC").cast(pl.Utf8).str.slice(0, 1).alias("g"))
+            .group_by("g")
+            .agg(pl.len().alias("n"))
+            .sort("n", descending=True)
+            .head(10)
+        )
+        for row in dist.iter_rows(named=True):
+            letra, contagem = row["g"], row["n"]
             marcador = " ← grupo respiratório" if letra == "J" else ""
             print(f"    {letra}: {contagem:>6} ({100 * contagem / n_linhas:.1f}%){marcador}")
 
     print("\n  Primeiras 5 linhas:")
-    print(df_pd.head(5).to_string())
+    print(df.head(5))
 
-    # Converter para CSV (utf-8) para salvar como amostra
-    csv_str = df_pd.to_csv(index=False)
-    return csv_str.encode("utf-8")
+    return df.write_csv().encode("utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -360,10 +350,7 @@ def main() -> None:
     print(f"  Host: {FTP_HOST}")
     print(f"  UF de amostra: {UF_AMOSTRA}")
     print(f"  Fixture destino: {AMOSTRA_PATH}")
-
-    # Verificar pysus antes de tudo
-    _importar_pysus()
-    print("\n  pysus: OK ✅")
+    print("  Decoder: datasus_dbc (Rust wheel) + dbfread + polars — sem pysus/pandas")
 
     # 1. Conectividade
     if not verificar_conectividade_ftp():

@@ -28,9 +28,10 @@ NOTA_HONESTA = (
     "Região Emprega agrega os saldos do Novo CAGED (admissões − desligamentos) de todos os "
     "municípios do estado no último mês disponível. Um resultado negativo pode refletir "
     "sazonalidade ou reestruturação setorial regional — não é veredito sobre gestão. "
-    "Emprego formal não capta "
-    "trabalho informal (~40% da força de trabalho). Municípios sem dado no período ficam fora do "
-    "cálculo e são listados como 'sem dado'. Lag típico do CAGED: ~40 dias após a competência."
+    "Emprego formal não capta trabalho informal (~40% da força de trabalho). Municípios sem dado "
+    "no período ficam fora do cálculo e são listados como 'sem dado'. Usa apenas CAGEDMOV "
+    "(movimentações brutas, sem ajustes de fora do prazo); CAGEDFOR (ajustes retroativos) "
+    "não está incorporado — refinamento futuro. Lag típico do CAGED: ~40 dias após a competência."
 )
 
 

@@ -819,6 +819,21 @@ components:
       - meta
       title: PulsoProdutivoOut
       type: object
+    RespostaBuscaTerritorios:
+      properties:
+        dados:
+          items:
+            $ref: '#/components/schemas/TerritorioSimples'
+          title: Dados
+          type: array
+        total:
+          title: Total
+          type: integer
+      required:
+      - dados
+      - total
+      title: RespostaBuscaTerritorios
+      type: object
     RespostaFontes:
       properties:
         dados:
@@ -1025,6 +1040,24 @@ components:
       - nome
       - nivel
       title: TerritorioRef
+      type: object
+    TerritorioSimples:
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        nome:
+          title: Nome
+          type: string
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      title: TerritorioSimples
       type: object
     ValidationError:
       properties:
@@ -1513,6 +1546,55 @@ paths:
       summary: Pulso Produtivo
       tags:
       - produtos
+  /v1/territorios:
+    get:
+      description: Busca municípios por nome ou prefixo de código IBGE — campo de
+        busca das telas.
+      operationId: buscar_territorios_v1_territorios_get
+      parameters:
+      - description: nome ou prefixo do código IBGE
+        in: query
+        name: q
+        required: true
+        schema:
+          description: nome ou prefixo do código IBGE
+          minLength: 2
+          title: Q
+          type: string
+      - description: nível territorial (municipio | uf)
+        in: query
+        name: nivel
+        required: false
+        schema:
+          default: municipio
+          description: nível territorial (municipio | uf)
+          title: Nivel
+          type: string
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          title: Limit
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaBuscaTerritorios'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Buscar Territorios
+      tags:
+      - indicadores
   /v1/territorios/{codigo_ibge}:
     get:
       operationId: obter_territorio_v1_territorios__codigo_ibge__get

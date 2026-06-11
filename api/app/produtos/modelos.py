@@ -1,11 +1,11 @@
-"""Modelos Pydantic dos produtos nomeados: OndeFoi (``/v1/onde-foi``) e Pulso Produtivo
-(``/v1/pulso-produtivo``)."""
+"""Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo e Giro Local."""
 
 from __future__ import annotations
 
 from pydantic import BaseModel
 
 from app.indicadores.modelos import MetaProveniencia
+from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
 
@@ -96,3 +96,31 @@ class PulsoProdutivoOut(BaseModel):
     meses: list[MesSaldoOut]
     nota: str  # enquadramento honesto do produto (formal, fluxo volátil, merece a pergunta)
     meta: MetaProveniencia
+
+
+# ----------------------------------------------------------------- Giro Local (TRAB-03)
+
+
+class GiroLocalOut(BaseModel):
+    """Dinamismo econômico local per capita: emprego formal (CAGED) + crédito bancário (ESTBAN)."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    # Emprego formal (CAGED)
+    periodo_emprego: str | None  # YYYY-MM do último saldo disponível
+    saldo_emprego: int | None
+    saldo_emprego_per_1000: float | None
+    nivel_emprego: NivelEmprego
+
+    # Crédito bancário (ESTBAN)
+    periodo_credito: str | None
+    saldo_credito: int | None
+    saldo_credito_per_hab: float | None
+    nivel_credito: NivelCredito
+
+    nota: str
+    meta_emprego: MetaProveniencia | None
+    meta_credito: MetaProveniencia | None

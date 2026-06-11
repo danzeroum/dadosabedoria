@@ -1,5 +1,4 @@
-"""Rotas dos produtos nomeados. OndeFoi (TRANSP-06): execução orçamentária por função (dado vivo).
-Pulso Produtivo (TRAB-01): saldo de emprego formal por município (dado real via ``/v1/valores``)."""
+"""Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03)."""
 
 from __future__ import annotations
 
@@ -7,8 +6,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
-from app.produtos.facade import PulsoProdutivoFacade
+from app.produtos.facade import GiroLocalFacade, PulsoProdutivoFacade
 from app.produtos.modelos import (
+    GiroLocalOut,
     OndeFoiLista,
     OndeFoiOut,
     PulsoProdutivoOut,
@@ -50,3 +50,15 @@ async def pulso_produtivo(
     emprego **formal**, fluxo volátil/sazonal — saldo negativo merece a pergunta, não é veredito.
     """
     return await PulsoProdutivoFacade(session).pulso_produtivo(codigo_ibge=codigo_ibge)
+
+
+@router.get("/giro-local/{codigo_ibge}", response_model=GiroLocalOut)
+async def giro_local(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> GiroLocalOut:
+    """Dinamismo econômico local per capita: criação de emprego formal + crédito bancário.
+
+    Combina CAGED (saldo/1000 hab) e ESTBAN (crédito/hab) para comparação entre municípios de
+    portes diferentes. 404 quando não há nenhum dado disponível para o município.
+    """
+    return await GiroLocalFacade(session).giro_local(codigo_ibge=codigo_ibge)

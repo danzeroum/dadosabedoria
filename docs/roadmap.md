@@ -245,7 +245,10 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
   **sem cadeado** (n_minimo=0). **Tela** `/pulso/{ibge}` (pivô "até a tela"): selo de nível +
   tendência + série mês-a-mês a partir do **zero** (sinal explícito) + a nota honesta; acessível
   (cor nunca sozinha, ADR-0009) e **certificada no screenshot de CI**; cross-link do drill-down do IVM.
-- [ ] 🔵 TRAB-03 Giro Local (CAGED+IBGE+ESTBAN); TRAB-02 Salário Radar; TRAB-04 Região Emprega.
+- [x] 🔵 **TRAB-03 Giro Local** — dinamismo econômico per capita (CAGED+IBGE+ESTBAN): saldo CAGED/1000 hab
+  + crédito ESTBAN/hab; endpoint `GET /v1/giro-local/{ibge}` + tela `/giro-local/{ibge}`; degrada
+  honestamente sem ESTBAN; cross-link do IVM drill-down e do Pulso Produtivo.
+- [ ] 🔵 TRAB-02 Salário Radar; TRAB-04 Região Emprega.
 
 **Frontend (design system):**
 - [x] 🟢 App `web/` Next.js: **mapa semafórico do IVM** + drill-down — ADR-0009/0010.

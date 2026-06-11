@@ -1,5 +1,6 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
-Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01)."""
+Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
+Sentinela Respiratória (SAUDE-01)."""
 
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ from app.produtos.facade import (
     PulsoProdutivoFacade,
     RegiaoEmpregaFacade,
     SalarioRadarFacade,
+    SentinelaRespFacade,
 )
 from app.produtos.modelos import (
     BussolaEduTrabOut,
@@ -22,6 +24,7 @@ from app.produtos.modelos import (
     PulsoProdutivoOut,
     RegiaoEmpregaOut,
     SalarioRadarOut,
+    SentinelaRespOut,
 )
 from app.produtos.repositorio_onde_foi import RepositorioOndeFoi
 
@@ -111,3 +114,17 @@ async def bussola_edu_trabalho(
     404 quando não há nenhum dado disponível para o município.
     """
     return await BussolaEduTrabFacade(session).bussola_edu_trabalho(codigo_ibge=codigo_ibge)
+
+
+@router.get("/sentinela-resp/{codigo_ibge}", response_model=SentinelaRespOut)
+async def sentinela_resp(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> SentinelaRespOut:
+    """Internações respiratórias SUS do município por mês (Sentinela Respiratória — SAUDE-01).
+
+    Contagem de AIH com diagnóstico no grupo J do CID-10 (J00–J99) no SIH/SUS. Dado de
+    **origem sensível**: células abaixo de 5 internações são protegidas pelo k-anonimato
+    (ADR-0004) — aparecem com ``suprimido=true`` e ``internacoes=null``, nunca como zero.
+    404 quando não há nenhum dado disponível para o município.
+    """
+    return await SentinelaRespFacade(session).sentinela_resp(codigo_ibge=codigo_ibge)

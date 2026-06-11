@@ -17,6 +17,7 @@ import type {
   RespostaIVMSerie,
   RespostaValores,
   SalarioRadarProduto,
+  SentinelaRespProduto,
 } from "./types";
 
 // Fetch server-side (sem CORS). Em compose, API_URL = http://api:8000 (rede interna).
@@ -222,6 +223,21 @@ export async function buscarBussolaEduTrab(
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar a Bússola Educação-Trabalho (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarSentinelaResp(
+  codigoIbge: string,
+): Promise<SentinelaRespProduto | null> {
+  const resp = await fetch(new URL(`/v1/sentinela-resp/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar a Sentinela Respiratória (${resp.status})`);
   }
   return resp.json();
 }

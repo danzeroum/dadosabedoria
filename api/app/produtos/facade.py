@@ -25,22 +25,28 @@ from app.produtos.giro_local import (
 from app.produtos.modelos import (
     BussolaEduTrabOut,
     GiroLocalOut,
+    MesInternacoesOut,
     MesSaldoOut,
     MunicipioEmpregoOut,
     PulsoProdutivoOut,
     RegiaoEmpregaOut,
     SalarioRadarOut,
+    SentinelaRespOut,
 )
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
 from app.produtos.regiao_emprega import NOTA_HONESTA as NOTA_REGIAO
 from app.produtos.regiao_emprega import calcular as calcular_regiao
 from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
+from app.produtos.sentinela_resp import NOTA_HONESTA as NOTA_SENTINELA
+from app.produtos.sentinela_resp import MesInternacoes
+from app.produtos.sentinela_resp import calcular as calcular_sentinela
 
 CODIGO_CAGED = "trabalho.emprego.saldo_caged"
 CODIGO_ESTBAN = "credito.operacoes.saldo_total"
 CODIGO_SALARIO = "trabalho.emprego.salario_medio_admissao"
 CODIGO_EDUCACAO = "educacao.matriculas.fundamental"
+CODIGO_DATASUS = "saude.resp.internacoes_j"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -416,4 +422,70 @@ class BussolaEduTrabFacade:
             meta_educacao=_meta(meta_edu) if meta_edu else None,
             meta_emprego=_meta(meta_caged) if meta_caged else None,
             meta_salario=_meta(meta_sal) if meta_sal else None,
+        )
+
+
+class SentinelaRespFacade:
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:sentinela-resp")
+    async def sentinela_resp(self, *, codigo_ibge: str) -> SentinelaRespOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        # Lê TODOS os meses (incluindo suprimidos) ordenados por período.
+        linhas, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_DATASUS,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=_POR_PAGINA,
+        )
+        if not linhas:
+            raise NaoEncontradoError(f"Sentinela Respiratória para município '{codigo_ibge}'")
+
+        meses = [
+            MesInternacoes(
+                periodo=r["periodo"].strftime("%Y-%m"),
+                internacoes=int(r["valor"]) if r["valor"] is not None else None,
+                suprimido=bool(r["suprimido"]),
+            )
+            for r in linhas
+        ]
+
+        s = calcular_sentinela(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            meses,
+        )
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_DATASUS)
+
+        return SentinelaRespOut(
+            codigo_ibge=s.codigo_ibge,
+            nome=s.nome,
+            uf=s.uf,
+            populacao=s.populacao,
+            periodo=s.periodo,
+            internacoes=s.internacoes,
+            internacoes_por_100k=s.internacoes_por_100k,
+            suprimido=s.suprimido,
+            nivel=s.nivel,
+            tendencia=s.tendencia,
+            meses=[
+                MesInternacoesOut(
+                    periodo=m.periodo,
+                    internacoes=m.internacoes,
+                    suprimido=m.suprimido,
+                )
+                for m in s.meses
+            ],
+            nota=NOTA_SENTINELA,
+            meta=_meta(meta_row) if meta_row else None,
         )

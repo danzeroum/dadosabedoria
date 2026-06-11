@@ -650,6 +650,25 @@ components:
       - metodologia
       title: IndicadorValorOut
       type: object
+    MesInternacoesOut:
+      properties:
+        internacoes:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Internacoes
+        periodo:
+          title: Periodo
+          type: string
+        suprimido:
+          title: Suprimido
+          type: boolean
+      required:
+      - periodo
+      - internacoes
+      - suprimido
+      title: MesInternacoesOut
+      type: object
     MesSaldoOut:
       properties:
         periodo:
@@ -1382,6 +1401,90 @@ components:
       - meta
       title: SalarioRadarOut
       type: object
+    SentinelaRespOut:
+      description: Internações respiratórias SUS por município/mês com supressão honesta
+        (SAUDE-01).
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        internacoes:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Internacoes
+        internacoes_por_100k:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Internacoes Por 100K
+        meses:
+          items:
+            $ref: '#/components/schemas/MesInternacoesOut'
+          title: Meses
+          type: array
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - elevado
+          - moderado
+          - baixo
+          - suprimido
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        suprimido:
+          title: Suprimido
+          type: boolean
+        tendencia:
+          anyOf:
+          - enum:
+            - subindo
+            - estavel
+            - caindo
+            type: string
+          - type: 'null'
+          title: Tendencia
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - periodo
+      - internacoes
+      - internacoes_por_100k
+      - suprimido
+      - nivel
+      - tendencia
+      - meses
+      - nota
+      - meta
+      title: SentinelaRespOut
+      type: object
     TerritorioOut:
       properties:
         codigo_ibge:
@@ -2104,6 +2207,45 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Salario Radar
+      tags:
+      - produtos
+  /v1/sentinela-resp/{codigo_ibge}:
+    get:
+      description: 'Internações respiratórias SUS do município por mês (Sentinela
+        Respiratória — SAUDE-01).
+
+
+        Contagem de AIH com diagnóstico no grupo J do CID-10 (J00–J99) no SIH/SUS.
+        Dado de
+
+        **origem sensível**: células abaixo de 5 internações são protegidas pelo k-anonimato
+
+        (ADR-0004) — aparecem com ``suprimido=true`` e ``internacoes=null``, nunca
+        como zero.
+
+        404 quando não há nenhum dado disponível para o município.'
+      operationId: sentinela_resp_v1_sentinela_resp__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentinelaRespOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Sentinela Resp
       tags:
       - produtos
   /v1/territorios:

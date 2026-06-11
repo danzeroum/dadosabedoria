@@ -318,6 +318,33 @@ export interface CoberturaCAGED {
   aviso: string | null;
 }
 
+// ----------------------------------------------------------------- Bússola Educação-Trabalho (EDU-01)
+
+export type NivelEducacao = "alto" | "medio" | "baixo" | "sem_dado";
+
+export interface BussolaEduTrabProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  // Educação (INEP — anual)
+  periodo_educacao: string | null; // YYYY
+  matriculas: number | null;
+  matriculas_por_mil: number | null;
+  nivel_educacao: NivelEducacao;
+  // Emprego formal (CAGED — mensal)
+  periodo_emprego: string | null; // YYYY-MM
+  saldo_emprego: number | null;
+  nivel_emprego: NivelEmprego;
+  // Salário médio das admissões (CAGED — mensal)
+  salario_medio: number | null;
+  nivel_salario: NivelSalario;
+  nota: string;
+  meta_educacao: MetaProveniencia | null;
+  meta_emprego: MetaProveniencia | null;
+  meta_salario: MetaProveniencia | null;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

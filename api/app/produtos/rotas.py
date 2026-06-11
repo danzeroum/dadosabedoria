@@ -1,5 +1,5 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
-Salário Radar (TRAB-02), Região Emprega (TRAB-04)."""
+Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01)."""
 
 from __future__ import annotations
 
@@ -8,12 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.produtos.facade import (
+    BussolaEduTrabFacade,
     GiroLocalFacade,
     PulsoProdutivoFacade,
     RegiaoEmpregaFacade,
     SalarioRadarFacade,
 )
 from app.produtos.modelos import (
+    BussolaEduTrabOut,
     GiroLocalOut,
     OndeFoiLista,
     OndeFoiOut,
@@ -96,3 +98,16 @@ async def regiao_emprega(
     destruição de empregos é local ou regional. 404 quando não há dado para a UF.
     """
     return await RegiaoEmpregaFacade(session).regiao_emprega(codigo_ibge=codigo_ibge)
+
+
+@router.get("/bussola-edu-trabalho/{codigo_ibge}", response_model=BussolaEduTrabOut)
+async def bussola_edu_trabalho(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> BussolaEduTrabOut:
+    """Base educacional e mercado de trabalho formal do município (Bússola EDU-01).
+
+    Combina matrículas do ensino fundamental (INEP/Censo Escolar, anual) com o saldo de emprego
+    formal e o salário médio das admissões (CAGED, mensal). A relação é de CONTEXTO, não causal.
+    404 quando não há nenhum dado disponível para o município.
+    """
+    return await BussolaEduTrabFacade(session).bussola_edu_trabalho(codigo_ibge=codigo_ibge)

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { perguntarIA } from "../../lib/api";
-import type { RespostaIA } from "../../lib/types";
+import { buscarTerritorios, perguntarIA } from "../../lib/api";
+import type { RespostaIA, TerritorioSimples } from "../../lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +19,8 @@ const EXEMPLOS: { q: string; indicador?: string; territorio?: string }[] = [
     indicador: "saude.resp.internacoes_j",
     territorio: "3550308",
   },
-  { q: "Quantos alunos nas escolas de São Paulo?", territorio: "3550308" }, // sinônimo → educação
-  { q: "Qual será a cotação do dólar amanhã?" }, // fora do repositório → a IA se abstém
+  { q: "Quantos alunos nas escolas de São Paulo?", territorio: "3550308" },
+  { q: "Qual será a cotação do dólar amanhã?" },
 ];
 
 function linkExemplo(e: { q: string; indicador?: string; territorio?: string }): string {
@@ -67,13 +67,35 @@ function Resposta({ r }: { r: RespostaIA }) {
   );
 }
 
+function nomeTerritorioDisplay(t: TerritorioSimples): string {
+  return t.uf ? `${t.nome} (${t.uf})` : t.nome;
+}
+
 export default async function PerguntarPage({
   searchParams,
 }: {
-  searchParams: { q?: string; indicador?: string; territorio?: string };
+  searchParams: { q?: string; indicador?: string; territorio?: string; bt?: string };
 }) {
-  const { q, indicador, territorio } = searchParams;
+  const { q, indicador, territorio, bt } = searchParams;
+
+  // Resolve nome legível quando território já está selecionado.
+  let territorioNome: string | null = null;
+  if (territorio) {
+    const r = await buscarTerritorios(territorio);
+    const t = r.dados[0];
+    if (t) territorioNome = nomeTerritorioDisplay(t);
+  }
+
+  // Resultados da busca de território quando o usuário pesquisou por nome.
+  const resultadosBusca = bt ? await buscarTerritorios(bt) : null;
+
   const resposta = q ? await perguntarIA({ pergunta: q, indicador, territorio }) : null;
+
+  // URL base sem território (para "trocar" e limpar busca).
+  const paramsBase = new URLSearchParams();
+  if (q) paramsBase.set("q", q);
+  if (indicador) paramsBase.set("indicador", indicador);
+  const urlBase = `/perguntar?${paramsBase.toString()}`;
 
   return (
     <main className="pagina">
@@ -83,15 +105,17 @@ export default async function PerguntarPage({
       <p className="pulso-pergunta">IA ancorada</p>
       <h1>Pergunte aos dados</h1>
       <p className="home-lead">
-        A IA só afirma o que <strong>recupera</strong> do repositório, sempre com <strong>citação</strong>{" "}
-        da fonte. Sem dado, ela <strong>se abstém</strong> — não inventa número nem causalidade. Sem
-        chave de LLM, narra em modo <strong>template</strong> (degradação graciosa); o que não muda é a
-        ancoragem.
+        A IA só afirma o que <strong>recupera</strong> do repositório, sempre com{" "}
+        <strong>citação</strong> da fonte. Sem dado, ela <strong>se abstém</strong> — não inventa
+        número nem causalidade. Sem chave de LLM, narra em modo <strong>template</strong> (degradação
+        graciosa); o que não muda é a ancoragem.
       </p>
 
       <section>
         <h2>Sua pergunta</h2>
         <form method="get" action="/perguntar" className="ia-form">
+          {/* Preserva território quando já selecionado */}
+          {territorio && <input type="hidden" name="territorio" value={territorio} />}
           <div className="ia-form-campo">
             <label htmlFor="q">Pergunte sobre os dados públicos</label>
             <input
@@ -103,24 +127,79 @@ export default async function PerguntarPage({
               placeholder="ex.: como está o emprego em São Paulo?"
             />
           </div>
-          <div className="ia-form-campo">
-            <label htmlFor="territorio">Município — código IBGE (opcional)</label>
-            <input
-              id="territorio"
-              name="territorio"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              defaultValue={territorio ?? ""}
-              placeholder="ex.: 3550308"
-            />
-          </div>
           <button type="submit">Perguntar</button>
         </form>
         <p className="ia-form-nota">
-          Não precisa escolher o indicador — a IA tenta achar o mais relevante pela sua pergunta e
-          cita a fonte. Sem dado, ela se abstém.
+          Não precisa escolher o indicador — a IA tenta achar o mais relevante pela sua pergunta.
+          Inclua o nome do município na pergunta (ex.: &ldquo;em Salvador&rdquo;) ou use o campo
+          abaixo para filtrar por município.
         </p>
+      </section>
+
+      <section>
+        <h2>
+          Município <span className="ia-opcional">(opcional)</span>
+        </h2>
+
+        {territorio && territorioNome ? (
+          // Território selecionado — mostra nome e link para trocar.
+          <p className="picker-ativo-nome">
+            {territorioNome}
+            <Link href={urlBase} className="picker-trocar-link">
+              trocar
+            </Link>
+          </p>
+        ) : (
+          // Formulário de busca por nome.
+          <form method="get" action="/perguntar" className="picker-busca-form">
+            {q && <input type="hidden" name="q" value={q} />}
+            {indicador && <input type="hidden" name="indicador" value={indicador} />}
+            <label htmlFor="bt-q">Buscar município</label>
+            <input
+              id="bt-q"
+              name="bt"
+              type="search"
+              defaultValue={bt ?? ""}
+              placeholder="ex.: Salvador, Campinas…"
+            />
+            <button type="submit">Buscar</button>
+            {bt && (
+              <Link href={urlBase} className="uf-limpar">
+                limpar
+              </Link>
+            )}
+          </form>
+        )}
+
+        {resultadosBusca !== null &&
+          (resultadosBusca.dados.length === 0 ? (
+            <p className="vazio">Nenhum município encontrado para &ldquo;{bt}&rdquo;.</p>
+          ) : (
+            <ul className="busca-resultados">
+              {resultadosBusca.dados.map((t) => {
+                const nome = nomeTerritorioDisplay(t);
+                const p = new URLSearchParams();
+                if (q) p.set("q", q);
+                if (indicador) p.set("indicador", indicador);
+                p.set("territorio", t.codigo_ibge);
+                return (
+                  <li key={t.codigo_ibge}>
+                    <Link href={`/perguntar?${p.toString()}`}>
+                      {nome}{" "}
+                      <span className="busca-codigo tnum">{t.codigo_ibge}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ))}
+
+        {!territorio && !bt && (
+          <p className="ia-form-nota">
+            A IA resolve o município automaticamente quando você o menciona na pergunta. Use este
+            campo apenas para ser mais preciso ou quando a pergunta for ambígua.
+          </p>
+        )}
       </section>
 
       <section>
@@ -136,7 +215,7 @@ export default async function PerguntarPage({
 
       {resposta ? (
         <section>
-          <h2>“{q}”</h2>
+          <h2>&ldquo;{q}&rdquo;</h2>
           <Resposta r={resposta} />
         </section>
       ) : null}

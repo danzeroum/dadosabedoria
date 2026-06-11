@@ -10,6 +10,15 @@ import type {
 
 export const dynamic = "force-dynamic";
 
+/** Períodos dentro dos últimos 3 meses podem ter AIH ainda em faturamento — série parcial. */
+function isMesParcial(periodo: string): boolean {
+  const [ano, mes] = periodo.split("-").map(Number);
+  const now = new Date();
+  const tresMesesAtras = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  const periodoDate = new Date(ano, mes - 1, 1);
+  return periodoDate >= tresMesesAtras;
+}
+
 const ROTULOS_NIVEL: Record<NivelSentinela, string> = {
   elevado: "Carga elevada (≥ 10/100k hab)",
   moderado: "Carga moderada (3–9/100k hab)",
@@ -42,25 +51,34 @@ function BarraHistorica({ meses }: { meses: MesInternacoesProduto[] }) {
 
   return (
     <div className="sentinela-historico" aria-label="Série histórica de internações">
-      {meses.map((m) => (
-        <div key={m.periodo} className="sentinela-barra-item">
-          <div
-            className="sentinela-barra"
-            style={{
-              height: m.suprimido ? "12px" : `${Math.max(4, ((m.internacoes ?? 0) / maxVal) * 80)}px`,
-              backgroundColor: m.suprimido ? "#9ca3af" : "#3b82f6",
-              opacity: m.suprimido ? 0.5 : 1,
-              minHeight: "4px",
-            }}
-            title={
-              m.suprimido
-                ? `${m.periodo}: Protegido (k-anonimato)`
-                : `${m.periodo}: ${m.internacoes?.toLocaleString("pt-BR")} internações`
-            }
-          />
-          <span className="sentinela-barra-label">{m.periodo.slice(5)}</span>
-        </div>
-      ))}
+      {meses.map((m) => {
+        const parcial = isMesParcial(m.periodo);
+        return (
+          <div key={m.periodo} className="sentinela-barra-item">
+            <div
+              className="sentinela-barra"
+              style={{
+                height: m.suprimido ? "12px" : `${Math.max(4, ((m.internacoes ?? 0) / maxVal) * 80)}px`,
+                backgroundColor: m.suprimido ? "#9ca3af" : parcial ? "#93c5fd" : "#3b82f6",
+                opacity: m.suprimido ? 0.5 : parcial ? 0.75 : 1,
+                minHeight: "4px",
+                borderTop: parcial && !m.suprimido ? "2px dashed #1d4ed8" : undefined,
+              }}
+              title={
+                m.suprimido
+                  ? `${m.periodo}: Protegido (k-anonimato)`
+                  : parcial
+                    ? `${m.periodo}: ${m.internacoes?.toLocaleString("pt-BR")} internações (parcial — AIH ainda em faturamento)`
+                    : `${m.periodo}: ${m.internacoes?.toLocaleString("pt-BR")} internações`
+              }
+            />
+            <span className="sentinela-barra-label">
+              {m.periodo.slice(5)}
+              {parcial ? "*" : ""}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -149,21 +167,39 @@ export default async function SentinelaRespPage({ params }: { params: { codigo: 
           <h2 style={{ fontSize: "1rem", marginBottom: "8px" }}>Série histórica</h2>
           <BarraHistorica meses={s.meses} />
           <ul className="sentinela-lista-meses">
-            {s.meses.map((m) => (
-              <li key={m.periodo} className="sentinela-mes-item">
-                <span className="sentinela-mes-periodo">{m.periodo}</span>
-                {m.suprimido ? (
-                  <span className="sentinela-mes-protegido" title="k-anonimato: menos de 5 internações">
-                    Protegido
+            {s.meses.map((m) => {
+              const parcial = isMesParcial(m.periodo);
+              return (
+                <li key={m.periodo} className="sentinela-mes-item">
+                  <span className="sentinela-mes-periodo">
+                    {m.periodo}
+                    {parcial && (
+                      <span
+                        title="Mês recente: AIH ainda em faturamento — contagem pode crescer"
+                        style={{ color: "#1d4ed8", marginLeft: "4px", fontSize: "0.75rem" }}
+                      >
+                        *parcial
+                      </span>
+                    )}
                   </span>
-                ) : (
-                  <span className="sentinela-mes-valor">
-                    {m.internacoes?.toLocaleString("pt-BR")} internações
-                  </span>
-                )}
-              </li>
-            ))}
+                  {m.suprimido ? (
+                    <span className="sentinela-mes-protegido" title="k-anonimato: menos de 5 internações">
+                      Protegido
+                    </span>
+                  ) : (
+                    <span className="sentinela-mes-valor">
+                      {m.internacoes?.toLocaleString("pt-BR")} internações
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+          {s.meses.some((m) => isMesParcial(m.periodo)) && (
+            <p style={{ fontSize: "0.78rem", color: "#4b5563", marginTop: "6px" }}>
+              * Meses recentes são parciais: AIH ainda em faturamento hospitalar. A série SIH estabiliza após ~3–6 meses da competência.
+            </p>
+          )}
         </section>
       )}
 

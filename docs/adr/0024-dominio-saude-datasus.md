@@ -42,6 +42,26 @@ Decoder: `datasus_dbc.decompress` (Rust wheel, substitui `expand_dbc_to_dbf`) + 
 - **Meses recentes incompletos**: AIH recentes ainda em faturamento → os últimos 1–2 meses do SIH são parciais. Caveat obrigatório no `NOTA_HONESTA` e na tela.
 - **Fixture mínima** (`tests/fixtures/datasus.py`): `MUNIC_RES`, `MUNIC_MOV`, `DIAG_PRINC`, `DT_INTER`, `ANO_CMPT`, `MES_CMPT` — sem quasi-identificadores. Amostra bruta não comitada no repo.
 
+## Grão: mensal (decisão 2026-06-11)
+
+Avaliado se um fallback trimestral ou anual reduziria a supressão excessiva em municípios pequenos.
+Ground-truth RO 2026-04: 90/137 células suprimidas a k=5 — taxa de ~65 %.
+
+**Decisão: manter grão mensal como autoritativo.**
+
+Justificativa:
+- A supressão alta em municípios pequenos é **comportamento correto de privacidade** (ADR-0004), não
+  um defeito do produto. Municípios com < 5 internações respiratórias/mês são, por definição, de baixo
+  volume — revelá-los como número seria arriscar reidentificação.
+- O grão mensal preserva o sinal de **sazonalidade** (pico inverno × verão), que é o principal valor
+  da série respiratória. Um trimestre conflatiria julho (pico) com maio e junho.
+- Alternativa trimestral seria um indicador separado (ex. `saude.resp.internacoes_j.trimestral`), não
+  uma substituição — a adicionar quando um produto analítico exigir.
+
+**Meses recentes parciais:** os últimos 1–3 meses do SIH têm AIH ainda em faturamento; a série
+estabiliza após ~3–6 meses da competência. A tela marca esses meses com `*parcial`; a `NOTA_HONESTA`
+e o `lag_tipico_dias=90` já comunicam o atraso estrutural.
+
 ## Consequências / a evoluir
 - 1ª fonte sensível com adaptador no ar; a supressão passa a ser exercida sobre uma fonte externa
   (não só no seed). **Próximos:** pipeline **live** (`run_datasus` + Dagster, incremental por

@@ -11,6 +11,9 @@ Ouro: conta AIH por (município, mês) — a contagem é também o ``n_amostra``
 
 Origem **sensível** (saúde): a contagem entra pelo caminho ouro, onde o k-anonimato com
 ``n_minimo=5`` suprime células abaixo do piso antes de gravar (ADR-0004).
+
+Pipeline nacional: ``FetcherDatasusFTP.baixar()`` baixa as 27 UFs sequencialmente e concatena.
+Se QUALQUER UF falhar, o pipeline aborta antes de gravar (ADR-0024 §grain) — sem subcontagem.
 """
 
 from __future__ import annotations
@@ -35,6 +38,11 @@ CONTRATO = ContratoFonte(
     fonte="datasus_sih",
     colunas_obrigatorias=frozenset({COL_MUNICIPIO, COL_DIAG, COL_DATA}),
 )
+
+#: Colunas selecionadas do RD antes de concatenar as 27 UFs — os ~108 campos restantes
+#: (incluindo CPF_AUT, GESTOR_CPF, NASC etc.) são descartados imediatamente para economizar
+#: memória e não persistir quasi-identificadores no bronze.
+_COLUNAS_PRODUTO = (COL_MUNICIPIO, "MUNIC_MOV", COL_DIAG, COL_DATA, "ANO_CMPT", "MES_CMPT")
 
 
 class AdaptadorDatasus:
@@ -87,15 +95,50 @@ class AdaptadorDatasus:
 
 
 class FetcherDatasusFTP:
-    """Fetcher real: baixa o RD<UF><AAMM>.dbc do FTP do DATASUS e decodifica DBC→tabular.
+    """Fetcher nacional: baixa RD<UF><AAMM>.dbc das 27 UFs sequencialmente e concatena.
 
     Não exercitado em teste (rede/DBC); parse/transformação são cobertos por fixture.
-    Decoder: datasus_dbc (Rust wheel) — ``decompress(src, dst)`` — + dbfread → polars.
+    Decoder: ``datasus_dbc.decompress`` (Rust wheel) + dbfread → polars.
+
+    Garantia contra subcontagem: se QUALQUER UF falhar, ``baixar`` lança ``RuntimeError``
+    antes de retornar — o pipeline não grava nada (ADR-0024 §grain).
+    Apenas as colunas de produto são mantidas em memória (os ~108 campos restantes, incluindo
+    quasi-identificadores CPF_AUT/GESTOR_CPF/NASC, são descartados na hora — ADR-0004).
     """
 
     HOST = "ftp.datasus.gov.br"
     CAMINHO = "/dissemin/publicos/SIHSUS/200801_/Dados/"
-    UF = "SP"  # UF da extração (exemplo); a parametrizar quando o pipeline ligar
+
+    #: 27 UFs do Brasil (ordem alfabética; DF incluído).
+    UFS_BR: tuple[str, ...] = (
+        "AC",
+        "AL",
+        "AP",
+        "AM",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MT",
+        "MS",
+        "MG",
+        "PA",
+        "PB",
+        "PR",
+        "PE",
+        "PI",
+        "RJ",
+        "RN",
+        "RS",
+        "RO",
+        "RR",
+        "SC",
+        "SP",
+        "SE",
+        "TO",
+    )
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede/dbc
         import ftplib  # nosec B402
@@ -106,24 +149,46 @@ class FetcherDatasusFTP:
         from dbfread import DBF
 
         comp = f"{janela.ano % 100:02d}{janela.mes:02d}"
-        nome = f"RD{self.UF}{comp}.dbc"
-        url = f"ftp://{self.HOST}{self.CAMINHO}{nome}"
-        fd, tmp_dbc = tempfile.mkstemp(suffix=".dbc")
-        os.close(fd)
-        tmp_dbf = tmp_dbc[:-4] + ".dbf"
-        try:
-            with ftplib.FTP(self.HOST, timeout=180) as ftp:  # noqa: S321  # nosec B321
-                ftp.login()
-                ftp.set_pasv(True)  # modo passivo obrigatório em containers (NAT/firewall)
-                ftp.cwd(self.CAMINHO)
-                with open(tmp_dbc, "wb") as f:
-                    ftp.retrbinary(f"RETR {nome}", f.write)
-            decompress(tmp_dbc, tmp_dbf)
-            df = pl.DataFrame(list(DBF(tmp_dbf, encoding="latin-1")))
-        finally:
-            for p in (tmp_dbc, tmp_dbf):
-                try:
-                    os.unlink(p)
-                except OSError:
-                    pass
-        return df.write_csv().encode("utf-8"), url
+
+        def _baixar_uf(uf: str) -> pl.DataFrame:
+            """Download + decode de uma UF; retorna apenas as colunas do produto (string)."""
+            nome = f"RD{uf}{comp}.dbc"
+            fd, tmp_dbc = tempfile.mkstemp(suffix=".dbc")
+            os.close(fd)
+            tmp_dbf = tmp_dbc[:-4] + ".dbf"
+            try:
+                with ftplib.FTP(self.HOST, timeout=180) as ftp:  # noqa: S321  # nosec B321
+                    ftp.login()
+                    ftp.set_pasv(True)
+                    ftp.cwd(self.CAMINHO)
+                    with open(tmp_dbc, "wb") as f:
+                        ftp.retrbinary(f"RETR {nome}", f.write)
+                decompress(tmp_dbc, tmp_dbf)
+                raw = pl.DataFrame(list(DBF(tmp_dbf, encoding="latin-1")))
+            finally:
+                for p in (tmp_dbc, tmp_dbf):
+                    try:
+                        os.unlink(p)
+                    except OSError:
+                        pass
+            # Descartar todos os campos além das 6 colunas do produto imediatamente.
+            cols = [c for c in _COLUNAS_PRODUTO if c in raw.columns]
+            return raw.select(pl.col(c).cast(pl.Utf8) for c in cols)
+
+        frames: list[pl.DataFrame] = []
+        ufs_falha: list[str] = []
+        for uf in self.UFS_BR:
+            try:
+                frames.append(_baixar_uf(uf))
+            except Exception as exc:  # noqa: BLE001
+                ufs_falha.append(f"{uf}({exc!s:.80})")
+
+        if ufs_falha:
+            raise RuntimeError(
+                f"DATASUS {comp}: {len(ufs_falha)} UF(s) falharam — abortando para evitar "
+                f"subcontagem (ADR-0024); tente novamente: {'; '.join(ufs_falha)}"
+            )
+
+        df_nacional = pl.concat(frames, how="diagonal_relaxed")
+        url = f"ftp://{self.HOST}{self.CAMINHO}RD*{comp}.dbc ({len(self.UFS_BR)} UFs)"
+        return df_nacional.write_csv().encode("utf-8"), url

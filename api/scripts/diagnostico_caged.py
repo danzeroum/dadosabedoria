@@ -48,9 +48,10 @@ HTTPS_ALTERNATIVAS = [
     "https://dadosabertos.mte.gov.br/",
 ]
 
-# Onde salvar a amostra (relativo ao root do repo, montado em /app no worker)
-REPO_ROOT = Path(__file__).resolve().parent.parent
-FIXTURE_DIR = REPO_ROOT / "api" / "tests" / "fixtures"
+# Dentro do container: __file__ = /app/scripts/diagnostico_caged.py
+# /app/ já É a pasta api/ — não há sub-nível api/ dentro do container.
+REPO_ROOT = Path(__file__).resolve().parent.parent  # /app/
+FIXTURE_DIR = REPO_ROOT / "tests" / "fixtures"  # /app/tests/fixtures/
 AMOSTRA_PATH = FIXTURE_DIR / "caged_amostra_real.csv"
 AMOSTRA_LINHAS = 2_000
 
@@ -186,10 +187,11 @@ def baixar_e_descomprimir(ftp: ftplib.FTP, caminho: str) -> tuple[bytes, str] | 
 
     # Tamanho do arquivo
     try:
-        tamanho = ftp.size(caminho)
-        print(f"  Tamanho no FTP: {tamanho / 1_048_576:.1f} MB ({tamanho:,} bytes)")
+        _tam = ftp.size(caminho)
+        if _tam is not None:
+            print(f"  Tamanho no FTP: {_tam / 1_048_576:.1f} MB ({_tam:,} bytes)")
     except ftplib.all_errors:
-        tamanho = None
+        _tam = None
         print("  Tamanho: não disponível via FTP SIZE")
 
     print(f"  Baixando {caminho} ...")

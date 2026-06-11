@@ -310,6 +310,14 @@ export interface SalarioRadarProduto {
   meta: MetaProveniencia;
 }
 
+// ----------------------------------------------------------------- Cobertura CAGED
+
+export interface CoberturaCAGED {
+  n_municipios: number;
+  demo: boolean;
+  aviso: string | null;
+}
+
 // GeoJSON do IVM (/v1/mapa/ivm) para a coropleta.
 export type GeometriaGeoJSON =
   | { type: "Polygon"; coordinates: number[][][] }

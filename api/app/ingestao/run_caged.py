@@ -17,6 +17,7 @@ from app.ingestao.pipeline import executar_caged
 async def _main(ano: int, mes: int) -> None:  # pragma: no cover - rede/S3
     configurar_logs()
     settings = get_settings()
+    from app.core.cache import invalidar
     from app.indicadores.ivm import refrescar_ivm
 
     adaptador = AdaptadorCaged(FetcherCagedFTP())
@@ -24,6 +25,7 @@ async def _main(ano: int, mes: int) -> None:  # pragma: no cover - rede/S3
     async with connect(settings.database_url) as conn:
         await executar_caged(Janela(ano, mes), conn, adaptador, store, responsavel="cli")
     await refrescar_ivm()
+    await invalidar("v1:cobertura:caged")
 
 
 def main() -> None:  # pragma: no cover - entrypoint

@@ -40,6 +40,7 @@ class ConfigIngestao(dg.Config):
 
 
 async def _rodar_caged(janela: Janela) -> None:  # pragma: no cover - rede/S3
+    from app.core.cache import invalidar
     from app.indicadores.ivm import refrescar_ivm
 
     settings = get_settings()
@@ -49,6 +50,7 @@ async def _rodar_caged(janela: Janela) -> None:  # pragma: no cover - rede/S3
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
     await refrescar_ivm()
+    await invalidar("v1:cobertura:caged")
 
 
 async def _rodar_estban(janela: Janela) -> None:  # pragma: no cover - rede/S3

@@ -104,8 +104,8 @@ que fazer · o que destrava · impacto · prioridade) dos gates conhecidos: **`d
   - ⚠️ **DATASUS** `ftp.datasus.gov.br` — timeout na porta 443 (FTP puro na porta 21, não acessível
     via HTTPS; sem URL HTTP alternativa identificada para o SIH). _(Protocolo FTP não suportado.)_
   - ❌ **CAGED** `ftp.mtps.gov.br` — `x-deny-reason: resolve_no_records` (DNS não resolve para
-    HTTPS; host existe só como FTP). _(CAGED novo via API BCB/PDET em `api.bcb.gov.br` — não está
-    no allowlist; dono: adicionar `api.bcb.gov.br` se quiser novo CAGED.)_
+    HTTPS; o CAGEDMOV está exclusivamente no FTP). _(Desbloqueio: liberar FTP `ftp.mtps.gov.br`
+    porta 21 no allowlist do ambiente — ver `scripts/diagnostico_caged.py`.)_
 - [~] **🟡 OndeFoi — re-ancoragem do número (a referendar; ADR-0028 §5 + ADR-0029):** o #0 mostrou que
   **"recebido por função" NÃO existe na fonte** (transferências [I-C] não são classificadas por
   função; só as despesas [I-E] têm função, nas colunas Empenhado→Liquidado→Pago). **Em MODO DEV o dev
@@ -252,7 +252,10 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
   adaptador estendido com `salario_brl`/`agregar_salario_medio`; indicador
   `trabalho.emprego.salario_medio_admissao`; endpoint `GET /v1/salario-radar/{ibge}` + tela
   `/salario-radar/{codigo}`; níveis alto/medio/baixo/sem_dado; 19 novos testes unitários.
-- [ ] 🔵 TRAB-04 Região Emprega.
+- [x] 🔵 **TRAB-04 Região Emprega** — retrato do emprego formal por UF (CAGED): saldo agregado
+  de todos os municípios, distribuição criando/estável/reduzindo/sem dado; endpoint
+  `GET /v1/regiao-emprega/{ibge}` (aceita código de UF ou município) + tela `/regiao-emprega/{codigo}`;
+  bulk query `saldos_por_uf()` sem N+1; 16 testes unitários.
 
 **Frontend (design system):**
 - [x] 🟢 App `web/` Next.js: **mapa semafórico do IVM** + drill-down — ADR-0009/0010.
@@ -275,6 +278,19 @@ Convergência: **TRAB-01 (Pulso Produtivo) + TRANSP-01 (IVM básico)**.
   exact-match); narrador template legível (12 pontos máx, nome "Rio de Janeiro (RJ)"); campo de
   busca por nome no `/perguntar` (substituiu o campo IBGE numérico); IVM e Comparar usam a mesma
   busca (fim do "Nenhum município encontrado" com seed parcial).
+
+**⚠️ ESTADO HONESTO DA FAMÍLIA CAGED (2026-06-11):** O andaime da Onda 1 está estruturalmente
+completo — todas as telas, endpoints e pipelines existem. Mas **Pulso Produtivo, Salário Radar,
+Região Emprega e o subíndice `v_emprego` do IVM** mostram hoje apenas o seed de teste
+(SP + Campinas, n=2). O acervo precisa da **ingestão nacional do CAGED** para refletir dado real.
+O endpoint `GET /v1/cobertura/caged` sinaliza automaticamente `demo=true` enquanto `n_municipios < 50`;
+as telas exibem o aviso "Demonstração" e ele cai sozinho após a ingestão — sem hardcode.
+**Construído ≠ com dado.** Desbloquear: liberar FTP `ftp.mtps.gov.br` (porta 21) no allowlist do
+ambiente e rodar `scripts/diagnostico_caged.py` para confirmar a forma antes de ingerir.
+
+**Guardrail (vigente):** não adicionar produto novo sobre fonte ainda não validada. Toda fonte nova
+passa primeiro pelo ciclo: sonda real → confirma forma → fixture fiel → fecha o ADR. Dado seed não
+conta como validado.
 
 **Critério de saída:** ingestão reexecutável/idempotente; IVM no ar com proveniência; mapa navegável;
 cobertura mantida (100% supressão/IVM). **Núcleo ✅; resta produtos TRAB e contratos formais.**

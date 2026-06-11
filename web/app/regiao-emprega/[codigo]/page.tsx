@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DemoAviso } from "../../../components/DemoAviso";
 import { buscarRegiaoEmprega } from "../../../lib/api";
 import type { NivelEmprego } from "../../../lib/types";
 
@@ -38,6 +39,7 @@ export default async function RegiaoEmpregaPage({ params }: { params: { codigo: 
       <Link href={`/ivm/${params.codigo}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Região Emprega — emprego formal no estado</p>
       <h1>
         {r.nome} ({r.uf})

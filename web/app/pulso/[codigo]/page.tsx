@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DemoAviso } from "../../../components/DemoAviso";
 import { PulsoSelo } from "../../../components/PulsoSelo";
 import { SerieSaldo } from "../../../components/SerieSaldo";
 import { buscarPulso } from "../../../lib/api";
@@ -19,6 +20,7 @@ export default async function PulsoPage({ params }: { params: { codigo: string }
       <Link href={`/ivm/${p.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Pulso Produtivo — emprego formal</p>
       <h1>
         {p.nome}

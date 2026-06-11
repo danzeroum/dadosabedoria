@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AcoesIVM } from "../../../components/AcoesIVM";
 import { Comparador } from "../../../components/Comparador";
+import { DemoAviso } from "../../../components/DemoAviso";
 import { Semaforo } from "../../../components/Semaforo";
 import { SeloConfianca } from "../../../components/SeloConfianca";
 import { SerieTemporal } from "../../../components/SerieTemporal";
@@ -34,6 +35,7 @@ export default async function MunicipioPage({
       <Link href="/ivm" className="voltar">
         ← Voltar ao mapa
       </Link>
+      <DemoAviso />
       <h1>{atual.nome}</h1>
       <div className="destaque">
         <span className="destaque-ivm">

@@ -91,29 +91,45 @@ class AdaptadorEstban:
 class FetcherEstbanHTTP:  # pragma: no cover - rede/zip
     """Fetcher real: baixa o ZIP do ESTBAN municipal do BCB e extrai o CSV.
 
-    **#0 (2026-06-08):** ``www.bcb.gov.br`` e ``dadosabertos.bcb.gov.br`` estão **abertos** (200).
-    O antigo ``www4.bcb.gov.br`` dá 404. O BCB migrou para um portal Angular (SPA) — todos os
-    caminhos estáticos retornam HTML. A URL binária do ZIP precisa ser descoberta via API backend
-    do BCB (``/api/servico/sitebcb/estban/…``) — investigação pendente (ver Lista de desbloqueio).
-    Parse/agregação cobertos por fixture até a URL ser confirmada.
+    **#0 (2026-06-08):** ``www.bcb.gov.br`` está acessível mas migrou para SPA Angular —
+    caminhos estáticos retornam HTML. A URL binária do ZIP deve ser confirmada via
+    ``scripts/diagnostico_estban.py`` (sonda múltiplos padrões com headers de browser).
+    Até lá, o parse/agregação estão cobertos pela fixture.
+
+    **Como desblocar:**
+    1. No VPS com rede aberta, rode:
+       ``docker compose --profile ingestion run --rm worker python scripts/diagnostico_estban.py``
+    2. O script imprime a URL que funciona e salva a fixture real.
+    3. Atualize ``BASE`` abaixo com a URL encontrada e abra PR.
     """
 
     BASE = "https://www.bcb.gov.br/estabilidadefinanceira/docs/estban"
 
+    _HEADERS = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "application/octet-stream,application/zip,*/*",
+        "Accept-Language": "pt-BR,pt;q=0.9",
+        "Referer": "https://www.bcb.gov.br/estabilidadefinanceira/estatisticabancariamunicipios",
+    }
+
     def baixar(self, janela: Janela) -> tuple[bytes, str]:
-        import urllib.request
         import zipfile
 
+        import httpx
+
         comp = janela.competencia
-        # URL a confirmar: o portal BCB migrou de www4 para www.bcb.gov.br (SPA Angular).
-        # Tentar o padrão do portal novo — se retornar HTML (SPA) levantar ValueError informativo.
         url = f"{self.BASE}/ESTBAN_MUNICIPIO_{comp}.ZIP"
-        with urllib.request.urlopen(url, timeout=120) as resp:  # noqa: S310  # nosec B310
-            dados = resp.read()
-        if dados[:5] == b"<!doc" or dados[:5] == b"<?xml":  # SPA ou página de erro
+        resp = httpx.get(url, headers=self._HEADERS, timeout=120, follow_redirects=True)
+        resp.raise_for_status()
+        dados = resp.content
+        if dados[:2] != b"PK":  # assinatura ZIP (PK magic bytes)
             raise ValueError(
-                f"BCB ESTBAN: URL {url!r} retornou HTML (SPA Angular). "
-                "A URL binária do ZIP precisa ser atualizada — ver List de desbloqueio."
+                f"BCB ESTBAN: URL {url!r} retornou conteúdo não-ZIP "
+                f"({dados[:80]!r}). "
+                "Execute scripts/diagnostico_estban.py no VPS para encontrar a URL correta."
             )
         with zipfile.ZipFile(io.BytesIO(dados)) as z:
             conteudo = z.read(z.namelist()[0])

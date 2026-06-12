@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -6,6 +7,16 @@ import { buscarSalarioRadar } from "../../../lib/api";
 import type { NivelSalario } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarSalarioRadar(params.codigo);
+  if (!data) return { title: "Salário Radar · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Salário Radar — ${local} · DadoSabedoria`,
+    description: `Salário médio das admissões formais em ${local}: patamar salarial das novas contratações via Novo CAGED.`,
+  };
+}
 
 const ROTULOS_NIVEL: Record<NivelSalario, string> = {
   alto: "Alto",

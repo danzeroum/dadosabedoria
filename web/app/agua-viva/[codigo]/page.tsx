@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -6,6 +7,16 @@ import { DemoAvisoSnis } from "../../../components/DemoAvisoSnis";
 import type { NivelAcesso } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarAguaViva(params.codigo);
+  if (!data) return { title: "AguaViva · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `AguaViva — ${local} · DadoSabedoria`,
+    description: `Cobertura de água e esgoto em ${local}: percentual de atendimento de água encanada e coleta de esgoto via SNIS.`,
+  };
+}
 
 const ROTULOS_NIVEL: Record<NivelAcesso, string> = {
   adequado: "Adequado (≥ 90%)",

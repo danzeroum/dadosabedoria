@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -8,6 +9,16 @@ import { buscarPulso } from "../../../lib/api";
 import { ROTULOS_TENDENCIA, SETA_TENDENCIA, formatarSaldo } from "../../../lib/pulso";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarPulso(params.codigo);
+  if (!data) return { title: "Pulso Produtivo · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Pulso Produtivo — ${local} · DadoSabedoria`,
+    description: `Saldo CAGED de emprego formal em ${local}: admissões, demissões e tendência do mercado de trabalho formal.`,
+  };
+}
 
 export default async function PulsoPage({ params }: { params: { codigo: string } }) {
   const p = await buscarPulso(params.codigo);

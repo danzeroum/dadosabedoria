@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -10,6 +11,16 @@ import type {
 } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarSentinelaResp(params.codigo);
+  if (!data) return { title: "Sentinela Respiratória · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Sentinela Respiratória — ${local} · DadoSabedoria`,
+    description: `Internações SUS do grupo J (doenças respiratórias) em ${local}: carga hospitalar, tendência e série histórica via SIH/DATASUS.`,
+  };
+}
 
 /** Períodos dentro dos últimos 3 meses podem ter AIH ainda em faturamento — série parcial. */
 function isMesParcial(periodo: string): boolean {

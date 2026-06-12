@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -6,6 +7,16 @@ import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelCredito, NivelEmprego } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarGiroLocal(params.codigo);
+  if (!data) return { title: "Giro Local · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Giro Local — ${local} · DadoSabedoria`,
+    description: `Dinamismo econômico per capita em ${local}: emprego formal (CAGED) e crédito bancário (ESTBAN) por habitante.`,
+  };
+}
 
 const ROTULOS_EMPREGO: Record<NivelEmprego, string> = {
   criando: "Criando empregos",

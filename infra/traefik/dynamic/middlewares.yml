@@ -1,10 +1,17 @@
 # Middlewares dinâmicos do Traefik (provider file). Referenciados por @file nas labels da api.
+# Hardening de segurança (WAF-lite, ADR-0038):
+#   - dsab-ratelimit: proteção contra DDoS/abuso por origem.
+#   - dsab-cors:      allowlist explícita (NUNCA '*' — §8).
+#   - dsab-headers:   defesa em profundidade via HTTP headers (OWASP Secure Headers).
+#   - dsab-bodylimit: limite de tamanho de body — rejeita payloads abusivos.
+# WAF OWASP CRS completo (ModSecurity/Coraza): aguarda plugin Traefik + domínio (gate 🔴).
 http:
   middlewares:
     dsab-ratelimit:
       rateLimit:
         average: 100      # req/s média por origem
         burst: 50
+
     dsab-cors:
       headers:
         # NUNCA '*' (§8): allowlist explícita. Ajuste por ambiente.
@@ -14,12 +21,53 @@ http:
         accessControlAllowHeaders: ["Authorization", "Content-Type"]
         accessControlMaxAge: 600
         addVaryHeader: true
+
     dsab-headers:
       headers:
+        # --- Clickjacking / framing ---
         frameDeny: true
+        # --- Sniffing de tipo de conteúdo ---
         contentTypeNosniff: true
+        # --- XSS (legacy browsers) ---
         browserXssFilter: true
-        referrerPolicy: "no-referrer"
-        # HSTS: TLS agora obrigatório em prod (traefik.yml + certresolver=le).
+        # --- Referrer ---
+        referrerPolicy: "strict-origin-when-cross-origin"
+        # --- HSTS (ativo em prod com TLS; ignorado em dev sem cert válido) ---
         stsSeconds: 31536000
         stsIncludeSubdomains: true
+        stsPreload: true
+        # --- Content-Security-Policy (OWASP Secure Headers) ---
+        # default-src 'self': bloqueia recursos externos não explicitados.
+        # script-src 'self': no inline JS (Next.js usa build estático, sem eval).
+        # style-src 'self' 'unsafe-inline': Tailwind/CSS-in-JS precisam de inline.
+        # img-src 'self' data: blob:: mapas e ícones inline.
+        # connect-src 'self': XHR/fetch só ao mesmo origin (API SSR não usa cliente XHR).
+        # frame-ancestors 'none': reforça frameDeny.
+        # upgrade-insecure-requests: força HTTPS para recursos mistos.
+        contentSecurityPolicy: >-
+          default-src 'self';
+          script-src 'self';
+          style-src 'self' 'unsafe-inline';
+          img-src 'self' data: blob:;
+          font-src 'self';
+          connect-src 'self';
+          frame-ancestors 'none';
+          base-uri 'self';
+          form-action 'self';
+          upgrade-insecure-requests
+        # --- Permissions-Policy (desabilita APIs sensíveis do browser) ---
+        permissionsPolicy: >-
+          camera=(),
+          microphone=(),
+          geolocation=(),
+          payment=(),
+          usb=(),
+          interest-cohort=()
+
+    # Limite de tamanho de body: rejeita uploads abusivos antes de chegar ao app.
+    # A API pública aceita apenas JSON pequeno; o maior payload é POST /v1/ia/perguntar
+    # (~2 KB típico; 64 KB é um teto muito generoso para prevenir DoS sem restringir uso legítimo).
+    dsab-bodylimit:
+      buffering:
+        maxRequestBodyBytes: 65536   # 64 KB
+        retryExpression: "IsNetworkError() && Attempts() < 2"

@@ -14,6 +14,7 @@ from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     CoberturaCAGED,
     CoberturaDatasus,
+    CoberturaInep,
     CoberturaSnis,
     IndicadorOut,
     PanoramaOut,
@@ -187,6 +188,17 @@ async def cobertura_datasus(session: AsyncSession = Depends(get_session)) -> Cob
     ingestão real via ``run_datasus`` — não é hardcode. Usado pela tela Sentinela Respiratória.
     """
     return await IndicadoresFacade(session).cobertura_datasus()
+
+
+@router.get("/cobertura/inep", response_model=CoberturaInep, tags=["cobertura"])
+async def cobertura_inep(session: AsyncSession = Depends(get_session)) -> CoberturaInep:
+    """Cobertura atual do INEP/Censo Escolar no acervo.
+
+    Retorna quantos municípios têm dado de matrículas e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão real via ``run_inep`` — não é hardcode. Usado pela tela Radar de Evasão Escolar.
+    """
+    return await IndicadoresFacade(session).cobertura_inep()
 
 
 @router.get("/mapa/ivm", tags=["ivm"])

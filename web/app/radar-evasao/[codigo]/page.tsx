@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarRadarEvasao } from "../../../lib/api";
+import { DemoAvisoInep } from "../../../components/DemoAvisoInep";
 import type { NivelEvasao } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function RadarEvasaoPage({ params }: { params: { codigo: st
       <Link href={`/bussola-edu-trabalho/${r.codigo_ibge}`} className="voltar">
         ← Ver a Bússola Educação-Trabalho
       </Link>
+      <DemoAvisoInep />
       <p className="pulso-pergunta">
         Radar de Evasão Escolar — cobertura do ensino fundamental municipal
       </p>

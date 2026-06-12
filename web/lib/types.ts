@@ -334,6 +334,14 @@ export interface CoberturaDatasus {
   aviso: string | null;
 }
 
+// ----------------------------------------------------------------- Cobertura INEP
+
+export interface CoberturaInep {
+  n_municipios: number;
+  demo: boolean;
+  aviso: string | null;
+}
+
 // ----------------------------------------------------------------- Bússola Educação-Trabalho (EDU-01)
 
 export type NivelEducacao = "alto" | "medio" | "baixo" | "sem_dado";

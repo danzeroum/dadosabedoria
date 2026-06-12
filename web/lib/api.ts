@@ -11,6 +11,7 @@ import type {
   FeatureCollectionIVM,
   GiroLocalProduto,
   IndicadorDetalhe,
+  LuzNoMapaResponse,
   ObraVivaProduto,
   OndeFoiLista,
   OndeFoiProduto,
@@ -309,6 +310,14 @@ export async function buscarAguaViva(codigo: string): Promise<AguaVivaResponse |
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`AguaViva ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<AguaVivaResponse>;
+}
+
+export async function buscarLuzNoMapa(codigo: string): Promise<LuzNoMapaResponse | null> {
+  const url = `${BASE}/v1/luz-no-mapa/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`LuzNoMapa ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<LuzNoMapaResponse>;
 }
 
 export async function buscarCoberturaSnis(): Promise<CoberturaSnis | null> {

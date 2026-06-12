@@ -1,7 +1,7 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
-EsgotoInvisível (SANE-03)."""
+EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04)."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from app.produtos.facade import (
     BussolaEduTrabFacade,
     EsgotoInvisivelFacade,
     GiroLocalFacade,
+    LuzNoMapaFacade,
     ObraVivaFacade,
     PulsoProdutivoFacade,
     RadarEvasaoFacade,
@@ -26,6 +27,7 @@ from app.produtos.modelos import (
     BussolaEduTrabOut,
     EsgotoInvisivelOut,
     GiroLocalOut,
+    LuzNoMapaOut,
     ObraVivaOut,
     OndeFoiLista,
     OndeFoiOut,
@@ -186,3 +188,15 @@ async def esgoto_invisivel(
     404 quando não há dado SNIS de esgoto para o município.
     """
     return await EsgotoInvisivelFacade(session).esgoto_invisivel(codigo_ibge=codigo_ibge)
+
+
+@router.get("/luz-no-mapa/{codigo_ibge}", response_model=LuzNoMapaOut)
+async def luz_no_mapa(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> LuzNoMapaOut:
+    """Qualidade do fornecimento de energia elétrica no município (LuzNoMapa — SANE-04).
+
+    Indicadores DEC (horas de interrupção por consumidor/ano) e FEC (interrupções/consumidor/ano)
+    da ANEEL. Menor é melhor. 404 quando não há dado ANEEL para o município.
+    """
+    return await LuzNoMapaFacade(session).luz_no_mapa(codigo_ibge=codigo_ibge)

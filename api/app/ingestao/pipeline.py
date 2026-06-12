@@ -26,6 +26,10 @@ from app.ingestao.adaptadores.caged import AdaptadorCaged
 from app.ingestao.adaptadores.datasus import CODIGO_INDICADOR as CODIGO_DATASUS
 from app.ingestao.adaptadores.datasus import CONTRATO as CONTRATO_DATASUS
 from app.ingestao.adaptadores.datasus import AdaptadorDatasus
+from app.ingestao.adaptadores.energia import CODIGO_DEC as CODIGO_DEC_ANEEL
+from app.ingestao.adaptadores.energia import CODIGO_FEC as CODIGO_FEC_ANEEL
+from app.ingestao.adaptadores.energia import CONTRATO as CONTRATO_ANEEL
+from app.ingestao.adaptadores.energia import AdaptadorAneel
 from app.ingestao.adaptadores.estban import CODIGO_INDICADOR as CODIGO_ESTBAN
 from app.ingestao.adaptadores.estban import AdaptadorEstban
 from app.ingestao.adaptadores.inep import CODIGO_INDICADOR as CODIGO_INEP
@@ -614,6 +618,91 @@ async def executar_datasus(
         responsavel=responsavel,
         ignorados=ignorados,
     )
+
+
+async def executar_aneel(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorAneel,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira ANEEL DEC/FEC (anual) — qualidade do fornecimento elétrico por município.
+
+    Grava dois indicadores: DEC (horas/consumidor/ano) e FEC (interrupções/consumidor/ano).
+    Vivo-pronto: forma a confirmar na 1ª busca real (``dadosabertos.aneel.gov.br``).
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"aneel/{janela.ano}.csv", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_ANEEL.validar(df)
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind_dec = await _carregar_indicador(conn, CODIGO_DEC_ANEEL)
+    ind_fec = await _carregar_indicador(conn, CODIGO_FEC_ANEEL)
+    mapa7 = await _mapa_municipios(conn)
+
+    celulas_dec: list[CelulaOuro] = []
+    celulas_fec: list[CelulaOuro] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas_dec.append(
+            CelulaOuro(
+                indicador_id=ind_dec.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["dec"]), 4))),
+                n_amostra=None,
+                confiabilidade=4,
+                fonte_id=ind_dec.fonte_id,
+            )
+        )
+        if row["fec"] is not None:
+            celulas_fec.append(
+                CelulaOuro(
+                    indicador_id=ind_fec.id,
+                    territorio_id=territorio_id,
+                    periodo=janela.periodo,
+                    atualizacao="anual",
+                    valor=Decimal(str(round(float(row["fec"]), 4))),
+                    n_amostra=None,
+                    confiabilidade=4,
+                    fonte_id=ind_fec.fonte_id,
+                )
+            )
+
+    resumo = await _gravar_celulas(
+        conn,
+        ind_dec,
+        celulas_dec,
+        janela,
+        fonte_codigo="aneel",
+        transformacoes=f"aneel {janela.ano}: bronze->prata->ouro (DEC)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+    if celulas_fec:
+        await _gravar_celulas(
+            conn,
+            ind_fec,
+            celulas_fec,
+            janela,
+            fonte_codigo="aneel",
+            transformacoes=f"aneel {janela.ano}: bronze->prata->ouro (FEC)",
+            url=url,
+            hash_origem=hash_origem,
+            responsavel=responsavel,
+            ignorados=0,
+        )
+    return resumo
 
 
 async def executar_snis(

@@ -195,6 +195,8 @@ export default async function BussolaEduTrabPage({ params }: { params: { codigo:
       </dl>
 
       <p style={{ marginTop: "16px" }}>
+        <Link href={`/radar-evasao/${b.codigo_ibge}`}>Ver o Radar de Evasão Escolar (cobertura do fundamental) →</Link>
+        <br />
         <Link href={`/pulso/${b.codigo_ibge}`}>Ver série histórica do emprego formal →</Link>
         <br />
         <Link href={`/salario-radar/${b.codigo_ibge}`}>Ver o Salário Radar (patamar das contratações) →</Link>

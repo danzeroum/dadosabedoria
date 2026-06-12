@@ -1171,6 +1171,81 @@ components:
       - meta
       title: PulsoProdutivoOut
       type: object
+    RadarEvasaoOut:
+      description: Cobertura do ensino fundamental municipal vs. pop. estimada em
+        idade escolar (EDU-02).
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        matriculas:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Matriculas
+        matriculas_por_mil:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Matriculas Por Mil
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - adequada
+          - atencao
+          - alerta
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        populacao_escolar_estimada:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao Escolar Estimada
+        taxa_cobertura:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Taxa Cobertura
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - periodo
+      - matriculas
+      - matriculas_por_mil
+      - populacao_escolar_estimada
+      - taxa_cobertura
+      - nivel
+      - nota
+      - meta
+      title: RadarEvasaoOut
+      type: object
     RegiaoEmpregaOut:
       description: Retrato regional do emprego formal (Novo CAGED) — TRAB-04.
       properties:
@@ -2234,6 +2309,45 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Pulso Produtivo
+      tags:
+      - produtos
+  /v1/radar-evasao/{codigo_ibge}:
+    get:
+      description: 'Cobertura do ensino fundamental vs. estimativa de crianças em
+        idade escolar (EDU-02).
+
+
+        Matrículas do Censo Escolar/INEP divididas por 14 % da pop. municipal (proxy
+        faixa 6–14 anos).
+
+        Taxa > 100 % indica polo de atração escolar — classifica como "adequada",
+        não erro.
+
+        Só cobre o fundamental formal (não EJA, creche, pré-escola).
+
+        404 quando não há dado de matrículas para o município.'
+      operationId: radar_evasao_v1_radar_evasao__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RadarEvasaoOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Radar Evasao
       tags:
       - produtos
   /v1/regiao-emprega/{codigo_ibge}:

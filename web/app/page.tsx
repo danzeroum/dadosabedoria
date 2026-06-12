@@ -75,6 +75,15 @@ const PRODUTOS: {
     selo: null,
   },
   {
+    titulo: "Radar de Evasão Escolar",
+    pergunta: "Quantas crianças em idade escolar estão fora do ensino fundamental?",
+    descricao:
+      "Matrículas do ensino fundamental (INEP/Censo Escolar) divididas por uma estimativa da população em idade escolar (14 % da população). Taxa > 100 % indica polo de atração — não erro. Só cobre o EF formal; não inclui EJA, creche nem pré-escola.",
+    href: "/radar-evasao/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
     titulo: "Sentinela Respiratória",
     pergunta: "Como estão as internações por doenças respiratórias no município?",
     descricao:

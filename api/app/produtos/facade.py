@@ -18,6 +18,8 @@ from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
 from app.produtos.agua_viva import calcular as calcular_agua_viva
 from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
 from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
+from app.produtos.esgoto_invisivel import NOTA_HONESTA as NOTA_ESGOTO_INVISIVEL
+from app.produtos.esgoto_invisivel import calcular as calcular_esgoto_invisivel
 from app.produtos.giro_local import (
     NOTA_HONESTA as NOTA_GIRO,
 )
@@ -27,6 +29,7 @@ from app.produtos.giro_local import (
 from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
+    EsgotoInvisivelOut,
     GiroLocalOut,
     MesInternacoesOut,
     MesSaldoOut,
@@ -681,4 +684,78 @@ class AguaVivaFacade:
             nota=NOTA_AGUA_VIVA,
             meta_agua=_meta(meta_agua) if meta_agua else None,
             meta_esgoto=_meta(meta_esgoto) if meta_esgoto else None,
+        )
+
+
+class EsgotoInvisivelFacade:
+    """Fachada do gap de saneamento por município — EsgotoInvisível (SANE-03)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:esgoto-invisivel")
+    async def esgoto_invisivel(self, *, codigo_ibge: str) -> EsgotoInvisivelOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas_esgoto, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_ESGOTO_SNIS,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+        if not linhas_esgoto:
+            raise NaoEncontradoError(f"EsgotoInvisível para município '{codigo_ibge}'")
+
+        linhas_agua, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_AGUA_SNIS,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+
+        ultimo_esgoto = linhas_esgoto[-1]
+        esgoto_pct = float(ultimo_esgoto["valor"]) if ultimo_esgoto["valor"] is not None else None
+        periodo = (
+            ultimo_esgoto["periodo"].strftime("%Y")
+            if ultimo_esgoto["periodo"] is not None
+            else None
+        )
+
+        agua_pct: float | None = None
+        if linhas_agua:
+            v = linhas_agua[-1]["valor"]
+            agua_pct = float(v) if v is not None else None
+
+        ei = calcular_esgoto_invisivel(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            periodo=periodo,
+            agua_pct=agua_pct,
+            esgoto_pct=esgoto_pct,
+        )
+        meta_esgoto = await self._repo.meta_indicador(self._s, CODIGO_ESGOTO_SNIS)
+        meta_agua = await self._repo.meta_indicador(self._s, CODIGO_AGUA_SNIS)
+
+        return EsgotoInvisivelOut(
+            codigo_ibge=ei.codigo_ibge,
+            nome=ei.nome,
+            uf=ei.uf,
+            periodo=ei.periodo,
+            agua_pct=ei.agua_pct,
+            esgoto_pct=ei.esgoto_pct,
+            gap_pct=ei.gap_pct,
+            nivel_gap=ei.nivel_gap,
+            nota=NOTA_ESGOTO_INVISIVEL,
+            meta_esgoto=_meta(meta_esgoto) if meta_esgoto else None,
+            meta_agua=_meta(meta_agua) if meta_agua else None,
         )

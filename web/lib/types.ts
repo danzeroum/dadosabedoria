@@ -474,3 +474,21 @@ export interface AguaVivaResponse {
   meta_agua: MetaProveniencia | null;
   meta_esgoto: MetaProveniencia | null;
 }
+
+// ----------------------------------------------------------------- EsgotoInvisível (SANE-03)
+
+export type NivelGap = "adequado" | "atencao" | "critico" | "sem_dado";
+
+export interface EsgotoInvisivelResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  periodo: string | null;
+  agua_pct: number | null;
+  esgoto_pct: number | null;
+  gap_pct: number | null;
+  nivel_gap: NivelGap;
+  nota: string;
+  meta_esgoto: MetaProveniencia | null;
+  meta_agua: MetaProveniencia | null;
+}

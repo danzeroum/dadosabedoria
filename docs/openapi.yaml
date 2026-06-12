@@ -287,6 +287,73 @@ components:
       - consultas
       title: ConsultaLoteIn
       type: object
+    EsgotoInvisivelOut:
+      description: Gap de saneamento por município — SANE-03 EsgotoInvisível.
+      properties:
+        agua_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Agua Pct
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        esgoto_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Esgoto Pct
+        gap_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Gap Pct
+        meta_agua:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        meta_esgoto:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel_gap:
+          enum:
+          - adequado
+          - atencao
+          - critico
+          - sem_dado
+          title: Nivel Gap
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - agua_pct
+      - esgoto_pct
+      - gap_pct
+      - nivel_gap
+      - nota
+      - meta_esgoto
+      - meta_agua
+      title: EsgotoInvisivelOut
+      type: object
     FonteAcervoOut:
       description: 'Uma fonte por trás dos números: órgão, licença, cadência, lag
         e base legal (LGPD).
@@ -1961,6 +2028,42 @@ paths:
       summary: Consultas Lote
       tags:
       - profundo
+  /v1/esgoto-invisivel/{codigo_ibge}:
+    get:
+      description: 'Gap entre cobertura de água e esgoto por município (EsgotoInvisível
+        — SANE-03).
+
+
+        Onde a água chega mas o esgoto some — mede o efluente não coletado (IN015_AE
+        do SNIS).
+
+        Níveis: adequado (≥ 70 %), atenção (40–69 %), crítico (< 40 %).
+
+        404 quando não há dado SNIS de esgoto para o município.'
+      operationId: esgoto_invisivel_v1_esgoto_invisivel__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EsgotoInvisivelOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Esgoto Invisivel
+      tags:
+      - produtos
   /v1/fontes:
     get:
       description: 'As fontes por trás de cada número: órgão, licença, cadência, lag

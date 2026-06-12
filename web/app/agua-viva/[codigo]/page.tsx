@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarAguaViva } from "../../../lib/api";
+import { DemoAvisoSnis } from "../../../components/DemoAvisoSnis";
 import type { NivelAcesso } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +88,7 @@ export default async function AguaVivaPage({ params }: { params: { codigo: strin
       <Link href={`/ivm/${av.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAvisoSnis />
       <p className="pulso-pergunta">AguaViva — saneamento básico</p>
       <h1>
         {av.nome}

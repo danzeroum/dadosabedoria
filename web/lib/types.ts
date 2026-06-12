@@ -318,6 +318,14 @@ export interface CoberturaCAGED {
   aviso: string | null;
 }
 
+// ----------------------------------------------------------------- Cobertura SNIS
+
+export interface CoberturaSnis {
+  n_municipios: number;
+  demo: boolean;
+  aviso: string | null;
+}
+
 // ----------------------------------------------------------------- Bússola Educação-Trabalho (EDU-01)
 
 export type NivelEducacao = "alto" | "medio" | "baixo" | "sem_dado";

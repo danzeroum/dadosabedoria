@@ -13,6 +13,7 @@ from app.indicadores.facade import IndicadoresFacade
 from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     CoberturaCAGED,
+    CoberturaSnis,
     IndicadorOut,
     PanoramaOut,
     RespostaBuscaTerritorios,
@@ -163,6 +164,17 @@ async def cobertura_caged(session: AsyncSession = Depends(get_session)) -> Cober
     hardcode. Usado pelas telas da família CAGED (Pulso, Salário Radar, Região Emprega, IVM).
     """
     return await IndicadoresFacade(session).cobertura_caged()
+
+
+@router.get("/cobertura/snis", response_model=CoberturaSnis, tags=["cobertura"])
+async def cobertura_snis(session: AsyncSession = Depends(get_session)) -> CoberturaSnis:
+    """Cobertura atual do SNIS no acervo.
+
+    Retorna quantos municípios têm dado SNIS de saneamento e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão real via ``run_snis`` — não é hardcode. Usado pelas telas AguaViva e EsgotoInvisível.
+    """
+    return await IndicadoresFacade(session).cobertura_snis()
 
 
 @router.get("/mapa/ivm", tags=["ivm"])

@@ -11,6 +11,7 @@ from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import (
     CoberturaCAGED,
+    CoberturaSnis,
     FonteAcervoOut,
     IndicadorOut,
     IndicadorValorOut,
@@ -203,6 +204,22 @@ class IndicadoresFacade:
             else None
         )
         return CoberturaCAGED(n_municipios=n, demo=demo, aviso=aviso)
+
+    @cache_leitura("v1:cobertura:snis")
+    async def cobertura_snis(self) -> CoberturaSnis:
+        """Cobertura atual do SNIS — detecta modo demonstração automaticamente."""
+        n = await self._repo.contar_municipios_snis(self._s)
+        demo = n < 50
+        aviso = (
+            (
+                f"Dados de demonstração: {n} município{'s' if n != 1 else ''} no acervo (seed de "
+                "teste). O aviso cai automaticamente após a ingestão nacional do SNIS (~5.500 "
+                "municípios)."
+            )
+            if demo
+            else None
+        )
+        return CoberturaSnis(n_municipios=n, demo=demo, aviso=aviso)
 
     @cache_leitura("v1:territorio")
     async def obter_territorio(self, *, codigo_ibge: str) -> TerritorioOut:

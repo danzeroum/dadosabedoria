@@ -3,7 +3,7 @@
 Forma confirmada no ADR-0024 (2026-06-11, RDRO2604):
   - ``MUNIC_RES``: município de RESIDÊNCIA (6 dígitos DATASUS; mapa 6→7 no pipeline).
   - ``DIAG_PRINC``: diagnóstico principal (CID-10 J00–J99 = respiratório).
-  - ``DT_INTER``: data de internação (YYYY-MM-DD após DBF→polars→CSV). Determina o mês do evento.
+  - ``DT_INTER``: data de internação em formato **YYYYMMDD** (sem traços) no DBF/CSV bruto.
     **Não usar ANO_CMPT/MES_CMPT**: é competência de faturamento e mistura meses.
 
 Prata: filtra DIAG_PRINC 'J%', deriva ``mes_internacao`` do 1.º dia do mês de DT_INTER.
@@ -81,10 +81,10 @@ class AdaptadorDatasus:
         return df
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
-        # MUNIC_RES: campo numérico no DBF — dbfread pode retornar float 355030.0 → cast(Utf8)
-        # produz "355030.0" que falha no mapa6. Double-cast Float64→Int64→Utf8 normaliza.
-        # DT_INTER → "YYYY-MM-DD" após DBF→polars→CSV; slice primeiros 7 chars = "YYYY-MM".
-        # Concatena "-01" para obter "YYYY-MM-01" e parseia como date (1.º dia do mês).
+        # MUNIC_RES: campo string no DBF ("110020"); triple-cast é defesa extra para
+        # DBFs numéricos — Float64→Int64→Utf8 normaliza "355030.0" → "355030".
+        # DT_INTER: formato YYYYMMDD no DBF (ex.: "20260119") — sem traços.
+        # parse("%Y%m%d") + truncate("1mo") → 1.º dia do mês (ex.: date(2026,1,1)).
         return df.select(
             pl.col(COL_MUNICIPIO)
             .cast(pl.Float64, strict=False)
@@ -92,11 +92,11 @@ class AdaptadorDatasus:
             .cast(pl.Utf8)
             .alias("cod_munres"),
             pl.col(COL_DIAG).cast(pl.Utf8).str.strip_chars().alias("diag"),
-            pl.concat_str(
-                pl.col(COL_DATA).cast(pl.Utf8).str.slice(0, 7),
-                pl.lit("-01"),
-            )
-            .str.to_date(format="%Y-%m-%d", strict=False)
+            pl.col(COL_DATA)
+            .cast(pl.Utf8)
+            .str.strip_chars()
+            .str.to_date(format="%Y%m%d", strict=False)
+            .dt.truncate("1mo")
             .alias("mes_internacao"),
         ).filter(
             pl.col("cod_munres").is_not_null()

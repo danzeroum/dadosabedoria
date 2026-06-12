@@ -32,10 +32,23 @@ def test_prata_filtra_grupo_j_e_extrai_mes() -> None:
     assert df.height == 5  # linha I10 (hipertensão) filtrada
 
 
+def test_prata_mes_internacao_nao_e_null() -> None:
+    """Guard: se mes_internacao fosse toda null, transformar_prata retornaria 0 linhas.
+
+    Esse teste falha se o formato de DT_INTER na fixture divergir do esperado pelo parser
+    (bug real em produção: fixture usava 'YYYY-MM-DD' mas o DBF real é 'YYYYMMDD').
+    """
+    a = _ad()
+    df = a.transformar_prata(a.parse(AMOSTRA))
+    assert df.height > 0, "prata retornou 0 linhas — DT_INTER provavelmente em formato errado"
+    nulls = df["mes_internacao"].null_count()
+    assert nulls == 0, f"mes_internacao tem {nulls} nulls — formato DT_INTER errado"
+
+
 def test_prata_mes_internacao_e_primeiro_dia_do_mes() -> None:
     a = _ad()
     df = a.transformar_prata(a.parse(AMOSTRA))
-    # DT_INTER "2026-09-03" e "2026-09-11" devem resultar em 2026-09-01
+    # DT_INTER "20260903" e "20260911" (YYYYMMDD) devem resultar em 2026-09-01
     meses = df["mes_internacao"].to_list()
     assert all(m == date(2026, 9, 1) for m in meses)
 
@@ -67,11 +80,11 @@ def test_contrato_reprova_sem_diag() -> None:
 
 
 def test_prata_normaliza_munic_res_float() -> None:
-    """MUNIC_RES vem como '355030.0' quando DBF numeric (float) passa por write_csv."""
+    """MUNIC_RES como '355030.0' (DBF numeric float via write_csv) é normalizado para '355030'."""
     dados = (
         b"MUNIC_RES,MUNIC_MOV,DIAG_PRINC,DT_INTER,ANO_CMPT,MES_CMPT\n"
-        b"355030.0,355030.0,J189,2026-09-03,2026,9\n"
-        b"350950.0,350950.0,J450,2026-09-04,2026,9\n"
+        b"355030.0,355030.0,J189,20260903,2026,9\n"
+        b"350950.0,350950.0,J450,20260904,2026,9\n"
     )
     a = _ad()
     prata = a.transformar_prata(a.parse(dados))
@@ -80,10 +93,10 @@ def test_prata_normaliza_munic_res_float() -> None:
 
 
 def test_prata_normaliza_munic_res_inteiro() -> None:
-    """MUNIC_RES como inteiro '355030' (sem .0) também funciona após o double-cast."""
+    """MUNIC_RES como string '355030' (caso real confirmado) também funciona."""
     dados = (
         b"MUNIC_RES,MUNIC_MOV,DIAG_PRINC,DT_INTER,ANO_CMPT,MES_CMPT\n"
-        b"355030,355030,J189,2026-09-03,2026,9\n"
+        b"355030,355030,J189,20260903,2026,9\n"
     )
     a = _ad()
     prata = a.transformar_prata(a.parse(dados))

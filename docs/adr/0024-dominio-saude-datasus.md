@@ -4,6 +4,7 @@
 - **Data:** 2026-06-06
 - **Atualização:** 2026-06-11 — forma real validada contra RDRO2604 (Rondônia, 2026-04)
 - **Atualização:** 2026-06-12 — política de UF ausente (550) revisada; ver §grain-v2
+- **Atualização:** 2026-06-12 — DT_INTER confirmado como YYYYMMDD (sem traços); fixture e parser corrigidos
 
 ## Contexto
 Concluída a sequência de fontes abertas de menor atrito da Onda 2A (SICONFI/INEP/PNCP), a Onda 2B
@@ -41,6 +42,9 @@ Decoder: `datasus_dbc.decompress` (Rust wheel, substitui `expand_dbc_to_dbf`) + 
 - **Mês = DT_INTER (1.º dia do mês), NÃO `ANO_CMPT`/`MES_CMPT`** (competência de faturamento mistura meses). Ajustado no adaptador (`transformar_prata`) e no pipeline (`executar_datasus`).
 - **Município = `MUNIC_RES`** (residência). `MUNIC_MOV` (local de internação) zeraria municípios sem hospital. Confirmado na nota honesta do produto.
 - **Meses recentes incompletos**: AIH recentes ainda em faturamento → os últimos 1–2 meses do SIH são parciais. Caveat obrigatório no `NOTA_HONESTA` e na tela.
+- **DT_INTER formato real: YYYYMMDD** (ex.: `"20260119"`, sem traços). Confirmado contra RDRO2603
+  em 2026-06-12. Fixture anterior usava `"YYYY-MM-DD"` mascarando o bug — corrigida. Parser usa
+  `str.to_date(format="%Y%m%d").dt.truncate("1mo")`.
 - **Fixture mínima** (`tests/fixtures/datasus.py`): `MUNIC_RES`, `MUNIC_MOV`, `DIAG_PRINC`, `DT_INTER`, `ANO_CMPT`, `MES_CMPT` — sem quasi-identificadores. Amostra bruta não comitada no repo.
 
 ## Grão: mensal (decisão 2026-06-11)

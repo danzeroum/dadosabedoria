@@ -14,6 +14,7 @@ const ROTULO_DOMINIO: Record<string, string> = {
   financas: "Finanças",
   educacao: "Educação",
   compras: "Compras",
+  saneamento: "Saneamento",
 };
 
 function agrupar(indicadores: IndicadorValor[]): [string, IndicadorValor[]][] {
@@ -32,7 +33,7 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
     notFound();
   }
   const grupos = agrupar(p.indicadores);
-  const temEmprego = p.indicadores.some((i) => i.dominio === "trabalho");
+  const dominios = new Set(p.indicadores.map((i) => i.dominio));
 
   return (
     <main className="pagina">
@@ -49,13 +50,41 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
         fonte. O que é protegido por privacidade aparece como protegido — nunca o número por baixo.
       </p>
 
-      {temEmprego ? (
-        <p className="ver-produto">
-          <Link href={`/pulso/${p.codigo_ibge}`}>
-            Ver o Pulso Produtivo (emprego formal mês a mês) →
-          </Link>
+      <nav aria-label="Produtos disponíveis" style={{ marginBottom: "16px" }}>
+        <p style={{ fontSize: "0.875rem", color: "#6b7280", marginBottom: "6px" }}>
+          Produtos com dado para este município:
         </p>
-      ) : null}
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {dominios.has("trabalho") && (
+            <>
+              <li><Link href={`/pulso/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>Pulso Produtivo →</Link></li>
+              <li><Link href={`/giro-local/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>Giro Local →</Link></li>
+              <li><Link href={`/salario-radar/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>Salário Radar →</Link></li>
+            </>
+          )}
+          {dominios.has("financas") && (
+            <li><Link href={`/onde-foi/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>OndeFoi →</Link></li>
+          )}
+          {dominios.has("educacao") && (
+            <>
+              <li><Link href={`/bussola-edu-trabalho/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>Bússola Edu-Trabalho →</Link></li>
+              <li><Link href={`/radar-evasao/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>Radar de Evasão →</Link></li>
+            </>
+          )}
+          {dominios.has("saude") && (
+            <li><Link href={`/sentinela-resp/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>Sentinela Respiratória →</Link></li>
+          )}
+          {dominios.has("compras") && (
+            <li><Link href={`/obra-viva/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>ObraViva →</Link></li>
+          )}
+          {dominios.has("saneamento") && (
+            <>
+              <li><Link href={`/agua-viva/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>AguaViva →</Link></li>
+              <li><Link href={`/esgoto-invisivel/${p.codigo_ibge}`} className="home-cta" style={{ fontSize: "0.85rem" }}>EsgotoInvisível →</Link></li>
+            </>
+          )}
+        </ul>
+      </nav>
 
       {grupos.length === 0 ? (
         <p className="vazio">Sem indicadores para este território ainda.</p>

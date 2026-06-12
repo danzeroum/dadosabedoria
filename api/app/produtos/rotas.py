@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.produtos.facade import (
+    AguaVivaFacade,
     BussolaEduTrabFacade,
     GiroLocalFacade,
     ObraVivaFacade,
@@ -19,6 +20,7 @@ from app.produtos.facade import (
     SentinelaRespFacade,
 )
 from app.produtos.modelos import (
+    AguaVivaOut,
     BussolaEduTrabOut,
     GiroLocalOut,
     ObraVivaOut,
@@ -158,3 +160,13 @@ async def obra_viva(codigo_ibge: str, session: AsyncSession = Depends(get_sessio
     404 quando não há dado de contratos para o município.
     """
     return await ObraVivaFacade(session).obra_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/agua-viva/{codigo_ibge}", response_model=AguaVivaOut)
+async def agua_viva(codigo_ibge: str, session: AsyncSession = Depends(get_session)) -> AguaVivaOut:
+    """Acesso a água tratada e coleta de esgoto por município (AguaViva — SANE-01).
+
+    Indicadores IN023_AE (água) e IN015_AE (esgoto) do SNIS.
+    404 quando não há dado SNIS para o município.
+    """
+    return await AguaVivaFacade(session).agua_viva(codigo_ibge=codigo_ibge)

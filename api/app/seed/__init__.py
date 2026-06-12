@@ -154,6 +154,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 30,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "snis",
+        "nome": "SNIS — Série Histórica",
+        "orgao": "MDR/SNSA",
+        "url_doc": "http://app4.mdr.gov.br/serieHistorica/",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 548,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -312,6 +324,50 @@ INDICADORES: list[dict[str, Any]] = [
         "codigo_externo": "valorGlobal",
         "metodologia": (
             "Soma do valorGlobal dos contratos do PNCP por município/ano (unidadeOrgao.codigoIbge)."
+        ),
+    },
+    {
+        "codigo": "saneamento.agua.atendimento_pct",
+        "nome": "Índice de atendimento de água",
+        "descricao": "Percentual da população atendida com abastecimento de água (IN023_AE, SNIS).",
+        "dominio": "saneamento",
+        "subdominio": "agua",
+        "unidade": "pct",
+        "polaridade": "negativa",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "snis",
+        "codigo_externo": "IN023_AE",
+        "metodologia": (
+            "IN023_AE do SNIS: (pop. urbana atendida com água / pop. urbana total) × 100, "
+            "por prestador declarante ao SNIS por município/ano."
+        ),
+    },
+    {
+        "codigo": "saneamento.esgoto.coleta_pct",
+        "nome": "Índice de coleta de esgoto",
+        "descricao": "Percentual da população com coleta de esgoto (IN015_AE, SNIS).",
+        "dominio": "saneamento",
+        "subdominio": "esgoto",
+        "unidade": "pct",
+        "polaridade": "negativa",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "snis",
+        "codigo_externo": "IN015_AE",
+        "metodologia": (
+            "IN015_AE do SNIS: (pop. urbana com coleta de esgoto / pop. urbana total) × 100, "
+            "por prestador declarante ao SNIS por município/ano."
         ),
     },
 ]

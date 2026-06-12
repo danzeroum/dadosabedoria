@@ -24,6 +24,7 @@ from app.ingestao.adaptadores.datasus import AdaptadorDatasus, FetcherDatasusFTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
 from app.ingestao.adaptadores.inep import AdaptadorInep, FetcherInepHTTP
 from app.ingestao.adaptadores.pncp import AdaptadorPncp, FetcherPncpHTTP
+from app.ingestao.adaptadores.saneamento import AdaptadorSnis, FetcherSnisHTTP
 from app.ingestao.adaptadores.siconfi import (
     AdaptadorSiconfi,
     FetcherSiconfiFuncoesHTTP,
@@ -39,6 +40,7 @@ from app.ingestao.pipeline import (
     executar_pncp,
     executar_siconfi,
     executar_siconfi_funcoes,
+    executar_snis,
 )
 
 # ------------------------------------------------------------------ Definições de partição
@@ -146,6 +148,15 @@ async def _rodar_datasus(janela: Janela) -> None:  # pragma: no cover - rede/FTP
     await refrescar_ivm()
 
 
+async def _rodar_snis(janela: Janela) -> None:  # pragma: no cover - rede
+    settings = get_settings()
+    adaptador = AdaptadorSnis(FetcherSnisHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_snis(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
 # ------------------------------------------------------------------ Assets (Degrau 2)
 
 
@@ -243,6 +254,21 @@ def valores_datasus(context: dg.AssetExecutionContext) -> dg.MaterializeResult: 
     return dg.MaterializeResult(metadata={"competencia": comp})
 
 
+@dg.asset(
+    partitions_def=_ANUAL,
+    group_name="saneamento",
+    description=(
+        "Atendimento de água e coleta de esgoto por município — SNIS/MDR (IN023_AE, IN015_AE)."
+    ),
+    metadata={"fonte": "SNIS/MDR", "lag_tipico": "12–18 meses"},
+)
+def valores_snis(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # pragma: no cover
+    comp = _comp_de_anual(context.partition_key)
+    context.log.info(f"SNIS: ano {context.partition_key}")
+    asyncio.run(_rodar_snis(Janela.de_competencia(comp)))
+    return dg.MaterializeResult(metadata={"ano": context.partition_key})
+
+
 # ------------------------------------------------------------------ Asset jobs
 
 job_valores_caged = dg.define_asset_job("job_valores_caged", selection=["valores_caged"])
@@ -252,6 +278,7 @@ job_execucao_siconfi = dg.define_asset_job("job_execucao_siconfi", selection=["e
 job_valores_inep = dg.define_asset_job("job_valores_inep", selection=["valores_inep"])
 job_valores_pncp = dg.define_asset_job("job_valores_pncp", selection=["valores_pncp"])
 job_valores_datasus = dg.define_asset_job("job_valores_datasus", selection=["valores_datasus"])
+job_valores_snis = dg.define_asset_job("job_valores_snis", selection=["valores_snis"])
 
 
 # ------------------------------------------------------------------ Schedules
@@ -307,6 +334,12 @@ def schedule_datasus_mensal(context: dg.ScheduleEvaluationContext) -> dg.RunRequ
     return dg.RunRequest(partition_key=f"{comp[:4]}-{comp[4:6]}-01")
 
 
+@dg.schedule(job=job_valores_snis, cron_schedule="0 8 15 3 *")  # 15/mar: dados do ano anterior
+def schedule_snis_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(partition_key=str(ano))
+
+
 # ------------------------------------------------------------------ Definições
 
 defs = dg.Definitions(
@@ -318,6 +351,7 @@ defs = dg.Definitions(
         valores_inep,
         valores_pncp,
         valores_datasus,
+        valores_snis,
     ],
     jobs=[
         job_valores_caged,
@@ -327,6 +361,7 @@ defs = dg.Definitions(
         job_valores_inep,
         job_valores_pncp,
         job_valores_datasus,
+        job_valores_snis,
     ],
     schedules=[
         schedule_caged_mensal,
@@ -336,5 +371,6 @@ defs = dg.Definitions(
         schedule_inep_anual,
         schedule_pncp_anual,
         schedule_datasus_mensal,
+        schedule_snis_anual,
     ],
 )

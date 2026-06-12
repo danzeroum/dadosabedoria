@@ -14,6 +14,8 @@ from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import MetaProveniencia
 from app.indicadores.repositorio import RepositorioIndicadores
+from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
+from app.produtos.agua_viva import calcular as calcular_agua_viva
 from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
 from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
 from app.produtos.giro_local import (
@@ -23,6 +25,7 @@ from app.produtos.giro_local import (
     calcular as calcular_giro,
 )
 from app.produtos.modelos import (
+    AguaVivaOut,
     BussolaEduTrabOut,
     GiroLocalOut,
     MesInternacoesOut,
@@ -54,6 +57,8 @@ CODIGO_SALARIO = "trabalho.emprego.salario_medio_admissao"
 CODIGO_EDUCACAO = "educacao.matriculas.fundamental"
 CODIGO_DATASUS = "saude.resp.internacoes_j"
 CODIGO_PNCP = "compras.contratos.valor_total"
+CODIGO_AGUA_SNIS = "saneamento.agua.atendimento_pct"
+CODIGO_ESGOTO_SNIS = "saneamento.esgoto.coleta_pct"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -604,4 +609,76 @@ class ObraVivaFacade:
             nivel=o.nivel,
             nota=NOTA_OBRA_VIVA,
             meta=_meta(meta_row) if meta_row else None,
+        )
+
+
+class AguaVivaFacade:
+    """Fachada do saneamento básico municipal — AguaViva (SANE-01)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:agua-viva")
+    async def agua_viva(self, *, codigo_ibge: str) -> AguaVivaOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas_agua, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_AGUA_SNIS,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+        if not linhas_agua:
+            raise NaoEncontradoError(f"AguaViva para município '{codigo_ibge}'")
+
+        linhas_esgoto, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_ESGOTO_SNIS,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+
+        ultimo_agua = linhas_agua[-1]
+        agua_pct = float(ultimo_agua["valor"]) if ultimo_agua["valor"] is not None else None
+        periodo = (
+            ultimo_agua["periodo"].strftime("%Y") if ultimo_agua["periodo"] is not None else None
+        )
+
+        esgoto_pct: float | None = None
+        if linhas_esgoto:
+            v = linhas_esgoto[-1]["valor"]
+            esgoto_pct = float(v) if v is not None else None
+
+        av = calcular_agua_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            periodo=periodo,
+            agua_pct=agua_pct,
+            esgoto_pct=esgoto_pct,
+        )
+        meta_agua = await self._repo.meta_indicador(self._s, CODIGO_AGUA_SNIS)
+        meta_esgoto = await self._repo.meta_indicador(self._s, CODIGO_ESGOTO_SNIS)
+
+        return AguaVivaOut(
+            codigo_ibge=av.codigo_ibge,
+            nome=av.nome,
+            uf=av.uf,
+            periodo=av.periodo,
+            agua_pct=av.agua_pct,
+            esgoto_pct=av.esgoto_pct,
+            nivel_agua=av.nivel_agua,
+            nivel_esgoto=av.nivel_esgoto,
+            nota=NOTA_AGUA_VIVA,
+            meta_agua=_meta(meta_agua) if meta_agua else None,
+            meta_esgoto=_meta(meta_esgoto) if meta_esgoto else None,
         )

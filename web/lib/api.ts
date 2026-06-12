@@ -1,4 +1,5 @@
 import type {
+  AguaVivaResponse,
   BussolaEduTrabProduto,
   CoberturaCAGED,
   FeatureCollectionIVM,
@@ -294,4 +295,12 @@ export async function buscarObraViva(
     throw new Error(`Falha ao buscar o ObraViva (${resp.status})`);
   }
   return resp.json();
+}
+
+export async function buscarAguaViva(codigo: string): Promise<AguaVivaResponse | null> {
+  const url = `${BASE}/v1/agua-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`AguaViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<AguaVivaResponse>;
 }

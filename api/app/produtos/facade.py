@@ -7,11 +7,13 @@ OndeFoi usa o seu próprio ``RepositorioOndeFoi``. **LuzNoMapa** lê DEC/FEC da 
 
 from __future__ import annotations
 
-from sqlalchemy import RowMapping
+from sqlalchemy import RowMapping, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
+from app.core.tables import execucao_funcao as t_ef
+from app.core.tables import territorio as t_terr
 from app.indicadores.modelos import MetaProveniencia
 from app.indicadores.repositorio import RepositorioIndicadores
 from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
@@ -44,6 +46,7 @@ from app.produtos.modelos import (
     RegiaoEmpregaOut,
     RioEmRiscoOut,
     SalarioRadarOut,
+    SemeandoTransparenciaOut,
     SentinelaRespOut,
 )
 from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
@@ -59,6 +62,8 @@ from app.produtos.rio_em_risco import NOTA_HONESTA as NOTA_RIO_EM_RISCO
 from app.produtos.rio_em_risco import calcular as calcular_rio_em_risco
 from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
+from app.produtos.semeando_transparencia import NOTA_HONESTA as NOTA_SEMEANDO
+from app.produtos.semeando_transparencia import calcular as calcular_semeando
 from app.produtos.sentinela_resp import NOTA_HONESTA as NOTA_SENTINELA
 from app.produtos.sentinela_resp import MesInternacoes
 from app.produtos.sentinela_resp import calcular as calcular_sentinela
@@ -946,4 +951,80 @@ class PratoFrioFacade:
             nivel=pf.nivel,
             nota=NOTA_PRATO_FRIO,
             meta=_meta(meta) if meta else None,
+        )
+
+
+# ------------------------------------------------- SemeandoTransparencia (ALIM-05)
+
+
+class SemeandoTransparenciaFacade:
+    """Fachada do investimento público municipal em agricultura — ALIM-05."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:semeando-transparencia")
+    async def semeando_transparencia(self, *, codigo_ibge: str) -> SemeandoTransparenciaOut:
+        # 1. território
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        # 2. período mais recente em execucao_funcao para este território
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"SemeandoTransparência para município '{codigo_ibge}'")
+
+        # 3. função 20 no período mais recente
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "20",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        st = calcular_semeando(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return SemeandoTransparenciaOut(
+            codigo_ibge=st.codigo_ibge,
+            nome=st.nome,
+            uf=st.uf,
+            populacao=st.populacao,
+            ano=st.ano,
+            valor_liquidado=st.valor_liquidado,
+            valor_por_hab=st.valor_por_hab,
+            nivel=st.nivel,
+            nota=NOTA_SEMEANDO,
+            meta=None,
         )

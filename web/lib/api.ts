@@ -13,6 +13,7 @@ import type {
   IndicadorDetalhe,
   LuzNoMapaResponse,
   PratoFrioResponse,
+  SemeandoTransparenciaResponse,
   RioEmRiscoResponse,
   ObraVivaProduto,
   OndeFoiLista,
@@ -376,4 +377,14 @@ export async function buscarPratoFrio(codigo: string): Promise<PratoFrioResponse
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`PratoFrio ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<PratoFrioResponse>;
+}
+
+export async function buscarSemeandoTransparencia(
+  codigo: string
+): Promise<SemeandoTransparenciaResponse | null> {
+  const url = `${BASE}/v1/semeando-transparencia/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`SemeandoTransparencia ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<SemeandoTransparenciaResponse>;
 }

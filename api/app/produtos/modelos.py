@@ -20,6 +20,7 @@ from app.produtos.radar_evasao import NivelEvasao
 from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.rio_em_risco import NivelSeca
 from app.produtos.salario_radar import NivelSalario
+from app.produtos.semeando_transparencia import NivelInvestimento
 from app.produtos.sentinela_resp import NivelSentinela, TendenciaSentinela
 
 
@@ -387,6 +388,26 @@ class PratoFrioOut(BaseModel):
     valor_total: float | None  # BRL total (soma das lavouras)
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelProducao
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- SemeandoTransparencia (ALIM-05)
+
+
+class SemeandoTransparenciaOut(BaseModel):
+    """Investimento público municipal em agricultura — ALIM-05 SemeandoTransparência."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None  # exercício de referência
+    valor_liquidado: float | None  # BRL — função 20 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelInvestimento
 
     nota: str
     meta: MetaProveniencia | None

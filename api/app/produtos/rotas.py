@@ -1,7 +1,8 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
-EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01)."""
+EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
+SemeandoTransparência (ALIM-05)."""
 
 from __future__ import annotations
 
@@ -22,6 +23,7 @@ from app.produtos.facade import (
     RegiaoEmpregaFacade,
     RioEmRiscoFacade,
     SalarioRadarFacade,
+    SemeandoTransparenciaFacade,
     SentinelaRespFacade,
 )
 from app.produtos.modelos import (
@@ -39,6 +41,7 @@ from app.produtos.modelos import (
     RegiaoEmpregaOut,
     RioEmRiscoOut,
     SalarioRadarOut,
+    SemeandoTransparenciaOut,
     SentinelaRespOut,
 )
 from app.produtos.repositorio_onde_foi import RepositorioOndeFoi
@@ -231,3 +234,17 @@ async def prato_frio(
     real (servicodados.ibge.gov.br). 404 quando não há dado PAM para o município.
     """
     return await PratoFrioFacade(session).prato_frio(codigo_ibge=codigo_ibge)
+
+
+@router.get("/semeando-transparencia/{codigo_ibge}", response_model=SemeandoTransparenciaOut)
+async def semeando_transparencia(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> SemeandoTransparenciaOut:
+    """Investimento municipal em agricultura — SICONFI Função 20 (ALIM-05).
+
+    Despesa liquidada na função 20 por habitante. Níveis: alto (≥ R$100/hab/ano),
+    moderado (≥ R$10), baixo (< R$10). 404 quando não há dado SICONFI.
+    """
+    return await SemeandoTransparenciaFacade(session).semeando_transparencia(
+        codigo_ibge=codigo_ibge
+    )

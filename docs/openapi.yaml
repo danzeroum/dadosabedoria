@@ -1,5 +1,75 @@
 components:
   schemas:
+    AguaVivaOut:
+      description: Saneamento básico municipal — SANE-01 AguaViva.
+      properties:
+        agua_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Agua Pct
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        esgoto_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Esgoto Pct
+        meta_agua:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        meta_esgoto:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel_agua:
+          enum:
+          - adequado
+          - atencao
+          - alerta
+          - sem_dado
+          title: Nivel Agua
+          type: string
+        nivel_esgoto:
+          enum:
+          - adequado
+          - atencao
+          - alerta
+          - sem_dado
+          title: Nivel Esgoto
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - agua_pct
+      - esgoto_pct
+      - nivel_agua
+      - nivel_esgoto
+      - nota
+      - meta_agua
+      - meta_esgoto
+      title: AguaVivaOut
+      type: object
     BussolaEduTrabOut:
       description: 'Bússola Educação-Trabalho: base educacional (INEP) + mercado de
         trabalho formal (CAGED).'
@@ -1767,6 +1837,39 @@ paths:
       summary: Health
       tags:
       - infra
+  /v1/agua-viva/{codigo_ibge}:
+    get:
+      description: 'Acesso a água tratada e coleta de esgoto por município (AguaViva
+        — SANE-01).
+
+
+        Indicadores IN023_AE (água) e IN015_AE (esgoto) do SNIS.
+
+        404 quando não há dado SNIS para o município.'
+      operationId: agua_viva_v1_agua_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AguaVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Agua Viva
+      tags:
+      - produtos
   /v1/bussola-edu-trabalho/{codigo_ibge}:
     get:
       description: 'Base educacional e mercado de trabalho formal do município (Bússola

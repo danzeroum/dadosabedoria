@@ -6,6 +6,7 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from app.indicadores.modelos import MetaProveniencia
+from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.obra_viva import NivelContratos
@@ -283,3 +284,24 @@ class ObraVivaOut(BaseModel):
 
     nota: str
     meta: MetaProveniencia | None
+
+
+# --------------------------------------------------------- AguaViva (SANE-01)
+
+
+class AguaVivaOut(BaseModel):
+    """Saneamento básico municipal — SANE-01 AguaViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+
+    periodo: str | None
+    agua_pct: float | None
+    esgoto_pct: float | None
+    nivel_agua: NivelAcesso
+    nivel_esgoto: NivelAcesso
+
+    nota: str
+    meta_agua: MetaProveniencia | None
+    meta_esgoto: MetaProveniencia | None

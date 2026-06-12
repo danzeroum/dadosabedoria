@@ -34,6 +34,10 @@ from app.ingestao.adaptadores.inep import AdaptadorInep
 from app.ingestao.adaptadores.pncp import CODIGO_INDICADOR as CODIGO_PNCP
 from app.ingestao.adaptadores.pncp import CONTRATO as CONTRATO_PNCP
 from app.ingestao.adaptadores.pncp import AdaptadorPncp
+from app.ingestao.adaptadores.saneamento import CODIGO_AGUA as CODIGO_AGUA_SNIS
+from app.ingestao.adaptadores.saneamento import CODIGO_ESGOTO as CODIGO_ESGOTO_SNIS
+from app.ingestao.adaptadores.saneamento import CONTRATO as CONTRATO_SNIS
+from app.ingestao.adaptadores.saneamento import AdaptadorSnis
 from app.ingestao.adaptadores.siconfi import CODIGO_INDICADOR as CODIGO_SICONFI
 from app.ingestao.adaptadores.siconfi import CONTRATO as CONTRATO_SICONFI
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi
@@ -610,3 +614,88 @@ async def executar_datasus(
         responsavel=responsavel,
         ignorados=ignorados,
     )
+
+
+async def executar_snis(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorSnis,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira SNIS (anual) — água (IN023_AE) e esgoto (IN015_AE) por município.
+
+    Grava dois indicadores: atendimento_pct e coleta_pct.
+    Vivo-pronto: forma a confirmar na 1ª busca real (#0, host app4.mdr.gov.br).
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"snis/{janela.ano}.csv", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_SNIS.validar(df)
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind_agua = await _carregar_indicador(conn, CODIGO_AGUA_SNIS)
+    ind_esgoto = await _carregar_indicador(conn, CODIGO_ESGOTO_SNIS)
+    mapa7 = await _mapa_municipios(conn)
+
+    celulas_agua: list[CelulaOuro] = []
+    celulas_esgoto: list[CelulaOuro] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas_agua.append(
+            CelulaOuro(
+                indicador_id=ind_agua.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["agua_pct"]), 4))),
+                n_amostra=None,
+                confiabilidade=4,
+                fonte_id=ind_agua.fonte_id,
+            )
+        )
+        if row["esgoto_pct"] is not None:
+            celulas_esgoto.append(
+                CelulaOuro(
+                    indicador_id=ind_esgoto.id,
+                    territorio_id=territorio_id,
+                    periodo=janela.periodo,
+                    atualizacao="anual",
+                    valor=Decimal(str(round(float(row["esgoto_pct"]), 4))),
+                    n_amostra=None,
+                    confiabilidade=4,
+                    fonte_id=ind_esgoto.fonte_id,
+                )
+            )
+
+    resumo = await _gravar_celulas(
+        conn,
+        ind_agua,
+        celulas_agua,
+        janela,
+        fonte_codigo="snis",
+        transformacoes=f"snis {janela.ano}: bronze->prata->ouro (atendimento água)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+    if celulas_esgoto:
+        await _gravar_celulas(
+            conn,
+            ind_esgoto,
+            celulas_esgoto,
+            janela,
+            fonte_codigo="snis",
+            transformacoes=f"snis {janela.ano}: bronze->prata->ouro (coleta esgoto)",
+            url=url,
+            hash_origem=hash_origem,
+            responsavel=responsavel,
+            ignorados=0,
+        )
+    return resumo

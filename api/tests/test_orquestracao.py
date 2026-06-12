@@ -53,8 +53,8 @@ def test_assets_carregam() -> None:
     assert list(valores_inep.key.path) == ["valores_inep"]
     assert list(valores_pncp.key.path) == ["valores_pncp"]
     assert list(valores_datasus.key.path) == ["valores_datasus"]
-    # 7 assets no acervo
-    assert len(list(defs.assets)) == 7
+    # 8 assets no acervo
+    assert len(list(defs.assets)) == 8
 
 
 def test_jobs_carregam() -> None:

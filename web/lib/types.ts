@@ -456,3 +456,21 @@ export interface ObraVivaProduto {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ----------------------------------------------------------------- AguaViva (SANE-01)
+
+export type NivelAcesso = "adequado" | "atencao" | "alerta" | "sem_dado";
+
+export interface AguaVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  periodo: string | null;
+  agua_pct: number | null;
+  esgoto_pct: number | null;
+  nivel_agua: NivelAcesso;
+  nivel_esgoto: NivelAcesso;
+  nota: string;
+  meta_agua: MetaProveniencia | null;
+  meta_esgoto: MetaProveniencia | null;
+}

@@ -33,3 +33,12 @@ class ResultadoLote(BaseModel):
 class RespostaLote(BaseModel):
     resultados: list[ResultadoLote]
     total: int
+
+
+class RespostaQuota(BaseModel):
+    """Uso atual da cota de API do cliente na janela em curso (sem incrementar o contador)."""
+
+    limite: int
+    usado: int
+    restante: int
+    reset: int = Field(description="Unix timestamp da próxima janela (hora cheia)")

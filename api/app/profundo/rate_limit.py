@@ -25,6 +25,13 @@ class InfoRateLimit(NamedTuple):
     reset: int  # Unix timestamp da próxima janela
 
 
+class InfoQuota(NamedTuple):
+    limite: int
+    usado: int
+    restante: int
+    reset: int  # Unix timestamp da próxima janela
+
+
 async def verificar_rate_limit(cliente: str) -> InfoRateLimit:
     """Incrementa o contador do cliente e retorna InfoRateLimit.
 
@@ -53,3 +60,24 @@ async def verificar_rate_limit(cliente: str) -> InfoRateLimit:
     except Exception:  # noqa: BLE001 — Redis indisponível: degrada graciosamente
         _log.warning("rate_limit_redis_falhou", cliente=cliente)
         return InfoRateLimit(limite=limite, restante=limite, reset=reset)
+
+
+async def consultar_quota(cliente: str) -> InfoQuota:
+    """Lê o uso atual da janela corrente **sem incrementar** o contador.
+
+    Degrada graciosamente se o Redis estiver indisponível (retorna usado=0).
+    """
+    limite = get_settings().rate_limit_profundo
+    agora = datetime.now(UTC)
+    janela = agora.strftime("%Y%m%d%H")
+    chave = f"rl:hora:{cliente}:{janela}"
+    reset = int(agora.replace(minute=0, second=0, microsecond=0).timestamp()) + JANELA_SEGUNDOS
+
+    try:
+        r = get_redis()
+        raw = await r.get(chave)
+        usado = int(raw) if raw else 0
+        return InfoQuota(limite=limite, usado=usado, restante=max(0, limite - usado), reset=reset)
+    except Exception:  # noqa: BLE001 — Redis indisponível: degrada graciosamente
+        _log.warning("quota_redis_falhou", cliente=cliente)
+        return InfoQuota(limite=limite, usado=0, restante=limite, reset=reset)

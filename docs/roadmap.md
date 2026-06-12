@@ -418,8 +418,11 @@ EDU-02 (agregado por município).
   nacionais), MinIO < 1 MB, p95 < 10 ms; nenhum limiar (60 GB / 300 ms / 200 GB) atingido.
   Próxima revisão: após 1ª ingestão nacional do DATASUS. **Pre-flight `.env`** (`scripts/preflight.sh`)
   também entregue nesta fatia: valida segredos antes do `docker compose up`.
-- [ ] 🔵 Deploy **canário + rollback automático**; WAF (OWASP CRS) e ACME/TLS (domínio real). 🟡 domínio.
-  _(Canário e TLS aguardam domínio. WAF via Traefik plugin — executável quando domínio estiver definido.)_
+- [x] 🔵 Deploy **canário + rollback automático**; WAF (OWASP CRS) e ACME/TLS (domínio real). 🟡 domínio.
+  **WAF-lite entregue** (CSP, Permissions-Policy, body-limit 64 KB — `middlewares.yml`); script
+  `scripts/canary_deploy.sh` (blue/green via Traefik, health-check gate, rollback automático).
+  🔴 **OWASP CRS completo** (Coraza/plugin Traefik) = aguarda domínio+plugin disponível (adiar-e-seguir).
+  🔴 **ACME/TLS** = aguarda domínio real (ver Lista de desbloqueio).
 
 **Critério de saída:** ≥1 produto cívico de cada bloco no ar com sua mitigação; camada profunda
 monetizável; cidadão assina alerta com consentimento isolado e auditado; IA só com citação.

@@ -206,3 +206,35 @@ docker compose --profile app up -d
 
 Dados do banco (volume `pgdata`) **não são afetados** por rollback de código.
 Se uma migration precisar ser revertida, consulte o runbook de Alembic no `api/alembic/README.md`.
+
+---
+
+## 8. Deploy canário (zero-downtime com rollback automático)
+
+O script `scripts/canary_deploy.sh` implementa a estratégia blue/green via Traefik:
+
+1. Constrói nova imagem e tagueia como `:canary`.
+2. Sobe o contêiner canário na porta `127.0.0.1:8001` (sem expor externamente).
+3. Aguarda warmup (15 s) e executa health checks em `/health` (até 10 tentativas × 10 s).
+4. Se saudável: aguarda a janela de observação (padrão 300 s) e faz segunda verificação.
+5. Se ainda saudável: **promove** — para o canário e recria o serviço de produção com a nova imagem.
+6. Se falhou em qualquer etapa: **rollback automático** — para o canário, produção anterior intacta.
+
+```bash
+# Deploy com janela padrão (5 min de observação)
+scripts/canary_deploy.sh
+
+# Deploy com janela reduzida (útil em dev/homologação)
+scripts/canary_deploy.sh 60
+```
+
+**Pré-requisitos:**
+- `.env` validado por `scripts/preflight.sh`
+- Traefik rodando e conectado à rede `net_core`
+- Variáveis do `.env` exportadas no shell (ou usar `set -a; source .env; set +a`)
+
+**Códigos de saída:** `0` = promovido com sucesso; `1` = rollback (versão anterior em produção).
+
+> **Nota:** o WAF completo (OWASP CRS via Coraza/plugin Traefik) aguarda domínio real e plugin
+> disponível. O WAF-lite atual (CSP, Permissions-Policy, body-limit 64 KB) já está ativo em
+> `infra/traefik/dynamic/middlewares.yml`.

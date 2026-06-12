@@ -190,6 +190,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 60,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "ibge_pam",
+        "nome": "IBGE PAM — Pesquisa Agrícola Municipal",
+        "orgao": "IBGE",
+        "url_doc": "https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9117-producao-agricola-municipal.html",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 365,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -464,6 +476,33 @@ INDICADORES: list[dict[str, Any]] = [
             "Forma a confirmar na 1ª busca real (monitordesecas.ana.gov.br)."
         ),
     },
+    {
+        "codigo": "alimentacao.producao.valor_total",
+        "nome": "Valor da produção agrícola municipal",
+        "descricao": (
+            "Valor total da produção agrícola municipal (lavouras temporárias + permanentes)"
+            " em BRL por município/ano. Fonte: IBGE PAM, tabelas 1612 e 1613, variável 762."
+        ),
+        "dominio": "alimentacao",
+        "subdominio": "producao",
+        "unidade": "BRL",
+        "polaridade": "maior_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "ibge_pam",
+        "codigo_externo": "PAM_762",
+        "metodologia": (
+            "Soma do Valor da Produção (variável 762, Mil Reais) das lavouras temporárias "
+            "(tabela 1612) e permanentes (tabela 1613) do IBGE PAM por município/ano. "
+            "Convertido de Mil BRL para BRL (× 1000). "
+            "Forma a confirmar na 1ª busca real (servicodados.ibge.gov.br)."
+        ),
+    },
 ]
 
 
@@ -699,6 +738,26 @@ async def _semear_fatos(
             seca_cels,
             meta,
             ContextoLinhagem(f_ana, seca, "seed Onda 2C: prata->ouro (ANA seca_indice)", "seed"),
+        )
+
+    # ALIMENTAÇÃO (IBGE PAM, anual): valor da produção agrícola por município/ano.
+    producao = ind_ids["alimentacao.producao.valor_total"]
+    f_pam = fonte_ids["ibge_pam"]
+    if not await _tem_dados_reais(conn, producao):
+        producao_cels = [
+            # SP: 5000+1000 Mil BRL → 6.000.000 BRL (fixture: grau-demo)
+            CelulaOuro(producao, sp, date(2023, 1, 1), "anual", Decimal("6000000"), None, 3, f_pam),
+            # Campinas: 8000+2000 Mil BRL → 10.000.000 BRL (fixture: grau-demo)
+            CelulaOuro(
+                producao, cps, date(2023, 1, 1), "anual", Decimal("10000000"), None, 3, f_pam
+            ),
+        ]
+        await grav.escrever_ouro(
+            producao_cels,
+            meta,
+            ContextoLinhagem(
+                f_pam, producao, "seed ALIM-01: prata->ouro (IBGE PAM valor_brl)", "seed"
+            ),
         )
 
 

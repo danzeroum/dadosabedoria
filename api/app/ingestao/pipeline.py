@@ -38,6 +38,9 @@ from app.ingestao.adaptadores.estban import AdaptadorEstban
 from app.ingestao.adaptadores.inep import CODIGO_INDICADOR as CODIGO_INEP
 from app.ingestao.adaptadores.inep import CONTRATO as CONTRATO_INEP
 from app.ingestao.adaptadores.inep import AdaptadorInep
+from app.ingestao.adaptadores.pam import CODIGO_INDICADOR as CODIGO_PAM
+from app.ingestao.adaptadores.pam import CONTRATO as CONTRATO_PAM
+from app.ingestao.adaptadores.pam import AdaptadorPam
 from app.ingestao.adaptadores.pncp import CODIGO_INDICADOR as CODIGO_PNCP
 from app.ingestao.adaptadores.pncp import CONTRATO as CONTRATO_PNCP
 from app.ingestao.adaptadores.pncp import AdaptadorPncp
@@ -842,6 +845,62 @@ async def executar_ana(
         janela,
         fonte_codigo="ana",
         transformacoes=f"ana {janela.ano}: bronze->prata->ouro (seca_indice)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_pam(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorPam,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira IBGE PAM (anual) — valor da produção agrícola municipal por habitante.
+
+    Grava um indicador: alimentacao.producao.valor_total (BRL, soma lavouras temp. + perm.).
+    Vivo-pronto: forma a confirmar na 1ª busca real (#0, host servicodados.ibge.gov.br).
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"ibge_pam/{janela.ano}.json", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_PAM.validar(df)
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind_pam = await _carregar_indicador(conn, CODIGO_PAM)
+    mapa7 = await _mapa_municipios(conn)
+
+    celulas: list[CelulaOuro] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind_pam.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["valor_brl"]), 0))),
+                n_amostra=None,
+                confiabilidade=3,
+                fonte_id=ind_pam.fonte_id,
+            )
+        )
+
+    return await _gravar_celulas(
+        conn,
+        ind_pam,
+        celulas,
+        janela,
+        fonte_codigo="ibge_pam",
+        transformacoes=f"ibge_pam {janela.ano}: bronze->prata->ouro (valor_brl)",
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

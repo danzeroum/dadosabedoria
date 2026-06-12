@@ -1435,6 +1435,68 @@ components:
       - pergunta
       title: PerguntaIA
       type: object
+    PratoFrioOut:
+      description: Produção agrícola municipal per capita — ALIM-01 PratoFrio.
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - alta
+          - moderada
+          - baixa
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+        valor_total:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Total
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - periodo
+      - valor_total
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: PratoFrioOut
+      type: object
     PulsoProdutivoOut:
       description: 'Pulso do emprego formal (Novo CAGED): a batida atual + o momento
         + a janela como contexto.'
@@ -2915,6 +2977,46 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Onde Foi
+      tags:
+      - produtos
+  /v1/prato-frio/{codigo_ibge}:
+    get:
+      description: 'Produção agrícola municipal per capita — IBGE PAM (PratoFrio —
+        ALIM-01).
+
+
+        Valor total da produção (lavouras temporárias + permanentes, variável 762)
+        em BRL por habitante.
+
+        Níveis: alta (≥ R$ 5.000/hab/ano), moderada (≥ R$ 500/hab/ano), baixa (< R$
+        500/hab/ano).
+
+        Produção varia por bioma/clima — use como contexto, não ranking. Forma a confirmar
+        na 1ª busca
+
+        real (servicodados.ibge.gov.br). 404 quando não há dado PAM para o município.'
+      operationId: prato_frio_v1_prato_frio__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PratoFrioOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Prato Frio
       tags:
       - produtos
   /v1/pulso-produtivo/{codigo_ibge}:

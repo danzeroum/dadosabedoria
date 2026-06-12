@@ -343,7 +343,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [x] 🔵 **EDU-01 Bússola Educação-Trabalho** (INEP+CAGED+IBGE) — endpoint
   `GET /v1/bussola-edu-trabalho/{ibge}` + tela `/bussola-edu-trabalho/{ibge}`; matrículas
   fundamental + saldo emprego + salário médio; CONTEXTO explícito (não causal); degrada com dado
-  parcial; 12 testes unitários; PR #114, 2026-06-11. _EDU-02 Radar de Evasão: próxima fatia._
+  parcial; 12 testes unitários; PR #114, 2026-06-11.
+- [x] 🔵 **EDU-02 Radar de Evasão Escolar** (INEP+IBGE) — endpoint `GET /v1/radar-evasao/{ibge}`
+  + tela `/radar-evasao/{ibge}`; taxa de cobertura = matrículas EF / (populacao × 0,14) × 100
+  (proxy faixa 6–14 anos, Censo 2022); níveis adequada/atencao/alerta; taxa > 100 % = polo de
+  atração escolar → "adequada"; dupla face §17; nota honesta (denominador estimado, lag INEP);
+  15 testes unitários; 2026-06-12.
 - [x] 🔵 **TRANSP-06 OndeFoi (SICONFI)** — tela **ao vivo** com dado real (SICONFI Anexo I-E,
   exercício 2024, ~5.541 municípios); banda calibrada 95/90 (ADR-0035); meta "sem dados
   disponíveis" quando tabela vazia (ADR-0033/PR-93). Lacunas adiantadas:
@@ -371,8 +376,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [ ] 🔵 Adaptador DATASUS **robusto** (DBC→Parquet, incremental/idempotente, mapa IBGE 6→7) +
   Dagster; demais sistemas (SIA/CNES/SINAN/SINASC/SIM) — o de maior atrito.
 - [ ] 🔵 SAUDE-04 Fila Visível; SAUDE-06 Receita Cidadã; SAUDE-05 Navegador de Acesso.
-- [ ] 🔵 SAUDE-01 Sentinela Respiratória; SAUDE-02 Caçador de Arboviroses; SAUDE-03 Materno-Infantil;
-  SAUDE-11 Burnout. *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*
+- [x] 🔵 **SAUDE-01 Sentinela Respiratória** (DATASUS/SIH) — endpoint `GET /v1/sentinela-resp/{ibge}`
+  + tela `/sentinela-resp/{ibge}`; contagem de AIH grupo J do CID-10 por mês com k-anonimato
+  (supressão < 5); níveis elevado/moderado/baixo/suprimido; tendência mês vs. anterior; série
+  histórica com barras; dupla face §17 (sem identificação de pacientes).
+- [ ] 🔵 SAUDE-02 Caçador de Arboviroses; SAUDE-03 Materno-Infantil; SAUDE-11 Burnout.
+  *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*
 
 ### 2C. Saneamento, água, energia, alimentação
 **Fontes:** ANA/HidroWeb, SNIS, ANEEL (DEC/FEC), IBGE PAM, CEPEA/CONAB, SICAR/MapBiomas.

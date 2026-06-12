@@ -421,6 +421,25 @@ export interface RespostaFontes {
   total: number;
 }
 
+// ----------------------------------------------------------------- Radar de Evasão (EDU-02)
+
+export type NivelEvasao = "adequada" | "atencao" | "alerta" | "sem_dado";
+
+export interface RadarEvasaoProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  periodo: string | null; // YYYY do Censo Escolar
+  matriculas: number | null;
+  matriculas_por_mil: number | null;
+  populacao_escolar_estimada: number | null; // populacao × 0,14
+  taxa_cobertura: number | null; // %
+  nivel: NivelEvasao;
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
 // ----------------------------------------------------------------- ObraViva (TRANSP-05)
 
 export type NivelContratos = "elevado" | "moderado" | "baixo" | "sem_dado";

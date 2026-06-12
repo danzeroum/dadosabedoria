@@ -30,6 +30,7 @@ from app.produtos.modelos import (
     MunicipioEmpregoOut,
     ObraVivaOut,
     PulsoProdutivoOut,
+    RadarEvasaoOut,
     RegiaoEmpregaOut,
     SalarioRadarOut,
     SentinelaRespOut,
@@ -37,6 +38,8 @@ from app.produtos.modelos import (
 from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
 from app.produtos.obra_viva import calcular as calcular_obra_viva
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
+from app.produtos.radar_evasao import NOTA_HONESTA as NOTA_RADAR
+from app.produtos.radar_evasao import calcular as calcular_radar
 from app.produtos.regiao_emprega import NOTA_HONESTA as NOTA_REGIAO
 from app.produtos.regiao_emprega import calcular as calcular_regiao
 from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
@@ -491,6 +494,62 @@ class SentinelaRespFacade:
                 for m in s.meses
             ],
             nota=NOTA_SENTINELA,
+            meta=_meta(meta_row) if meta_row else None,
+        )
+
+
+class RadarEvasaoFacade:
+    """Fachada do Radar de Evasão Escolar (EDU-02): cobertura do ensino fundamental."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:radar-evasao")
+    async def radar_evasao(self, *, codigo_ibge: str) -> RadarEvasaoOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_EDUCACAO,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=10,
+        )
+        if not linhas:
+            raise NaoEncontradoError(f"Radar de Evasão para município '{codigo_ibge}'")
+
+        ultimo = [r for r in linhas if r["valor"] is not None]
+        if not ultimo:
+            raise NaoEncontradoError(f"Radar de Evasão para município '{codigo_ibge}'")
+
+        row = ultimo[-1]
+        r = calcular_radar(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            periodo=row["periodo"].strftime("%Y"),
+            matriculas=int(row["valor"]),
+        )
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_EDUCACAO)
+
+        return RadarEvasaoOut(
+            codigo_ibge=r.codigo_ibge,
+            nome=r.nome,
+            uf=r.uf,
+            populacao=r.populacao,
+            periodo=r.periodo,
+            matriculas=r.matriculas,
+            matriculas_por_mil=r.matriculas_por_mil,
+            populacao_escolar_estimada=r.populacao_escolar_estimada,
+            taxa_cobertura=r.taxa_cobertura,
+            nivel=r.nivel,
+            nota=NOTA_RADAR,
             meta=_meta(meta_row) if meta_row else None,
         )
 

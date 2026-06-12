@@ -13,6 +13,7 @@ from app.produtos.facade import (
     GiroLocalFacade,
     ObraVivaFacade,
     PulsoProdutivoFacade,
+    RadarEvasaoFacade,
     RegiaoEmpregaFacade,
     SalarioRadarFacade,
     SentinelaRespFacade,
@@ -24,6 +25,7 @@ from app.produtos.modelos import (
     OndeFoiLista,
     OndeFoiOut,
     PulsoProdutivoOut,
+    RadarEvasaoOut,
     RegiaoEmpregaOut,
     SalarioRadarOut,
     SentinelaRespOut,
@@ -130,6 +132,20 @@ async def sentinela_resp(
     404 quando não há nenhum dado disponível para o município.
     """
     return await SentinelaRespFacade(session).sentinela_resp(codigo_ibge=codigo_ibge)
+
+
+@router.get("/radar-evasao/{codigo_ibge}", response_model=RadarEvasaoOut)
+async def radar_evasao(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> RadarEvasaoOut:
+    """Cobertura do ensino fundamental vs. estimativa de crianças em idade escolar (EDU-02).
+
+    Matrículas do Censo Escolar/INEP divididas por 14 % da pop. municipal (proxy faixa 6–14 anos).
+    Taxa > 100 % indica polo de atração escolar — classifica como "adequada", não erro.
+    Só cobre o fundamental formal (não EJA, creche, pré-escola).
+    404 quando não há dado de matrículas para o município.
+    """
+    return await RadarEvasaoFacade(session).radar_evasao(codigo_ibge=codigo_ibge)
 
 
 @router.get("/obra-viva/{codigo_ibge}", response_model=ObraVivaOut)

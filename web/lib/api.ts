@@ -10,6 +10,7 @@ import type {
   Panorama,
   PerguntaInput,
   PulsoProduto,
+  RadarEvasaoProduto,
   RegiaoEmpregaProduto,
   RespostaBuscaTerritorios,
   RespostaFontes,
@@ -261,6 +262,21 @@ export async function perguntarIA(corpo: PerguntaInput): Promise<RespostaIA> {
   });
   if (!resp.ok) {
     throw new Error(`Falha ao perguntar à IA (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarRadarEvasao(
+  codigoIbge: string,
+): Promise<RadarEvasaoProduto | null> {
+  const resp = await fetch(new URL(`/v1/radar-evasao/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar o Radar de Evasão (${resp.status})`);
   }
   return resp.json();
 }

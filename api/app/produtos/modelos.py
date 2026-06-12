@@ -11,6 +11,7 @@ from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.obra_viva import NivelContratos
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
+from app.produtos.radar_evasao import NivelEvasao
 from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.salario_radar import NivelSalario
 from app.produtos.sentinela_resp import NivelSentinela, TendenciaSentinela
@@ -238,6 +239,28 @@ class SentinelaRespOut(BaseModel):
     tendencia: TendenciaSentinela | None  # None com < 2 meses reais
 
     meses: list[MesInternacoesOut]  # série histórica (inclui meses suprimidos)
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ----------------------------------------------------------- Radar de Evasão (EDU-02)
+
+
+class RadarEvasaoOut(BaseModel):
+    """Cobertura do ensino fundamental municipal vs. pop. estimada em idade escolar (EDU-02)."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    periodo: str | None  # YYYY do Censo Escolar
+    matriculas: int | None
+    matriculas_por_mil: float | None
+    populacao_escolar_estimada: int | None  # populacao × 0,14
+    taxa_cobertura: float | None  # %
+    nivel: NivelEvasao
+
     nota: str
     meta: MetaProveniencia | None
 

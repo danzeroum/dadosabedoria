@@ -235,3 +235,15 @@ class CoberturaSnis(BaseModel):
     n_municipios: int
     demo: bool
     aviso: str | None = None
+
+
+class CoberturaDatasus(BaseModel):
+    """Cobertura atual do DATASUS/SIH no acervo — detecta modo demonstração automaticamente.
+
+    ``demo=true`` quando há menos de 50 municípios (seed de teste vs. ~5.500 nacional).
+    O rótulo cai sozinho após a ingestão real via ``run_datasus``; não é hardcode.
+    """
+
+    n_municipios: int
+    demo: bool
+    aviso: str | None = None

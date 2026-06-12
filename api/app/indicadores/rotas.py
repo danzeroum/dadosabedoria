@@ -13,6 +13,7 @@ from app.indicadores.facade import IndicadoresFacade
 from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     CoberturaCAGED,
+    CoberturaDatasus,
     CoberturaSnis,
     IndicadorOut,
     PanoramaOut,
@@ -175,6 +176,17 @@ async def cobertura_snis(session: AsyncSession = Depends(get_session)) -> Cobert
     ingestão real via ``run_snis`` — não é hardcode. Usado pelas telas AguaViva e EsgotoInvisível.
     """
     return await IndicadoresFacade(session).cobertura_snis()
+
+
+@router.get("/cobertura/datasus", response_model=CoberturaDatasus, tags=["cobertura"])
+async def cobertura_datasus(session: AsyncSession = Depends(get_session)) -> CoberturaDatasus:
+    """Cobertura atual do DATASUS/SIH no acervo.
+
+    Retorna quantos municípios têm dado SIH e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão real via ``run_datasus`` — não é hardcode. Usado pela tela Sentinela Respiratória.
+    """
+    return await IndicadoresFacade(session).cobertura_datasus()
 
 
 @router.get("/mapa/ivm", tags=["ivm"])

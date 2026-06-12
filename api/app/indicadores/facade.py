@@ -11,6 +11,7 @@ from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.indicadores.modelos import (
     CoberturaCAGED,
+    CoberturaDatasus,
     CoberturaSnis,
     FonteAcervoOut,
     IndicadorOut,
@@ -220,6 +221,22 @@ class IndicadoresFacade:
             else None
         )
         return CoberturaSnis(n_municipios=n, demo=demo, aviso=aviso)
+
+    @cache_leitura("v1:cobertura:datasus")
+    async def cobertura_datasus(self) -> CoberturaDatasus:
+        """Cobertura atual do DATASUS/SIH — detecta modo demonstração automaticamente."""
+        n = await self._repo.contar_municipios_datasus(self._s)
+        demo = n < 50
+        aviso = (
+            (
+                f"Dados de demonstração: {n} município{'s' if n != 1 else ''} no acervo (seed de "
+                "teste). O aviso cai automaticamente após a ingestão nacional do DATASUS/SIH "
+                "(~5.500 municípios)."
+            )
+            if demo
+            else None
+        )
+        return CoberturaDatasus(n_municipios=n, demo=demo, aviso=aviso)
 
     @cache_leitura("v1:territorio")
     async def obter_territorio(self, *, codigo_ibge: str) -> TerritorioOut:

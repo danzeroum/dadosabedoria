@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSentinelaResp } from "../../../lib/api";
+import { DemoAvisoDatasus } from "../../../components/DemoAvisoDatasus";
 import type {
   MesInternacoesProduto,
   NivelSentinela,
@@ -94,6 +95,7 @@ export default async function SentinelaRespPage({ params }: { params: { codigo: 
       <Link href={`/ivm/${s.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAvisoDatasus />
       <p className="pulso-pergunta">Sentinela Respiratória — internações SUS por doenças respiratórias</p>
       <h1>
         {s.nome}

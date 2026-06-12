@@ -240,6 +240,31 @@ components:
       - demo
       title: CoberturaCAGED
       type: object
+    CoberturaDatasus:
+      description: 'Cobertura atual do DATASUS/SIH no acervo — detecta modo demonstração
+        automaticamente.
+
+
+        ``demo=true`` quando há menos de 50 municípios (seed de teste vs. ~5.500 nacional).
+
+        O rótulo cai sozinho após a ingestão real via ``run_datasus``; não é hardcode.'
+      properties:
+        aviso:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Aviso
+        demo:
+          title: Demo
+          type: boolean
+        n_municipios:
+          title: N Municipios
+          type: integer
+      required:
+      - n_municipios
+      - demo
+      title: CoberturaDatasus
+      type: object
     CoberturaSnis:
       description: 'Cobertura atual do SNIS no acervo — detecta modo demonstração
         automaticamente.
@@ -2021,6 +2046,30 @@ paths:
                 $ref: '#/components/schemas/CoberturaCAGED'
           description: Successful Response
       summary: Cobertura Caged
+      tags:
+      - indicadores
+      - cobertura
+  /v1/cobertura/datasus:
+    get:
+      description: 'Cobertura atual do DATASUS/SIH no acervo.
+
+
+        Retorna quantos municípios têm dado SIH e se o modo é demonstração
+
+        (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente
+        após a
+
+        ingestão real via ``run_datasus`` — não é hardcode. Usado pela tela Sentinela
+        Respiratória.'
+      operationId: cobertura_datasus_v1_cobertura_datasus_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoberturaDatasus'
+          description: Successful Response
+      summary: Cobertura Datasus
       tags:
       - indicadores
       - cobertura

@@ -5,6 +5,27 @@ do primeiro deploy; nas atualizações rotineiras, vá direto ao §3.
 
 ---
 
+## 0. Pre-flight (sempre, antes de qualquer `docker compose up`)
+
+```bash
+# Valida que o .env tem todos os segredos trocados e está coerente.
+# Falha com mensagem descritiva se ainda houver 'change_me_*'.
+bash scripts/preflight.sh
+
+# Ou apontando para um .env específico:
+bash scripts/preflight.sh /caminho/para/.env
+```
+
+**O que verifica:**
+- Nenhuma variável crítica contém o placeholder `change_me_*`.
+- `JWT_SECRET` tem ≥ 32 caracteres.
+- `BACKUP_PASSPHRASE` tem ≥ 16 caracteres.
+- `POSTGRES_PASSWORD` é consistente com a senha em `ADMIN_DATABASE_URL`.
+- Alertas (não bloqueantes) para ausência de `PUBLIC_DOMAIN`/`ACME_EMAIL` (TLS inativo)
+  e `LLM_API_KEY` (IA em template).
+
+---
+
 ## 1. Primeiro deploy (VPS nova / contêiner limpo)
 
 ```bash

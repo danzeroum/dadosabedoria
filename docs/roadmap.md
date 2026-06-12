@@ -414,9 +414,12 @@ EDU-02 (agregado por município).
 - [ ] 🟡 **Conselho de Privacy-by-Design** (Defensoria/ONGs) p/ produtos de acesso restrito (HAB-04, DIR-01).
 
 **Infra / gatilhos (provavelmente disparam aqui):**
-- [ ] 🔵 Avaliar gatilhos §1.1: Postgres→gerenciado (>60 GB ou p95>300 ms), MinIO→S3 (>200 GB),
-  observabilidade externalizada (agente leve, retenção curta).
+- [x] 🔵 **Avaliar gatilhos §1.1** — ADR-0037 (2026-06-12): banco < 200 MB (seed + SICONFI/PNCP/IBGE
+  nacionais), MinIO < 1 MB, p95 < 10 ms; nenhum limiar (60 GB / 300 ms / 200 GB) atingido.
+  Próxima revisão: após 1ª ingestão nacional do DATASUS. **Pre-flight `.env`** (`scripts/preflight.sh`)
+  também entregue nesta fatia: valida segredos antes do `docker compose up`.
 - [ ] 🔵 Deploy **canário + rollback automático**; WAF (OWASP CRS) e ACME/TLS (domínio real). 🟡 domínio.
+  _(Canário e TLS aguardam domínio. WAF via Traefik plugin — executável quando domínio estiver definido.)_
 
 **Critério de saída:** ≥1 produto cívico de cada bloco no ar com sua mitigação; camada profunda
 monetizável; cidadão assina alerta com consentimento isolado e auditado; IA só com citação.

@@ -13,17 +13,24 @@ Origem **sensível** (saúde): a contagem entra pelo caminho ouro, onde o k-anon
 ``n_minimo=5`` suprime células abaixo do piso antes de gravar (ADR-0004).
 
 Pipeline nacional: ``FetcherDatasusFTP.baixar()`` baixa as 27 UFs sequencialmente e concatena.
-Se QUALQUER UF falhar, o pipeline aborta antes de gravar (ADR-0024 §grain) — sem subcontagem.
+Política de falha (ADR-0024 §grain-v2):
+  - Erro **transitório** (conexão/timeout): aborta antes de gravar — sem subcontagem.
+  - Erro **550/arquivo-não-encontrado**: UF ainda não publicou a competência; NÃO é subcontagem
+    (via MUNIC_RES a única perda seria residente da UF ausente internado nela mesma — desprezível
+    para AC/RR). Ingere as UFs disponíveis; registra as ausentes na proveniência; NÃO faz retry.
 """
 
 from __future__ import annotations
 
 import io
+import logging
 
 import polars as pl
 
 from app.ingestao.adaptadores.base import FetcherFonte, Janela
 from app.ingestao.contratos import ContratoFonte
+
+logger = logging.getLogger(__name__)
 
 #: Indicador alimentado por este adaptador (origem sensível — k-anon no caminho ouro).
 CODIGO_INDICADOR = "saude.resp.internacoes_j"
@@ -43,6 +50,13 @@ CONTRATO = ContratoFonte(
 #: (incluindo CPF_AUT, GESTOR_CPF, NASC etc.) são descartados imediatamente para economizar
 #: memória e não persistir quasi-identificadores no bronze.
 _COLUNAS_PRODUTO = (COL_MUNICIPIO, "MUNIC_MOV", COL_DIAG, COL_DATA, "ANO_CMPT", "MES_CMPT")
+
+
+class UFNaoPublicadaError(Exception):
+    """UF retornou 550 file-not-found: competência ainda não publicada no FTP do DATASUS.
+
+    Não é erro transitório — retry é inútil. Ingere as demais UFs disponíveis.
+    """
 
 
 class AdaptadorDatasus:
@@ -100,8 +114,11 @@ class FetcherDatasusFTP:
     Não exercitado em teste (rede/DBC); parse/transformação são cobertos por fixture.
     Decoder: ``datasus_dbc.decompress`` (Rust wheel) + dbfread → polars.
 
-    Garantia contra subcontagem: se QUALQUER UF falhar, ``baixar`` lança ``RuntimeError``
-    antes de retornar — o pipeline não grava nada (ADR-0024 §grain).
+    Política de falha (ADR-0024 §grain-v2):
+      - Erro transitório (conexão/timeout/etc.): aborta, lança RuntimeError — sem subcontagem.
+      - 550 file-not-found (UFNaoPublicadaError): competência não publicada pela UF; ingere as
+        demais e registra as ausentes na string de proveniência. NÃO faz retry (550 é permanente
+        até a UF publicar). A mensagem orienta a usar competência anterior ou aguardar.
     Apenas as colunas de produto são mantidas em memória (os ~108 campos restantes, incluindo
     quasi-identificadores CPF_AUT/GESTOR_CPF/NASC, são descartados na hora — ADR-0004).
     """
@@ -151,7 +168,11 @@ class FetcherDatasusFTP:
         comp = f"{janela.ano % 100:02d}{janela.mes:02d}"
 
         def _baixar_uf(uf: str) -> pl.DataFrame:
-            """Download + decode de uma UF; retorna apenas as colunas do produto (string)."""
+            """Download + decode de uma UF; retorna apenas as colunas do produto (string).
+
+            Lança UFNaoPublicadaError se o FTP retornar 550 (arquivo inexistente).
+            Qualquer outro erro propaga como exceção transitória.
+            """
             nome = f"RD{uf}{comp}.dbc"
             fd, tmp_dbc = tempfile.mkstemp(suffix=".dbc")
             os.close(fd)
@@ -161,8 +182,13 @@ class FetcherDatasusFTP:
                     ftp.login()
                     ftp.set_pasv(True)
                     ftp.cwd(self.CAMINHO)
-                    with open(tmp_dbc, "wb") as f:
-                        ftp.retrbinary(f"RETR {nome}", f.write)
+                    try:
+                        with open(tmp_dbc, "wb") as f:
+                            ftp.retrbinary(f"RETR {nome}", f.write)
+                    except ftplib.error_perm as exc:
+                        if "550" in str(exc):
+                            raise UFNaoPublicadaError(uf) from exc
+                        raise
                 decompress(tmp_dbc, tmp_dbf)
                 raw = pl.DataFrame(list(DBF(tmp_dbf, encoding="latin-1")))
             finally:
@@ -176,19 +202,46 @@ class FetcherDatasusFTP:
             return raw.select(pl.col(c).cast(pl.Utf8) for c in cols)
 
         frames: list[pl.DataFrame] = []
-        ufs_falha: list[str] = []
+        ufs_ausentes: list[str] = []  # 550: competência não publicada — não é subcontagem
+        ufs_falha: list[str] = []  # erro transitório: aborta tudo
         for uf in self.UFS_BR:
             try:
                 frames.append(_baixar_uf(uf))
+            except UFNaoPublicadaError:
+                ufs_ausentes.append(uf)
             except Exception as exc:  # noqa: BLE001
                 ufs_falha.append(f"{uf}({exc!s:.80})")
 
         if ufs_falha:
             raise RuntimeError(
-                f"DATASUS {comp}: {len(ufs_falha)} UF(s) falharam — abortando para evitar "
-                f"subcontagem (ADR-0024); tente novamente: {'; '.join(ufs_falha)}"
+                f"DATASUS {comp}: {len(ufs_falha)} UF(s) com erro transitório — "
+                f"abortando para evitar subcontagem (ADR-0024); verifique conexão: "
+                f"{'; '.join(ufs_falha)}"
+            )
+
+        if not frames:
+            raise RuntimeError(
+                f"DATASUS {comp}: nenhuma UF disponível no FTP — todas as UFs retornaram 550. "
+                f"Competência provavelmente ainda não publicada: {', '.join(ufs_ausentes)}. "
+                f"Use a competência anterior ou aguarde a publicação."
+            )
+
+        if ufs_ausentes:
+            logger.warning(
+                "DATASUS %s: %d UF(s) ainda não publicaram esta competência (550): %s. "
+                "Ingerindo as %d UFs disponíveis (ADR-0024 §grain-v2).",
+                comp,
+                len(ufs_ausentes),
+                ", ".join(ufs_ausentes),
+                len(frames),
             )
 
         df_nacional = pl.concat(frames, how="diagonal_relaxed")
-        url = f"ftp://{self.HOST}{self.CAMINHO}RD*{comp}.dbc ({len(self.UFS_BR)} UFs)"
+        ausentes_nota = (
+            f"; UFs ainda não publicadas: {', '.join(ufs_ausentes)}" if ufs_ausentes else ""
+        )
+        url = (
+            f"ftp://{self.HOST}{self.CAMINHO}RD*{comp}.dbc "
+            f"({len(frames)}/{len(self.UFS_BR)} UFs{ausentes_nota})"
+        )
         return df_nacional.write_csv().encode("utf-8"), url

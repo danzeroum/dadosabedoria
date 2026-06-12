@@ -1,4 +1,4 @@
-"""Valida o Degrau 1 do Dagster (definitions carregam; schedule gera a competência correta).
+"""Valida o Degrau 2 do Dagster (assets com partições carregam; schedules geram a partição correta).
 
 Requer o extra `orquestracao` (Dagster). Pulado onde o runtime não está instalado.
 """
@@ -14,34 +14,102 @@ pytestmark = pytest.mark.orquestracao
 dagster = pytest.importorskip("dagster")
 
 
-def test_definitions_carregam() -> None:
+# ------------------------------------------------------------------ Utilitários puros
+
+
+def test_comp_de_mensal() -> None:
+    from app.orquestracao.definitions import _comp_de_mensal
+
+    assert _comp_de_mensal("2024-01-01") == "202401"
+    assert _comp_de_mensal("2026-06-01") == "202606"
+
+
+def test_comp_de_anual() -> None:
+    from app.orquestracao.definitions import _comp_de_anual
+
+    assert _comp_de_anual("2024") == "202401"
+    assert _comp_de_anual("2020") == "202001"
+
+
+# ------------------------------------------------------------------ Definições carregam
+
+
+def test_assets_carregam() -> None:
     from app.orquestracao.definitions import (
-        job_caged,
-        job_estban,
-        job_siconfi,
-        schedule_caged_mensal,
-        schedule_estban_mensal,
-        schedule_siconfi_anual,
+        defs,
+        execucao_siconfi,
+        valores_caged,
+        valores_datasus,
+        valores_estban,
+        valores_inep,
+        valores_pncp,
+        valores_siconfi,
     )
 
-    assert job_caged.name == "job_caged"
-    assert job_estban.name == "job_estban"
-    assert job_siconfi.name == "job_siconfi"
+    assert list(valores_caged.key.path) == ["valores_caged"]
+    assert list(valores_estban.key.path) == ["valores_estban"]
+    assert list(valores_siconfi.key.path) == ["valores_siconfi"]
+    assert list(execucao_siconfi.key.path) == ["execucao_siconfi"]
+    assert list(valores_inep.key.path) == ["valores_inep"]
+    assert list(valores_pncp.key.path) == ["valores_pncp"]
+    assert list(valores_datasus.key.path) == ["valores_datasus"]
+    # 7 assets no acervo
+    assert len(list(defs.assets)) == 7
+
+
+def test_jobs_carregam() -> None:
+    from app.orquestracao.definitions import (
+        job_execucao_siconfi,
+        job_valores_caged,
+        job_valores_datasus,
+        job_valores_estban,
+        job_valores_inep,
+        job_valores_pncp,
+        job_valores_siconfi,
+    )
+
+    assert job_valores_caged.name == "job_valores_caged"
+    assert job_valores_estban.name == "job_valores_estban"
+    assert job_valores_siconfi.name == "job_valores_siconfi"
+    assert job_execucao_siconfi.name == "job_execucao_siconfi"
+    assert job_valores_inep.name == "job_valores_inep"
+    assert job_valores_pncp.name == "job_valores_pncp"
+    assert job_valores_datasus.name == "job_valores_datasus"
+
+
+def test_schedules_carregam() -> None:
+    from app.orquestracao.definitions import (
+        schedule_caged_mensal,
+        schedule_datasus_mensal,
+        schedule_estban_mensal,
+        schedule_inep_anual,
+        schedule_pncp_anual,
+        schedule_siconfi_anual,
+        schedule_siconfi_funcoes_anual,
+    )
+
     assert schedule_caged_mensal.name == "schedule_caged_mensal"
     assert schedule_estban_mensal.name == "schedule_estban_mensal"
     assert schedule_siconfi_anual.name == "schedule_siconfi_anual"
+    assert schedule_siconfi_funcoes_anual.name == "schedule_siconfi_funcoes_anual"
+    assert schedule_inep_anual.name == "schedule_inep_anual"
+    assert schedule_pncp_anual.name == "schedule_pncp_anual"
+    assert schedule_datasus_mensal.name == "schedule_datasus_mensal"
 
 
-def test_schedules_geram_competencia_com_defasagem() -> None:
+# ------------------------------------------------------------------ Partições nos schedules
+
+
+def test_schedule_caged_gera_particao_com_defasagem() -> None:
     from app.orquestracao.definitions import schedule_caged_mensal, schedule_estban_mensal
 
     ctx = dagster.build_schedule_context(
         scheduled_execution_time=datetime(2026, 6, 5, 6, 0, tzinfo=UTC)
     )
-    caged = schedule_caged_mensal(ctx).run_config["ops"]["op_carregar_caged"]["config"]
-    estban = schedule_estban_mensal(ctx).run_config["ops"]["op_carregar_estban"]["config"]
-    assert caged["competencia"] == "202604"  # CAGED: 2 meses
-    assert estban["competencia"] == "202603"  # ESTBAN: 3 meses
+    # CAGED: 2 meses de defasagem em 05/06/2026 → competência 202604 → partição "2026-04-01"
+    assert schedule_caged_mensal(ctx).partition_key == "2026-04-01"
+    # ESTBAN: 3 meses → competência 202603 → partição "2026-03-01"
+    assert schedule_estban_mensal(ctx).partition_key == "2026-03-01"
 
 
 def test_schedule_siconfi_usa_exercicio_anterior() -> None:
@@ -50,15 +118,8 @@ def test_schedule_siconfi_usa_exercicio_anterior() -> None:
     ctx = dagster.build_schedule_context(
         scheduled_execution_time=datetime(2026, 6, 1, 8, 0, tzinfo=UTC)
     )
-    cfg = schedule_siconfi_anual(ctx).run_config["ops"]["op_carregar_siconfi"]["config"]
-    assert cfg["competencia"] == "202501"  # DCA anual → exercício anterior
-
-
-def test_definitions_incluem_siconfi_funcoes() -> None:
-    from app.orquestracao.definitions import job_siconfi_funcoes, schedule_siconfi_funcoes_anual
-
-    assert job_siconfi_funcoes.name == "job_siconfi_funcoes"
-    assert schedule_siconfi_funcoes_anual.name == "schedule_siconfi_funcoes_anual"
+    # DCA anual → exercício anterior → partição "2025"
+    assert schedule_siconfi_anual(ctx).partition_key == "2025"
 
 
 def test_schedule_siconfi_funcoes_usa_exercicio_anterior() -> None:
@@ -67,7 +128,58 @@ def test_schedule_siconfi_funcoes_usa_exercicio_anterior() -> None:
     ctx = dagster.build_schedule_context(
         scheduled_execution_time=datetime(2026, 6, 1, 9, 0, tzinfo=UTC)
     )
-    cfg = schedule_siconfi_funcoes_anual(ctx).run_config["ops"]["op_carregar_siconfi_funcoes"][
-        "config"
-    ]
-    assert cfg["competencia"] == "202501"  # DCA anual (Anexo I-E) → exercício anterior
+    # Anexo I-E (OndeFoi) → exercício anterior → partição "2025"
+    assert schedule_siconfi_funcoes_anual(ctx).partition_key == "2025"
+
+
+def test_schedule_inep_usa_ano_anterior() -> None:
+    from app.orquestracao.definitions import schedule_inep_anual
+
+    ctx = dagster.build_schedule_context(
+        scheduled_execution_time=datetime(2026, 11, 1, 9, 0, tzinfo=UTC)
+    )
+    # Censo Escolar: microdados saem ~out → exercício anterior → partição "2025"
+    assert schedule_inep_anual(ctx).partition_key == "2025"
+
+
+def test_schedule_pncp_usa_ano_anterior() -> None:
+    from app.orquestracao.definitions import schedule_pncp_anual
+
+    ctx = dagster.build_schedule_context(
+        scheduled_execution_time=datetime(2026, 1, 15, 8, 0, tzinfo=UTC)
+    )
+    # Contratos consolidados do exercício anterior → partição "2025"
+    assert schedule_pncp_anual(ctx).partition_key == "2025"
+
+
+def test_schedule_datasus_gera_particao_com_defasagem() -> None:
+    from app.orquestracao.definitions import schedule_datasus_mensal
+
+    ctx = dagster.build_schedule_context(
+        scheduled_execution_time=datetime(2026, 6, 12, 7, 0, tzinfo=UTC)
+    )
+    # DATASUS: 4 meses de defasagem em 12/06/2026 → competência 202602 → partição "2026-02-01"
+    assert schedule_datasus_mensal(ctx).partition_key == "2026-02-01"
+
+
+# ------------------------------------------------------------------ Grupos corretos
+
+
+def test_grupos_por_dominio() -> None:
+    from app.orquestracao.definitions import (
+        execucao_siconfi,
+        valores_caged,
+        valores_datasus,
+        valores_estban,
+        valores_inep,
+        valores_pncp,
+        valores_siconfi,
+    )
+
+    assert valores_caged.group_names_by_key[valores_caged.key] == "trabalho"
+    assert valores_estban.group_names_by_key[valores_estban.key] == "trabalho"
+    assert valores_siconfi.group_names_by_key[valores_siconfi.key] == "financas"
+    assert execucao_siconfi.group_names_by_key[execucao_siconfi.key] == "financas"
+    assert valores_inep.group_names_by_key[valores_inep.key] == "educacao"
+    assert valores_pncp.group_names_by_key[valores_pncp.key] == "compras"
+    assert valores_datasus.group_names_by_key[valores_datasus.key] == "saude"

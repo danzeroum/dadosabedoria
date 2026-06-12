@@ -406,7 +406,7 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   dupla face §17; FetcherFake para CI (app4.mdr.gov.br bloqueado no contêiner — dado real na VPS);
   14 testes unitários; PR #128, 2026-06-12.
 - [x] 🔵 **SANE-03 Esgoto Invisível** (SNIS/MDR) — gap entre cobertura de água e esgoto por município; endpoint `GET /v1/esgoto-invisivel/{ibge}` + tela `/esgoto-invisivel/{ibge}`; gap_pct = agua_pct − esgoto_pct; níveis adequado/atenção/crítico; FetcherFake para CI; 15 testes unitários; PR #129, 2026-06-12.
-- [ ] 🔵 SANE-02 Rio em Risco (ANA Monitor de Secas) — aguarda source sonda.
+- [x] 🔵 **SANE-02 RioEmRisco** (ANA Monitor de Secas) — endpoint `GET /v1/rio-em-risco/{ibge}` + tela `/rio-em-risco/{codigo}`; índice seca 0–5 (Normal=0..D4=5), pior mês do exercício; FetcherFake para CI; pipeline bronze→prata→ouro; Dagster `job_valores_ana` + `schedule_ana_anual` (15/fev); 19 testes; PR #139, 2026-06-12.
 - [x] 🔵 **SANE-04 LuzNoMapa** (ANEEL DEC/FEC) — endpoint `GET /v1/luz-no-mapa/{ibge}` + tela `/luz-no-mapa/{ibge}`; DEC (horas de interrupção/consumidor/ano) e FEC (interrupções/consumidor/ano); níveis confiavel/regular/fragil/sem_dado; FetcherFake para CI; pipeline bronze→prata→ouro (média por município, consolida distribuidoras); Dagster `job_valores_aneel` + `schedule_aneel_anual`; 18 testes unitários + 4 integração + 3 API; PR #138, 2026-06-12.
 - [ ] 🔵 ALIM-01 Prato no Frio; ALIM-02 Fome Oculta; ALIM-05 Semeando Transparência.
 

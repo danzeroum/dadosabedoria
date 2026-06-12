@@ -1,16 +1,25 @@
 # Middlewares dinâmicos do Traefik (provider file). Referenciados por @file nas labels da api.
 # Hardening de segurança (WAF-lite, ADR-0038):
-#   - dsab-ratelimit: proteção contra DDoS/abuso por origem.
-#   - dsab-cors:      allowlist explícita (NUNCA '*' — §8).
-#   - dsab-headers:   defesa em profundidade via HTTP headers (OWASP Secure Headers).
-#   - dsab-bodylimit: limite de tamanho de body — rejeita payloads abusivos.
+#   - dsab-ratelimit:          proteção geral contra DDoS/abuso por origem (todas as rotas /v1).
+#   - dsab-ratelimit-profundo: throttle de IP mais conservador para o tier pago (lote = caro).
+#   - dsab-cors:               allowlist explícita (NUNCA '*' — §8).
+#   - dsab-headers:            defesa em profundidade via HTTP headers (OWASP Secure Headers).
+#   - dsab-bodylimit:          limite de tamanho de body — rejeita payloads abusivos.
 # WAF OWASP CRS completo (ModSecurity/Coraza): aguarda plugin Traefik + domínio (gate 🔴).
 http:
   middlewares:
     dsab-ratelimit:
       rateLimit:
-        average: 100      # req/s média por origem
+        average: 100      # req/s média por origem (rotas públicas)
         burst: 50
+
+    # Tier profundo: lote processa N queries DB em paralelo — throttle de IP na borda.
+    # Complementa o fixed-window Redis por chave (app-level). Valores conservadores:
+    # lote típico leva 100–500 ms; 10 req/s por IP já é uso muito intenso.
+    dsab-ratelimit-profundo:
+      rateLimit:
+        average: 10       # req/s média por origem (rotas do tier pago)
+        burst: 5
 
     dsab-cors:
       headers:

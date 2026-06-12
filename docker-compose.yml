@@ -96,6 +96,15 @@ services:
       - "traefik.http.routers.api.tls.certresolver=le"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
       - "traefik.http.routers.api.middlewares=dsab-ratelimit@file,dsab-cors@file,dsab-headers@file,dsab-bodylimit@file"
+      # Tier profundo: router separado com throttle de IP conservador (dsab-ratelimit-profundo).
+      # Prioridade maior que `api` (regra mais específica) → intercepta lote/quota primeiro.
+      - "traefik.http.routers.api-profundo.rule=PathPrefix(`/v1/consultas-lote`) || Path(`/v1/quota`)"
+      - "traefik.http.routers.api-profundo.priority=10"
+      - "traefik.http.routers.api-profundo.entrypoints=websecure"
+      - "traefik.http.routers.api-profundo.tls=true"
+      - "traefik.http.routers.api-profundo.tls.certresolver=le"
+      - "traefik.http.routers.api-profundo.service=api"
+      - "traefik.http.routers.api-profundo.middlewares=dsab-ratelimit-profundo@file,dsab-cors@file,dsab-headers@file,dsab-bodylimit@file"
     networks: [net_core]
 
   # --- Frontend (Next.js) — mapa semafórico do IVM. Profile `app`. ---

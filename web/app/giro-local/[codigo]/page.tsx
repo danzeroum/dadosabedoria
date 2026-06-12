@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarGiroLocal } from "../../../lib/api";
+import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelCredito, NivelEmprego } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,7 @@ export default async function GiroLocalPage({ params }: { params: { codigo: stri
       <Link href={`/ivm/${g.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Giro Local — dinamismo econômico per capita</p>
       <h1>
         {g.nome}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarBussolaEduTrab } from "../../../lib/api";
+import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelEducacao, NivelEmprego, NivelSalario } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +65,7 @@ export default async function BussolaEduTrabPage({ params }: { params: { codigo:
       <Link href={`/ivm/${b.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Bússola Educação-Trabalho — base educacional e emprego formal</p>
       <h1>
         {b.nome}

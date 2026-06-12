@@ -64,3 +64,28 @@ def test_contrato_reprova_sem_diag() -> None:
     df = pl.DataFrame({"MUNIC_RES": ["355030"], "DT_INTER": ["2026-09-01"]})
     with pytest.raises(ContratoVioladoError):
         CONTRATO.validar(df)
+
+
+def test_prata_normaliza_munic_res_float() -> None:
+    """MUNIC_RES vem como '355030.0' quando DBF numeric (float) passa por write_csv."""
+    dados = (
+        b"MUNIC_RES,MUNIC_MOV,DIAG_PRINC,DT_INTER,ANO_CMPT,MES_CMPT\n"
+        b"355030.0,355030.0,J189,2026-09-03,2026,9\n"
+        b"350950.0,350950.0,J450,2026-09-04,2026,9\n"
+    )
+    a = _ad()
+    prata = a.transformar_prata(a.parse(dados))
+    assert prata.height == 2
+    assert set(prata["cod_munres"].to_list()) == {"355030", "350950"}
+
+
+def test_prata_normaliza_munic_res_inteiro() -> None:
+    """MUNIC_RES como inteiro '355030' (sem .0) também funciona após o double-cast."""
+    dados = (
+        b"MUNIC_RES,MUNIC_MOV,DIAG_PRINC,DT_INTER,ANO_CMPT,MES_CMPT\n"
+        b"355030,355030,J189,2026-09-03,2026,9\n"
+    )
+    a = _ad()
+    prata = a.transformar_prata(a.parse(dados))
+    assert prata.height == 1
+    assert prata["cod_munres"][0] == "355030"

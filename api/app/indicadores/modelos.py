@@ -259,3 +259,28 @@ class CoberturaInep(BaseModel):
     n_municipios: int
     demo: bool
     aviso: str | None = None
+
+
+class CoberturaPncp(BaseModel):
+    """Cobertura atual do PNCP no acervo — detecta modo demonstração automaticamente.
+
+    ``demo=true`` quando há menos de 50 municípios (seed de teste vs. ~5.500 nacional).
+    O rótulo cai sozinho após a ingestão real via ``run_pncp``; não é hardcode.
+    """
+
+    n_municipios: int
+    demo: bool
+    aviso: str | None = None
+
+
+class CoberturaSiconfi(BaseModel):
+    """Cobertura atual do SICONFI/STN no acervo — detecta modo demonstração automaticamente.
+
+    ``demo=true`` quando há menos de 50 municípios com execução orçamentária na fato
+    ``execucao_funcao``. O rótulo cai sozinho após a ingestão nacional via ``run_siconfi_funcoes``;
+    não é hardcode.
+    """
+
+    n_municipios: int
+    demo: bool
+    aviso: str | None = None

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarObraViva } from "../../../lib/api";
+import { DemoAvisoPncp } from "../../../components/DemoAvisoPncp";
 import type { NivelContratos } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,7 @@ export default async function ObraVivaPage({ params }: { params: { codigo: strin
       <Link href={`/ivm/${o.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAvisoPncp />
       <p className="pulso-pergunta">ObraViva — contratações públicas via PNCP</p>
       <h1>
         {o.nome}

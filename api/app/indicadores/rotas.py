@@ -15,6 +15,8 @@ from app.indicadores.modelos import (
     CoberturaCAGED,
     CoberturaDatasus,
     CoberturaInep,
+    CoberturaPncp,
+    CoberturaSiconfi,
     CoberturaSnis,
     IndicadorOut,
     PanoramaOut,
@@ -199,6 +201,28 @@ async def cobertura_inep(session: AsyncSession = Depends(get_session)) -> Cobert
     ingestão real via ``run_inep`` — não é hardcode. Usado pela tela Radar de Evasão Escolar.
     """
     return await IndicadoresFacade(session).cobertura_inep()
+
+
+@router.get("/cobertura/pncp", response_model=CoberturaPncp, tags=["cobertura"])
+async def cobertura_pncp(session: AsyncSession = Depends(get_session)) -> CoberturaPncp:
+    """Cobertura atual do PNCP no acervo.
+
+    Retorna quantos municípios têm dado de contratos PNCP e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão nacional via ``run_pncp`` — não é hardcode. Usado pela tela ObraViva.
+    """
+    return await IndicadoresFacade(session).cobertura_pncp()
+
+
+@router.get("/cobertura/siconfi", response_model=CoberturaSiconfi, tags=["cobertura"])
+async def cobertura_siconfi(session: AsyncSession = Depends(get_session)) -> CoberturaSiconfi:
+    """Cobertura atual do SICONFI/STN no acervo.
+
+    Retorna quantos municípios têm execução orçamentária na fato ``execucao_funcao`` e se o modo
+    é demonstração (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente
+    após a ingestão nacional via ``run_siconfi_funcoes`` — não é hardcode. Usado pela tela OndeFoi.
+    """
+    return await IndicadoresFacade(session).cobertura_siconfi()
 
 
 @router.get("/mapa/ivm", tags=["ivm"])

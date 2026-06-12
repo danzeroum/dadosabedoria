@@ -13,7 +13,7 @@ from datetime import date
 from sqlalchemy import RowMapping, and_, case, distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.tables import base_legal, fonte, indicador, territorio, valor
+from app.core.tables import base_legal, execucao_funcao, fonte, indicador, territorio, valor
 
 
 def _cols_meta() -> list:
@@ -338,6 +338,28 @@ class RepositorioIndicadores:
                 territorio.c.nivel == "municipio",
             )
         )
+        return int((await session.execute(stmt)).scalar_one())
+
+    async def contar_municipios_pncp(self, session: AsyncSession) -> int:
+        """Conta territórios municipais com dado PNCP não suprimido — detecta modo demo."""
+        j = valor.join(indicador, indicador.c.id == valor.c.indicador_id).join(
+            territorio, territorio.c.id == valor.c.territorio_id
+        )
+        stmt = (
+            select(func.count(distinct(territorio.c.id)))
+            .select_from(j)
+            .where(
+                indicador.c.codigo == "compras.contratos.valor_total",
+                indicador.c.publico.is_(True),
+                valor.c.suprimido.is_(False),
+                territorio.c.nivel == "municipio",
+            )
+        )
+        return int((await session.execute(stmt)).scalar_one())
+
+    async def contar_municipios_siconfi(self, session: AsyncSession) -> int:
+        """Conta territórios municipais com execução orçamentária na fato execucao_funcao."""
+        stmt = select(func.count(distinct(execucao_funcao.c.territorio_id)))
         return int((await session.execute(stmt)).scalar_one())
 
     async def obter_territorio(self, session: AsyncSession, codigo_ibge: str) -> RowMapping | None:

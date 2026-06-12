@@ -290,6 +290,59 @@ components:
       - demo
       title: CoberturaInep
       type: object
+    CoberturaPncp:
+      description: 'Cobertura atual do PNCP no acervo — detecta modo demonstração
+        automaticamente.
+
+
+        ``demo=true`` quando há menos de 50 municípios (seed de teste vs. ~5.500 nacional).
+
+        O rótulo cai sozinho após a ingestão real via ``run_pncp``; não é hardcode.'
+      properties:
+        aviso:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Aviso
+        demo:
+          title: Demo
+          type: boolean
+        n_municipios:
+          title: N Municipios
+          type: integer
+      required:
+      - n_municipios
+      - demo
+      title: CoberturaPncp
+      type: object
+    CoberturaSiconfi:
+      description: 'Cobertura atual do SICONFI/STN no acervo — detecta modo demonstração
+        automaticamente.
+
+
+        ``demo=true`` quando há menos de 50 municípios com execução orçamentária na
+        fato
+
+        ``execucao_funcao``. O rótulo cai sozinho após a ingestão nacional via ``run_siconfi_funcoes``;
+
+        não é hardcode.'
+      properties:
+        aviso:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Aviso
+        demo:
+          title: Demo
+          type: boolean
+        n_municipios:
+          title: N Municipios
+          type: integer
+      required:
+      - n_municipios
+      - demo
+      title: CoberturaSiconfi
+      type: object
     CoberturaSnis:
       description: 'Cobertura atual do SNIS no acervo — detecta modo demonstração
         automaticamente.
@@ -2119,6 +2172,54 @@ paths:
                 $ref: '#/components/schemas/CoberturaInep'
           description: Successful Response
       summary: Cobertura Inep
+      tags:
+      - indicadores
+      - cobertura
+  /v1/cobertura/pncp:
+    get:
+      description: 'Cobertura atual do PNCP no acervo.
+
+
+        Retorna quantos municípios têm dado de contratos PNCP e se o modo é demonstração
+
+        (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente
+        após a
+
+        ingestão nacional via ``run_pncp`` — não é hardcode. Usado pela tela ObraViva.'
+      operationId: cobertura_pncp_v1_cobertura_pncp_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoberturaPncp'
+          description: Successful Response
+      summary: Cobertura Pncp
+      tags:
+      - indicadores
+      - cobertura
+  /v1/cobertura/siconfi:
+    get:
+      description: 'Cobertura atual do SICONFI/STN no acervo.
+
+
+        Retorna quantos municípios têm execução orçamentária na fato ``execucao_funcao``
+        e se o modo
+
+        é demonstração (``demo=true`` quando há menos de 50 municípios). O rótulo
+        cai automaticamente
+
+        após a ingestão nacional via ``run_siconfi_funcoes`` — não é hardcode. Usado
+        pela tela OndeFoi.'
+      operationId: cobertura_siconfi_v1_cobertura_siconfi_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoberturaSiconfi'
+          description: Successful Response
+      summary: Cobertura Siconfi
       tags:
       - indicadores
       - cobertura

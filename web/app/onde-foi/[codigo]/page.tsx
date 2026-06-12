@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,6 +10,16 @@ import { buscarOndeFoi } from "../../../lib/api";
 import { formatarMilhoes, mensagemBanda } from "../../../lib/onde-foi";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarOndeFoi(params.codigo);
+  if (!data) return { title: "OndeFoi · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `OndeFoi — ${local} · DadoSabedoria`,
+    description: `Execução orçamentária por função em ${local}: do que foi empenhado, quanto saiu do papel (liquidado) — dados SICONFI/STN.`,
+  };
+}
 
 export default async function OndeFoiPage({ params }: { params: { codigo: string } }) {
   const d = await buscarOndeFoi(params.codigo);

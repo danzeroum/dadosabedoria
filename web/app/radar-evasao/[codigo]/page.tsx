@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -6,6 +7,16 @@ import { DemoAvisoInep } from "../../../components/DemoAvisoInep";
 import type { NivelEvasao } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarRadarEvasao(params.codigo);
+  if (!data) return { title: "Radar de Evasão Escolar · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Radar de Evasão Escolar — ${local} · DadoSabedoria`,
+    description: `Cobertura do ensino fundamental em ${local}: taxa de matrículas por habitante em idade escolar (INEP/Censo Escolar).`,
+  };
+}
 
 const ROTULOS_NIVEL: Record<NivelEvasao, string> = {
   adequada: "Cobertura adequada (≥ 90 %)",

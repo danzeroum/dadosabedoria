@@ -16,10 +16,22 @@ from app.core.db import get_session
 from app.core.erros import NaoEncontradoError, ValidacaoError
 from app.indicadores.facade import IndicadoresFacade
 from app.profundo.api_key import requer_chave_profunda
-from app.profundo.modelos import ConsultaLoteIn, RespostaLote, ResultadoLote
-from app.profundo.rate_limit import verificar_rate_limit
+from app.profundo.modelos import ConsultaLoteIn, RespostaLote, RespostaQuota, ResultadoLote
+from app.profundo.rate_limit import consultar_quota, verificar_rate_limit
 
 router = APIRouter(prefix="/v1", tags=["profundo"])
+
+
+@router.get("/quota", response_model=RespostaQuota)
+async def quota(
+    cliente: str = Depends(requer_chave_profunda),
+) -> RespostaQuota:
+    """Tier PROFUNDO: retorna o uso atual da cota na janela em curso **sem** incrementar o contador.
+
+    Requer chave de API válida (Bearer ou X-API-Key). Não conta como requisição para o rate-limit.
+    """
+    q = await consultar_quota(cliente)
+    return RespostaQuota(limite=q.limite, usado=q.usado, restante=q.restante, reset=q.reset)
 
 
 def _parse_mes(valor: str | None, campo: str) -> date | None:

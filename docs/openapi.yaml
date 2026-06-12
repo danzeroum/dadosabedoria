@@ -1704,6 +1704,30 @@ components:
       - total
       title: RespostaLote
       type: object
+    RespostaQuota:
+      description: Uso atual da cota de API do cliente na janela em curso (sem incrementar
+        o contador).
+      properties:
+        limite:
+          title: Limite
+          type: integer
+        reset:
+          description: Unix timestamp da próxima janela (hora cheia)
+          title: Reset
+          type: integer
+        restante:
+          title: Restante
+          type: integer
+        usado:
+          title: Usado
+          type: integer
+      required:
+      - limite
+      - usado
+      - restante
+      - reset
+      title: RespostaQuota
+      type: object
     RespostaValores:
       properties:
         dados:
@@ -2771,6 +2795,25 @@ paths:
       summary: Pulso Produtivo
       tags:
       - produtos
+  /v1/quota:
+    get:
+      description: 'Tier PROFUNDO: retorna o uso atual da cota na janela em curso
+        **sem** incrementar o contador.
+
+
+        Requer chave de API válida (Bearer ou X-API-Key). Não conta como requisição
+        para o rate-limit.'
+      operationId: quota_v1_quota_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaQuota'
+          description: Successful Response
+      summary: Quota
+      tags:
+      - profundo
   /v1/radar-evasao/{codigo_ibge}:
     get:
       description: 'Cobertura do ensino fundamental vs. estimativa de crianças em

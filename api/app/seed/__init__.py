@@ -178,6 +178,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 365,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "ana",
+        "nome": "ANA — Monitor de Secas",
+        "orgao": "ANA",
+        "url_doc": "https://monitordesecas.ana.gov.br",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 60,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -426,6 +438,32 @@ INDICADORES: list[dict[str, Any]] = [
             "reguladas pela ANEEL no município. Forma a confirmar na 1ª busca real."
         ),
     },
+    {
+        "codigo": "saneamento.agua.seca_indice",
+        "nome": "Índice de Seca — Monitor de Secas ANA",
+        "descricao": (
+            "Índice numérico de seca (0–5) derivado da classificação do Monitor de Secas da ANA: "
+            "Normal=0, D0=1, D1=2, D2=3, D3=4, D4=5. Valor anual = pior mês do exercício."
+        ),
+        "dominio": "saneamento",
+        "subdominio": "agua",
+        "unidade": "indice",
+        "polaridade": "menor_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "ana",
+        "codigo_externo": "seca_indice",
+        "metodologia": (
+            "Classificação mensal de seca por município (Normal, D0–D4), metodologia USDM "
+            "adaptada pela ANA. Convertida em índice 0–5; valor anual = máximo mensal. "
+            "Forma a confirmar na 1ª busca real (monitordesecas.ana.gov.br)."
+        ),
+    },
 ]
 
 
@@ -645,6 +683,22 @@ async def _semear_fatos(
             fec_cels,
             meta,
             ContextoLinhagem(f_aneel, fec, "seed Onda 2C: prata->ouro (ANEEL FEC)", "seed"),
+        )
+
+    # SANEAMENTO/SECA (ANA Monitor de Secas, anual): índice de seca por município/ano.
+    seca = ind_ids["saneamento.agua.seca_indice"]
+    f_ana = fonte_ids["ana"]
+    if not await _tem_dados_reais(conn, seca):
+        seca_cels = [
+            # SP: Normal (0.0) — sem seca registrada
+            CelulaOuro(seca, sp, date(2023, 1, 1), "anual", Decimal("0.0"), None, 3, f_ana),
+            # Campinas: D0 (1.0) — Anormalmente Seco
+            CelulaOuro(seca, cps, date(2023, 1, 1), "anual", Decimal("1.0"), None, 3, f_ana),
+        ]
+        await grav.escrever_ouro(
+            seca_cels,
+            meta,
+            ContextoLinhagem(f_ana, seca, "seed Onda 2C: prata->ouro (ANA seca_indice)", "seed"),
         )
 
 

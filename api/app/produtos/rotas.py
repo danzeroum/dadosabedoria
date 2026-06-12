@@ -1,7 +1,7 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
-EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04)."""
+EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02)."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from app.produtos.facade import (
     PulsoProdutivoFacade,
     RadarEvasaoFacade,
     RegiaoEmpregaFacade,
+    RioEmRiscoFacade,
     SalarioRadarFacade,
     SentinelaRespFacade,
 )
@@ -34,6 +35,7 @@ from app.produtos.modelos import (
     PulsoProdutivoOut,
     RadarEvasaoOut,
     RegiaoEmpregaOut,
+    RioEmRiscoOut,
     SalarioRadarOut,
     SentinelaRespOut,
 )
@@ -200,3 +202,16 @@ async def luz_no_mapa(
     da ANEEL. Menor é melhor. 404 quando não há dado ANEEL para o município.
     """
     return await LuzNoMapaFacade(session).luz_no_mapa(codigo_ibge=codigo_ibge)
+
+
+@router.get("/rio-em-risco/{codigo_ibge}", response_model=RioEmRiscoOut)
+async def rio_em_risco(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> RioEmRiscoOut:
+    """Risco hídrico de seca por município — ANA Monitor de Secas (RioEmRisco — SANE-02).
+
+    Índice de seca (0–5: Normal=0, D0=1, D1=2, D2=3, D3=4, D4=5), pior mês do exercício.
+    Níveis: normal (< D0), atencao (D0–D1), critico (D2–D4).
+    404 quando não há dado ANA para o município.
+    """
+    return await RioEmRiscoFacade(session).rio_em_risco(codigo_ibge=codigo_ibge)

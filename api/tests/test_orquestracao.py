@@ -38,6 +38,7 @@ def test_assets_carregam() -> None:
     from app.orquestracao.definitions import (
         defs,
         execucao_siconfi,
+        valores_ana,
         valores_aneel,
         valores_caged,
         valores_datasus,
@@ -57,13 +58,15 @@ def test_assets_carregam() -> None:
     assert list(valores_datasus.key.path) == ["valores_datasus"]
     assert list(valores_snis.key.path) == ["valores_snis"]
     assert list(valores_aneel.key.path) == ["valores_aneel"]
-    # 9 assets no acervo
-    assert len(list(defs.assets)) == 9
+    assert list(valores_ana.key.path) == ["valores_ana"]
+    # 10 assets no acervo
+    assert len(list(defs.assets)) == 10
 
 
 def test_jobs_carregam() -> None:
     from app.orquestracao.definitions import (
         job_execucao_siconfi,
+        job_valores_ana,
         job_valores_aneel,
         job_valores_caged,
         job_valores_datasus,
@@ -83,10 +86,12 @@ def test_jobs_carregam() -> None:
     assert job_valores_datasus.name == "job_valores_datasus"
     assert job_valores_snis.name == "job_valores_snis"
     assert job_valores_aneel.name == "job_valores_aneel"
+    assert job_valores_ana.name == "job_valores_ana"
 
 
 def test_schedules_carregam() -> None:
     from app.orquestracao.definitions import (
+        schedule_ana_anual,
         schedule_aneel_anual,
         schedule_caged_mensal,
         schedule_datasus_mensal,
@@ -107,6 +112,7 @@ def test_schedules_carregam() -> None:
     assert schedule_datasus_mensal.name == "schedule_datasus_mensal"
     assert schedule_snis_anual.name == "schedule_snis_anual"
     assert schedule_aneel_anual.name == "schedule_aneel_anual"
+    assert schedule_ana_anual.name == "schedule_ana_anual"
 
 
 # ------------------------------------------------------------------ Partições nos schedules
@@ -180,6 +186,7 @@ def test_schedule_datasus_gera_particao_com_defasagem() -> None:
 def test_grupos_por_dominio() -> None:
     from app.orquestracao.definitions import (
         execucao_siconfi,
+        valores_ana,
         valores_aneel,
         valores_caged,
         valores_datasus,
@@ -199,3 +206,4 @@ def test_grupos_por_dominio() -> None:
     assert valores_datasus.group_names_by_key[valores_datasus.key] == "saude"
     assert valores_snis.group_names_by_key[valores_snis.key] == "saneamento"
     assert valores_aneel.group_names_by_key[valores_aneel.key] == "energia"
+    assert valores_ana.group_names_by_key[valores_ana.key] == "saneamento"

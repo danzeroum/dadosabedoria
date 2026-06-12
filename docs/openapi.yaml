@@ -1850,6 +1850,56 @@ components:
       - indicador
       title: ResultadoLote
       type: object
+    RioEmRiscoOut:
+      description: Risco hídrico de seca por município — SANE-02 RioEmRisco.
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - normal
+          - atencao
+          - critico
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        seca_indice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Seca Indice
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - seca_indice
+      - nivel
+      - nota
+      - meta
+      title: RioEmRiscoOut
+      type: object
     SalarioRadarOut:
       description: Nível salarial das novas contratações formais (Novo CAGED) por
         município/mês.
@@ -2996,6 +3046,42 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Regiao Emprega
+      tags:
+      - produtos
+  /v1/rio-em-risco/{codigo_ibge}:
+    get:
+      description: 'Risco hídrico de seca por município — ANA Monitor de Secas (RioEmRisco
+        — SANE-02).
+
+
+        Índice de seca (0–5: Normal=0, D0=1, D1=2, D2=3, D3=4, D4=5), pior mês do
+        exercício.
+
+        Níveis: normal (< D0), atencao (D0–D1), critico (D2–D4).
+
+        404 quando não há dado ANA para o município.'
+      operationId: rio_em_risco_v1_rio_em_risco__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RioEmRiscoOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Rio Em Risco
       tags:
       - produtos
   /v1/salario-radar/{codigo_ibge}:

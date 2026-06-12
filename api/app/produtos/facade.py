@@ -41,6 +41,7 @@ from app.produtos.modelos import (
     PulsoProdutivoOut,
     RadarEvasaoOut,
     RegiaoEmpregaOut,
+    RioEmRiscoOut,
     SalarioRadarOut,
     SentinelaRespOut,
 )
@@ -51,6 +52,8 @@ from app.produtos.radar_evasao import NOTA_HONESTA as NOTA_RADAR
 from app.produtos.radar_evasao import calcular as calcular_radar
 from app.produtos.regiao_emprega import NOTA_HONESTA as NOTA_REGIAO
 from app.produtos.regiao_emprega import calcular as calcular_regiao
+from app.produtos.rio_em_risco import NOTA_HONESTA as NOTA_RIO_EM_RISCO
+from app.produtos.rio_em_risco import calcular as calcular_rio_em_risco
 from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
 from app.produtos.sentinela_resp import NOTA_HONESTA as NOTA_SENTINELA
@@ -67,6 +70,7 @@ CODIGO_AGUA_SNIS = "saneamento.agua.atendimento_pct"
 CODIGO_ESGOTO_SNIS = "saneamento.esgoto.coleta_pct"
 CODIGO_DEC = "energia.qualidade.dec"
 CODIGO_FEC = "energia.qualidade.fec"
+CODIGO_SECA = "saneamento.agua.seca_indice"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -835,4 +839,54 @@ class EsgotoInvisivelFacade:
             nota=NOTA_ESGOTO_INVISIVEL,
             meta_esgoto=_meta(meta_esgoto) if meta_esgoto else None,
             meta_agua=_meta(meta_agua) if meta_agua else None,
+        )
+
+
+class RioEmRiscoFacade:
+    """Fachada do risco hídrico de seca por município — RioEmRisco (SANE-02)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:rio-em-risco")
+    async def rio_em_risco(self, *, codigo_ibge: str) -> RioEmRiscoOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_SECA,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+        if not linhas:
+            raise NaoEncontradoError(f"RioEmRisco para município '{codigo_ibge}'")
+
+        ultimo = linhas[-1]
+        seca_indice = float(ultimo["valor"]) if ultimo["valor"] is not None else None
+        periodo = ultimo["periodo"].strftime("%Y") if ultimo["periodo"] is not None else None
+
+        rer = calcular_rio_em_risco(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            periodo=periodo,
+            seca_indice=seca_indice,
+        )
+        meta = await self._repo.meta_indicador(self._s, CODIGO_SECA)
+
+        return RioEmRiscoOut(
+            codigo_ibge=rer.codigo_ibge,
+            nome=rer.nome,
+            uf=rer.uf,
+            periodo=rer.periodo,
+            seca_indice=rer.seca_indice,
+            nivel=rer.nivel,
+            nota=NOTA_RIO_EM_RISCO,
+            meta=_meta(meta) if meta else None,
         )

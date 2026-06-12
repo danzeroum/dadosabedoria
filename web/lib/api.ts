@@ -12,6 +12,7 @@ import type {
   GiroLocalProduto,
   IndicadorDetalhe,
   LuzNoMapaResponse,
+  RioEmRiscoResponse,
   ObraVivaProduto,
   OndeFoiLista,
   OndeFoiProduto,
@@ -318,6 +319,14 @@ export async function buscarLuzNoMapa(codigo: string): Promise<LuzNoMapaResponse
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`LuzNoMapa ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<LuzNoMapaResponse>;
+}
+
+export async function buscarRioEmRisco(codigo: string): Promise<RioEmRiscoResponse | null> {
+  const url = `${BASE}/v1/rio-em-risco/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`RioEmRisco ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<RioEmRiscoResponse>;
 }
 
 export async function buscarCoberturaSnis(): Promise<CoberturaSnis | null> {

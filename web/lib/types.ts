@@ -546,3 +546,18 @@ export interface LuzNoMapaResponse {
   meta_dec: MetaProveniencia | null;
   meta_fec: MetaProveniencia | null;
 }
+
+// ----------------------------------------------------------------- RioEmRisco (SANE-02)
+
+export type NivelSeca = "normal" | "atencao" | "critico" | "sem_dado";
+
+export interface RioEmRiscoResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  periodo: string | null;
+  seca_indice: number | null;  // 0–5: Normal=0, D0=1, D1=2, D2=3, D3=4, D4=5
+  nivel: NivelSeca;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

@@ -342,6 +342,18 @@ export interface CoberturaInep {
   aviso: string | null;
 }
 
+export interface CoberturaPncp {
+  n_municipios: number;
+  demo: boolean;
+  aviso: string | null;
+}
+
+export interface CoberturaSiconfi {
+  n_municipios: number;
+  demo: boolean;
+  aviso: string | null;
+}
+
 // ----------------------------------------------------------------- Bússola Educação-Trabalho (EDU-01)
 
 export type NivelEducacao = "alto" | "medio" | "baixo" | "sem_dado";

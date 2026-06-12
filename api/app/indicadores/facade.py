@@ -13,6 +13,8 @@ from app.indicadores.modelos import (
     CoberturaCAGED,
     CoberturaDatasus,
     CoberturaInep,
+    CoberturaPncp,
+    CoberturaSiconfi,
     CoberturaSnis,
     FonteAcervoOut,
     IndicadorOut,
@@ -254,6 +256,38 @@ class IndicadoresFacade:
             else None
         )
         return CoberturaInep(n_municipios=n, demo=demo, aviso=aviso)
+
+    @cache_leitura("v1:cobertura:pncp")
+    async def cobertura_pncp(self) -> CoberturaPncp:
+        """Cobertura atual do PNCP — detecta modo demonstração automaticamente."""
+        n = await self._repo.contar_municipios_pncp(self._s)
+        demo = n < 50
+        aviso = (
+            (
+                f"Dados de demonstração: {n} município{'s' if n != 1 else ''} no acervo (seed de "
+                "teste). O aviso cai automaticamente após a ingestão nacional do PNCP (~5.500 "
+                "municípios)."
+            )
+            if demo
+            else None
+        )
+        return CoberturaPncp(n_municipios=n, demo=demo, aviso=aviso)
+
+    @cache_leitura("v1:cobertura:siconfi")
+    async def cobertura_siconfi(self) -> CoberturaSiconfi:
+        """Cobertura atual do SICONFI/STN — detecta modo demonstração automaticamente."""
+        n = await self._repo.contar_municipios_siconfi(self._s)
+        demo = n < 50
+        aviso = (
+            (
+                f"Dados de demonstração: {n} município{'s' if n != 1 else ''} no acervo (seed de "
+                "teste). O aviso cai automaticamente após a ingestão nacional do SICONFI "
+                "(~5.500 municípios)."
+            )
+            if demo
+            else None
+        )
+        return CoberturaSiconfi(n_municipios=n, demo=demo, aviso=aviso)
 
     @cache_leitura("v1:territorio")
     async def obter_territorio(self, *, codigo_ibge: str) -> TerritorioOut:

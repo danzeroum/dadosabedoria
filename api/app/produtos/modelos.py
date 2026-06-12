@@ -1,5 +1,6 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
-Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05)."""
+Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
+AguaViva (SANE-01), EsgotoInvisivel (SANE-03)."""
 
 from __future__ import annotations
 
@@ -8,6 +9,7 @@ from pydantic import BaseModel
 from app.indicadores.modelos import MetaProveniencia
 from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
+from app.produtos.esgoto_invisivel import NivelGap
 from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.obra_viva import NivelContratos
 from app.produtos.onde_foi import Banda, ExeEstado
@@ -305,3 +307,24 @@ class AguaVivaOut(BaseModel):
     nota: str
     meta_agua: MetaProveniencia | None
     meta_esgoto: MetaProveniencia | None
+
+
+# --------------------------------------------------------- EsgotoInvisivel (SANE-03)
+
+
+class EsgotoInvisivelOut(BaseModel):
+    """Gap de saneamento por município — SANE-03 EsgotoInvisível."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+
+    periodo: str | None
+    agua_pct: float | None
+    esgoto_pct: float | None
+    gap_pct: float | None  # água_pct − esgoto_pct; None quando esgoto ausente
+    nivel_gap: NivelGap
+
+    nota: str
+    meta_esgoto: MetaProveniencia | None
+    meta_agua: MetaProveniencia | None

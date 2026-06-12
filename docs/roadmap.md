@@ -390,7 +390,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 
 ### 2C. Saneamento, água, energia, alimentação
 **Fontes:** ANA/HidroWeb, SNIS, ANEEL (DEC/FEC), IBGE PAM, CEPEA/CONAB, SICAR/MapBiomas.
-- [ ] 🔵 SANE-01 AguaViva; SANE-02 Rio em Risco; SANE-03 Esgoto Invisível; SANE-04 Luz no Mapa.
+- [x] 🔵 **SANE-01 AguaViva** (SNIS/MDR) — endpoint `GET /v1/agua-viva/{ibge}` + tela `/agua-viva/{ibge}`;
+  IN023_AE (água tratada) e IN015_AE (esgoto coletado) classificados em adequado/atenção/alerta (ODS 6);
+  dupla face §17; FetcherFake para CI (app4.mdr.gov.br bloqueado no contêiner — dado real na VPS);
+  14 testes unitários; PR #128, 2026-06-12.
+- [ ] 🔵 **SANE-03 Esgoto Invisível** (SNIS/MDR) — gap entre cobertura de água e esgoto por município.
+- [ ] 🔵 SANE-02 Rio em Risco (ANA/HidroWeb); SANE-04 Luz no Mapa (ANEEL) — aguardam sources.
 - [ ] 🔵 ALIM-01 Prato no Frio; ALIM-02 Fome Oculta; ALIM-05 Semeando Transparência.
 
 ### 2D. Open-core profundo + cidadão + IA (capacidades transversais)

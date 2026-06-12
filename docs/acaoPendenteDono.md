@@ -111,6 +111,18 @@ nunca fica parado esperando.
 
 ---
 
+### 10. SNIS — ingestão real na VPS
+- **O que é:** `app4.mdr.gov.br` (SNIS/MDR — série histórica) não está no allowlist do
+  contêiner; a esteira está completa (adaptador + pipeline + Dagster schedule 15/mar).
+- **O que fazer:** na **VPS** com rede aberta, executar:
+  ```bash
+  python -m app.ingestao.run_snis 2023   # ou ano disponível
+  ```
+- **Destrava:** AguaViva (SANE-01) e Esgoto Invisível (SANE-03) com dado real em vez de
+  fixture. Schedule Dagster já configurado (`0 8 15 3 *`, dados do ano anterior).
+
+---
+
 ## 📋 Checklist de primeiro deploy na VPS
 
 Execute `scripts/preflight.sh` antes de `docker compose up` para garantir que todos os

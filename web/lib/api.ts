@@ -1,5 +1,6 @@
 import type {
   AguaVivaResponse,
+  EsgotoInvisivelResponse,
   BussolaEduTrabProduto,
   CoberturaCAGED,
   FeatureCollectionIVM,
@@ -303,4 +304,14 @@ export async function buscarAguaViva(codigo: string): Promise<AguaVivaResponse |
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`AguaViva ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<AguaVivaResponse>;
+}
+
+export async function buscarEsgotoInvisivel(
+  codigo: string,
+): Promise<EsgotoInvisivelResponse | null> {
+  const url = `${BASE}/v1/esgoto-invisivel/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`EsgotoInvisivel ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<EsgotoInvisivelResponse>;
 }

@@ -1,6 +1,7 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
-Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05)."""
+Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
+EsgotoInvisível (SANE-03)."""
 
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from app.core.db import get_session
 from app.produtos.facade import (
     AguaVivaFacade,
     BussolaEduTrabFacade,
+    EsgotoInvisivelFacade,
     GiroLocalFacade,
     ObraVivaFacade,
     PulsoProdutivoFacade,
@@ -22,6 +24,7 @@ from app.produtos.facade import (
 from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
+    EsgotoInvisivelOut,
     GiroLocalOut,
     ObraVivaOut,
     OndeFoiLista,
@@ -170,3 +173,16 @@ async def agua_viva(codigo_ibge: str, session: AsyncSession = Depends(get_sessio
     404 quando não há dado SNIS para o município.
     """
     return await AguaVivaFacade(session).agua_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/esgoto-invisivel/{codigo_ibge}", response_model=EsgotoInvisivelOut)
+async def esgoto_invisivel(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> EsgotoInvisivelOut:
+    """Gap entre cobertura de água e esgoto por município (EsgotoInvisível — SANE-03).
+
+    Onde a água chega mas o esgoto some — mede o efluente não coletado (IN015_AE do SNIS).
+    Níveis: adequado (≥ 70 %), atenção (40–69 %), crítico (< 40 %).
+    404 quando não há dado SNIS de esgoto para o município.
+    """
+    return await EsgotoInvisivelFacade(session).esgoto_invisivel(codigo_ibge=codigo_ibge)

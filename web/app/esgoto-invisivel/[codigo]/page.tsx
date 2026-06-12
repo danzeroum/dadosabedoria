@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarEsgotoInvisivel } from "../../../lib/api";
+import { DemoAvisoSnis } from "../../../components/DemoAvisoSnis";
 import type { NivelGap } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarEsgotoInvisivel(params.codigo);
+  if (!data) return { title: "EsgotoInvisível · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `EsgotoInvisível — ${local} · DadoSabedoria`,
+    description: `Gap água×esgoto em ${local}: onde a água encanada chega mas a coleta de esgoto não — cobertura SNIS comparada.`,
+  };
+}
 
 const ROTULOS_NIVEL: Record<NivelGap, string> = {
   adequado: "Adequado (≥ 70%)",
@@ -86,6 +98,7 @@ export default async function EsgotoInvisivelPage({
       <Link href={`/ivm/${ei.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAvisoSnis />
       <p className="pulso-pergunta">EsgotoInvisível — onde a água chega mas o esgoto some</p>
       <h1>
         {ei.nome}

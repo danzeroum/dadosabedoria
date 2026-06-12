@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarBussolaEduTrab } from "../../../lib/api";
+import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelEducacao, NivelEmprego, NivelSalario } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarBussolaEduTrab(params.codigo);
+  if (!data) return { title: "Bússola Educação-Trabalho · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Bússola Educação-Trabalho — ${local} · DadoSabedoria`,
+    description: `Matrículas no ensino fundamental e emprego formal em ${local}: base educacional (INEP) cruzada com o mercado de trabalho (CAGED).`,
+  };
+}
 
 const ROTULOS_EDUCACAO: Record<NivelEducacao, string> = {
   alto: "Cobertura alta",
@@ -64,6 +76,7 @@ export default async function BussolaEduTrabPage({ params }: { params: { codigo:
       <Link href={`/ivm/${b.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Bússola Educação-Trabalho — base educacional e emprego formal</p>
       <h1>
         {b.nome}

@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSentinelaResp } from "../../../lib/api";
+import { DemoAvisoDatasus } from "../../../components/DemoAvisoDatasus";
 import type {
   MesInternacoesProduto,
   NivelSentinela,
@@ -9,6 +11,16 @@ import type {
 } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarSentinelaResp(params.codigo);
+  if (!data) return { title: "Sentinela Respiratória · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Sentinela Respiratória — ${local} · DadoSabedoria`,
+    description: `Internações SUS do grupo J (doenças respiratórias) em ${local}: carga hospitalar, tendência e série histórica via SIH/DATASUS.`,
+  };
+}
 
 /** Períodos dentro dos últimos 3 meses podem ter AIH ainda em faturamento — série parcial. */
 function isMesParcial(periodo: string): boolean {
@@ -94,6 +106,7 @@ export default async function SentinelaRespPage({ params }: { params: { codigo: 
       <Link href={`/ivm/${s.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAvisoDatasus />
       <p className="pulso-pergunta">Sentinela Respiratória — internações SUS por doenças respiratórias</p>
       <h1>
         {s.nome}

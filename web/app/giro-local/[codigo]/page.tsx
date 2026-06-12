@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarGiroLocal } from "../../../lib/api";
+import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelCredito, NivelEmprego } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarGiroLocal(params.codigo);
+  if (!data) return { title: "Giro Local · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `Giro Local — ${local} · DadoSabedoria`,
+    description: `Dinamismo econômico per capita em ${local}: emprego formal (CAGED) e crédito bancário (ESTBAN) por habitante.`,
+  };
+}
 
 const ROTULOS_EMPREGO: Record<NivelEmprego, string> = {
   criando: "Criando empregos",
@@ -53,6 +65,7 @@ export default async function GiroLocalPage({ params }: { params: { codigo: stri
       <Link href={`/ivm/${g.codigo_ibge}`} className="voltar">
         ← Ver o IVM do município
       </Link>
+      <DemoAviso />
       <p className="pulso-pergunta">Giro Local — dinamismo econômico per capita</p>
       <h1>
         {g.nome}

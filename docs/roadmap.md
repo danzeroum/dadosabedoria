@@ -394,7 +394,7 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   IN023_AE (água tratada) e IN015_AE (esgoto coletado) classificados em adequado/atenção/alerta (ODS 6);
   dupla face §17; FetcherFake para CI (app4.mdr.gov.br bloqueado no contêiner — dado real na VPS);
   14 testes unitários; PR #128, 2026-06-12.
-- [ ] 🔵 **SANE-03 Esgoto Invisível** (SNIS/MDR) — gap entre cobertura de água e esgoto por município.
+- [x] 🔵 **SANE-03 Esgoto Invisível** (SNIS/MDR) — gap entre cobertura de água e esgoto por município; endpoint `GET /v1/esgoto-invisivel/{ibge}` + tela `/esgoto-invisivel/{ibge}`; gap_pct = agua_pct − esgoto_pct; níveis adequado/atenção/crítico; FetcherFake para CI; 15 testes unitários; PR #129, 2026-06-12.
 - [ ] 🔵 SANE-02 Rio em Risco (ANA/HidroWeb); SANE-04 Luz no Mapa (ANEEL) — aguardam sources.
 - [ ] 🔵 ALIM-01 Prato no Frio; ALIM-02 Fome Oculta; ALIM-05 Semeando Transparência.
 

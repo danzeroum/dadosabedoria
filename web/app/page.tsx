@@ -57,6 +57,51 @@ const PRODUTOS: {
     selo: null,
   },
   {
+    titulo: "Giro Local",
+    pergunta: "Qual o dinamismo econômico do meu município?",
+    descricao:
+      "Emprego formal (CAGED) + crédito bancário (ESTBAN) per capita num só retrato. Combina dois termômetros independentes; quando um está sem dado, o outro ainda orienta.",
+    href: "/giro-local/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
+    titulo: "Salário Radar",
+    pergunta: "Qual o salário médio das novas contratações formais?",
+    descricao:
+      "Média salarial das admissões do Novo CAGED no município. Fluxo mensal — retrata quem entrou no mercado formal, não quem já estava lá. Alto/médio/baixo em relação ao salário-mínimo.",
+    href: "/salario-radar/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
+    titulo: "Região Emprega",
+    pergunta: "Como está o emprego formal na minha UF?",
+    descricao:
+      "Retrato regional do Novo CAGED: saldo total de empregos formais + quantos municípios estão criando, estáveis ou reduzindo vagas. Perspectiva estadual para contextualizar o município.",
+    href: "/regiao-emprega/35",
+    cta: "Ver exemplo (SP)",
+    selo: null,
+  },
+  {
+    titulo: "AguaViva",
+    pergunta: "Como está o saneamento básico no meu município?",
+    descricao:
+      "Cobertura de água tratada e coleta de esgoto (SNIS/MDR): IN023_AE e IN015_AE por município. Classificados por ODS 6 (adequado/atenção/alerta). Ausência de dado ≠ ausência de serviço — municípios sem resposta ao SNIS ficam como 'sem dado'.",
+    href: "/agua-viva/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
+    titulo: "EsgotoInvisível",
+    pergunta: "Onde a água chega mas o esgoto some?",
+    descricao:
+      "Gap entre cobertura de água encanada e coleta de esgoto por município (SNIS/MDR). Quanto maior o gap, mais domicílios com água mas sem rede de coleta — o efluente vai para rios, solo ou fossas.",
+    href: "/esgoto-invisivel/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
     titulo: "Panorama do município",
     pergunta: "O que sabemos sobre o meu município?",
     descricao:
@@ -164,7 +209,7 @@ export default async function Home() {
       </section>
 
       <p className="home-nota">
-        Dados abertos (IBGE · Novo CAGED · BCB/ESTBAN · DATASUS/SIH · SICONFI/STN · INEP · PNCP). Cada
+        Dados abertos (IBGE · Novo CAGED · BCB/ESTBAN · DATASUS/SIH · SICONFI/STN · INEP · PNCP · SNIS/MDR). Cada
         tela traz sua metodologia e a fonte. O OndeFoi usa dados reais do SICONFI/STN (Anexo I-E, exercício 2024).{" "}
         <Link href="/fontes">De onde vêm os dados e como protegemos →</Link>
       </p>

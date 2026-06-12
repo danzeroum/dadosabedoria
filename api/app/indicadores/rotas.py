@@ -13,6 +13,9 @@ from app.indicadores.facade import IndicadoresFacade
 from app.indicadores.ivm import IVMFacade
 from app.indicadores.modelos import (
     CoberturaCAGED,
+    CoberturaDatasus,
+    CoberturaInep,
+    CoberturaSnis,
     IndicadorOut,
     PanoramaOut,
     RespostaBuscaTerritorios,
@@ -163,6 +166,39 @@ async def cobertura_caged(session: AsyncSession = Depends(get_session)) -> Cober
     hardcode. Usado pelas telas da família CAGED (Pulso, Salário Radar, Região Emprega, IVM).
     """
     return await IndicadoresFacade(session).cobertura_caged()
+
+
+@router.get("/cobertura/snis", response_model=CoberturaSnis, tags=["cobertura"])
+async def cobertura_snis(session: AsyncSession = Depends(get_session)) -> CoberturaSnis:
+    """Cobertura atual do SNIS no acervo.
+
+    Retorna quantos municípios têm dado SNIS de saneamento e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão real via ``run_snis`` — não é hardcode. Usado pelas telas AguaViva e EsgotoInvisível.
+    """
+    return await IndicadoresFacade(session).cobertura_snis()
+
+
+@router.get("/cobertura/datasus", response_model=CoberturaDatasus, tags=["cobertura"])
+async def cobertura_datasus(session: AsyncSession = Depends(get_session)) -> CoberturaDatasus:
+    """Cobertura atual do DATASUS/SIH no acervo.
+
+    Retorna quantos municípios têm dado SIH e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão real via ``run_datasus`` — não é hardcode. Usado pela tela Sentinela Respiratória.
+    """
+    return await IndicadoresFacade(session).cobertura_datasus()
+
+
+@router.get("/cobertura/inep", response_model=CoberturaInep, tags=["cobertura"])
+async def cobertura_inep(session: AsyncSession = Depends(get_session)) -> CoberturaInep:
+    """Cobertura atual do INEP/Censo Escolar no acervo.
+
+    Retorna quantos municípios têm dado de matrículas e se o modo é demonstração
+    (``demo=true`` quando há menos de 50 municípios). O rótulo cai automaticamente após a
+    ingestão real via ``run_inep`` — não é hardcode. Usado pela tela Radar de Evasão Escolar.
+    """
+    return await IndicadoresFacade(session).cobertura_inep()
 
 
 @router.get("/mapa/ivm", tags=["ivm"])

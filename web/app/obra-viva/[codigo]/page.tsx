@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -5,6 +6,16 @@ import { buscarObraViva } from "../../../lib/api";
 import type { NivelContratos } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { codigo: string } }): Promise<Metadata> {
+  const data = await buscarObraViva(params.codigo);
+  if (!data) return { title: "ObraViva · DadoSabedoria" };
+  const local = data.nome + (data.uf ? ` (${data.uf})` : "");
+  return {
+    title: `ObraViva — ${local} · DadoSabedoria`,
+    description: `Contratos públicos PNCP per capita em ${local}: intensidade de contratação de obras, serviços e bens pelos órgãos públicos.`,
+  };
+}
 
 const ROTULOS_NIVEL: Record<NivelContratos, string> = {
   elevado: "Alta intensidade de contratação (≥ R$ 3.000/hab)",

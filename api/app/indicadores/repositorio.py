@@ -289,6 +289,57 @@ class RepositorioIndicadores:
         )
         return int((await session.execute(stmt)).scalar_one())
 
+    async def contar_municipios_snis(self, session: AsyncSession) -> int:
+        """Conta territórios municipais com dado SNIS de água não suprimido — detecta modo demo."""
+        j = valor.join(indicador, indicador.c.id == valor.c.indicador_id).join(
+            territorio, territorio.c.id == valor.c.territorio_id
+        )
+        stmt = (
+            select(func.count(distinct(territorio.c.id)))
+            .select_from(j)
+            .where(
+                indicador.c.codigo == "saneamento.agua.atendimento_pct",
+                indicador.c.publico.is_(True),
+                valor.c.suprimido.is_(False),
+                territorio.c.nivel == "municipio",
+            )
+        )
+        return int((await session.execute(stmt)).scalar_one())
+
+    async def contar_municipios_datasus(self, session: AsyncSession) -> int:
+        """Conta territórios municipais com dado SIH não suprimido — detecta modo demo."""
+        j = valor.join(indicador, indicador.c.id == valor.c.indicador_id).join(
+            territorio, territorio.c.id == valor.c.territorio_id
+        )
+        stmt = (
+            select(func.count(distinct(territorio.c.id)))
+            .select_from(j)
+            .where(
+                indicador.c.codigo == "saude.resp.internacoes_j",
+                indicador.c.publico.is_(True),
+                valor.c.suprimido.is_(False),
+                territorio.c.nivel == "municipio",
+            )
+        )
+        return int((await session.execute(stmt)).scalar_one())
+
+    async def contar_municipios_inep(self, session: AsyncSession) -> int:
+        """Conta territórios municipais com dado INEP não suprimido — detecta modo demo."""
+        j = valor.join(indicador, indicador.c.id == valor.c.indicador_id).join(
+            territorio, territorio.c.id == valor.c.territorio_id
+        )
+        stmt = (
+            select(func.count(distinct(territorio.c.id)))
+            .select_from(j)
+            .where(
+                indicador.c.codigo == "educacao.matriculas.fundamental",
+                indicador.c.publico.is_(True),
+                valor.c.suprimido.is_(False),
+                territorio.c.nivel == "municipio",
+            )
+        )
+        return int((await session.execute(stmt)).scalar_one())
+
     async def obter_territorio(self, session: AsyncSession, codigo_ibge: str) -> RowMapping | None:
         pai = territorio.alias("pai")
         j = territorio.outerjoin(pai, pai.c.id == territorio.c.pai_id)

@@ -1,5 +1,8 @@
 import type {
   AguaVivaResponse,
+  CoberturaDatasus,
+  CoberturaInep,
+  CoberturaSnis,
   EsgotoInvisivelResponse,
   BussolaEduTrabProduto,
   CoberturaCAGED,
@@ -304,6 +307,24 @@ export async function buscarAguaViva(codigo: string): Promise<AguaVivaResponse |
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`AguaViva ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<AguaVivaResponse>;
+}
+
+export async function buscarCoberturaSnis(): Promise<CoberturaSnis | null> {
+  const resp = await fetch(new URL("/v1/cobertura/snis", BASE), { cache: "no-store" });
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
+export async function buscarCoberturaDatasus(): Promise<CoberturaDatasus | null> {
+  const resp = await fetch(new URL("/v1/cobertura/datasus", BASE), { cache: "no-store" });
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
+export async function buscarCoberturaInep(): Promise<CoberturaInep | null> {
+  const resp = await fetch(new URL("/v1/cobertura/inep", BASE), { cache: "no-store" });
+  if (!resp.ok) return null;
+  return resp.json();
 }
 
 export async function buscarEsgotoInvisivel(

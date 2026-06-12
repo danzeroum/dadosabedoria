@@ -38,6 +38,7 @@ from app.produtos.modelos import (
     MesSaldoOut,
     MunicipioEmpregoOut,
     ObraVivaOut,
+    PratoFrioOut,
     PulsoProdutivoOut,
     RadarEvasaoOut,
     RegiaoEmpregaOut,
@@ -47,6 +48,8 @@ from app.produtos.modelos import (
 )
 from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
 from app.produtos.obra_viva import calcular as calcular_obra_viva
+from app.produtos.prato_frio import NOTA_HONESTA as NOTA_PRATO_FRIO
+from app.produtos.prato_frio import calcular as calcular_prato_frio
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
 from app.produtos.radar_evasao import NOTA_HONESTA as NOTA_RADAR
 from app.produtos.radar_evasao import calcular as calcular_radar
@@ -71,6 +74,7 @@ CODIGO_ESGOTO_SNIS = "saneamento.esgoto.coleta_pct"
 CODIGO_DEC = "energia.qualidade.dec"
 CODIGO_FEC = "energia.qualidade.fec"
 CODIGO_SECA = "saneamento.agua.seca_indice"
+CODIGO_PAM = "alimentacao.producao.valor_total"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -888,5 +892,58 @@ class RioEmRiscoFacade:
             seca_indice=rer.seca_indice,
             nivel=rer.nivel,
             nota=NOTA_RIO_EM_RISCO,
+            meta=_meta(meta) if meta else None,
+        )
+
+
+class PratoFrioFacade:
+    """Fachada da produção agrícola municipal per capita — PratoFrio (ALIM-01)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:prato-frio")
+    async def prato_frio(self, *, codigo_ibge: str) -> PratoFrioOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_PAM,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=10,
+        )
+        if not linhas:
+            raise NaoEncontradoError(f"PratoFrio para município '{codigo_ibge}'")
+
+        ultimo = linhas[-1]
+        valor_total = float(ultimo["valor"]) if ultimo["valor"] is not None else None
+        periodo = ultimo["periodo"].strftime("%Y") if ultimo["periodo"] is not None else None
+
+        pf = calcular_prato_frio(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            periodo=periodo,
+            valor_total=valor_total,
+        )
+        meta = await self._repo.meta_indicador(self._s, CODIGO_PAM)
+
+        return PratoFrioOut(
+            codigo_ibge=pf.codigo_ibge,
+            nome=pf.nome,
+            uf=pf.uf,
+            populacao=pf.populacao,
+            periodo=pf.periodo,
+            valor_total=pf.valor_total,
+            valor_por_hab=pf.valor_por_hab,
+            nivel=pf.nivel,
+            nota=NOTA_PRATO_FRIO,
             meta=_meta(meta) if meta else None,
         )

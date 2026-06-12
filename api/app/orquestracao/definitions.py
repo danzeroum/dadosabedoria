@@ -25,6 +25,7 @@ from app.ingestao.adaptadores.datasus import AdaptadorDatasus, FetcherDatasusFTP
 from app.ingestao.adaptadores.energia import AdaptadorAneel, FetcherAneelHTTP
 from app.ingestao.adaptadores.estban import AdaptadorEstban, FetcherEstbanHTTP
 from app.ingestao.adaptadores.inep import AdaptadorInep, FetcherInepHTTP
+from app.ingestao.adaptadores.pam import AdaptadorPam, FetcherPamHTTP
 from app.ingestao.adaptadores.pncp import AdaptadorPncp, FetcherPncpHTTP
 from app.ingestao.adaptadores.saneamento import AdaptadorSnis, FetcherSnisHTTP
 from app.ingestao.adaptadores.siconfi import (
@@ -41,6 +42,7 @@ from app.ingestao.pipeline import (
     executar_datasus,
     executar_estban,
     executar_inep,
+    executar_pam,
     executar_pncp,
     executar_siconfi,
     executar_siconfi_funcoes,
@@ -175,6 +177,13 @@ async def _rodar_ana(janela: Janela) -> None:  # pragma: no cover - rede
     adaptador = AdaptadorAna(FetcherAnaHTTP())
     async with connect(settings.database_url) as conn:
         await executar_ana(janela, conn, adaptador, construir_store_padrao(), responsavel="dagster")
+
+
+async def _rodar_pam(janela: Janela) -> None:  # pragma: no cover - rede
+    settings = get_settings()
+    adaptador = AdaptadorPam(FetcherPamHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_pam(janela, conn, adaptador, construir_store_padrao(), responsavel="dagster")
 
 
 # ------------------------------------------------------------------ Assets (Degrau 2)
@@ -319,6 +328,22 @@ def valores_ana(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # p
     return dg.MaterializeResult(metadata={"ano": context.partition_key})
 
 
+@dg.asset(
+    partitions_def=_ANUAL,
+    group_name="alimentacao",
+    description=(
+        "Valor da produção agrícola municipal por habitante — IBGE PAM "
+        "(lavouras temporárias 1612 + permanentes 1613, variável 762)."
+    ),
+    metadata={"fonte": "IBGE PAM", "lag_tipico": "~12 meses"},
+)
+def valores_pam(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # pragma: no cover
+    comp = _comp_de_anual(context.partition_key)
+    context.log.info(f"IBGE PAM: ano {context.partition_key}")
+    asyncio.run(_rodar_pam(Janela.de_competencia(comp)))
+    return dg.MaterializeResult(metadata={"ano": context.partition_key})
+
+
 # ------------------------------------------------------------------ Asset jobs
 
 job_valores_caged = dg.define_asset_job("job_valores_caged", selection=["valores_caged"])
@@ -331,6 +356,7 @@ job_valores_datasus = dg.define_asset_job("job_valores_datasus", selection=["val
 job_valores_snis = dg.define_asset_job("job_valores_snis", selection=["valores_snis"])
 job_valores_aneel = dg.define_asset_job("job_valores_aneel", selection=["valores_aneel"])
 job_valores_ana = dg.define_asset_job("job_valores_ana", selection=["valores_ana"])
+job_valores_pam = dg.define_asset_job("job_valores_pam", selection=["valores_pam"])
 
 
 # ------------------------------------------------------------------ Schedules
@@ -404,6 +430,14 @@ def schedule_ana_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
     return dg.RunRequest(partition_key=str(ano))
 
 
+@dg.schedule(
+    job=job_valores_pam, cron_schedule="0 8 15 11 *"
+)  # 15/nov — dados PAM do exercício anterior
+def schedule_pam_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(partition_key=str(ano))
+
+
 # ------------------------------------------------------------------ Definições
 
 defs = dg.Definitions(
@@ -418,6 +452,7 @@ defs = dg.Definitions(
         valores_snis,
         valores_aneel,
         valores_ana,
+        valores_pam,
     ],
     jobs=[
         job_valores_caged,
@@ -430,6 +465,7 @@ defs = dg.Definitions(
         job_valores_snis,
         job_valores_aneel,
         job_valores_ana,
+        job_valores_pam,
     ],
     schedules=[
         schedule_caged_mensal,
@@ -442,5 +478,6 @@ defs = dg.Definitions(
         schedule_snis_anual,
         schedule_aneel_anual,
         schedule_ana_anual,
+        schedule_pam_anual,
     ],
 )

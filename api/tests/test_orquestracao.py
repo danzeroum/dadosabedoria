@@ -44,6 +44,7 @@ def test_assets_carregam() -> None:
         valores_datasus,
         valores_estban,
         valores_inep,
+        valores_pam,
         valores_pncp,
         valores_siconfi,
         valores_snis,
@@ -59,8 +60,9 @@ def test_assets_carregam() -> None:
     assert list(valores_snis.key.path) == ["valores_snis"]
     assert list(valores_aneel.key.path) == ["valores_aneel"]
     assert list(valores_ana.key.path) == ["valores_ana"]
-    # 10 assets no acervo
-    assert len(list(defs.assets)) == 10
+    assert list(valores_pam.key.path) == ["valores_pam"]
+    # 11 assets no acervo
+    assert len(list(defs.assets)) == 11
 
 
 def test_jobs_carregam() -> None:
@@ -72,6 +74,7 @@ def test_jobs_carregam() -> None:
         job_valores_datasus,
         job_valores_estban,
         job_valores_inep,
+        job_valores_pam,
         job_valores_pncp,
         job_valores_siconfi,
         job_valores_snis,
@@ -87,6 +90,7 @@ def test_jobs_carregam() -> None:
     assert job_valores_snis.name == "job_valores_snis"
     assert job_valores_aneel.name == "job_valores_aneel"
     assert job_valores_ana.name == "job_valores_ana"
+    assert job_valores_pam.name == "job_valores_pam"
 
 
 def test_schedules_carregam() -> None:
@@ -97,6 +101,7 @@ def test_schedules_carregam() -> None:
         schedule_datasus_mensal,
         schedule_estban_mensal,
         schedule_inep_anual,
+        schedule_pam_anual,
         schedule_pncp_anual,
         schedule_siconfi_anual,
         schedule_siconfi_funcoes_anual,
@@ -113,6 +118,7 @@ def test_schedules_carregam() -> None:
     assert schedule_snis_anual.name == "schedule_snis_anual"
     assert schedule_aneel_anual.name == "schedule_aneel_anual"
     assert schedule_ana_anual.name == "schedule_ana_anual"
+    assert schedule_pam_anual.name == "schedule_pam_anual"
 
 
 # ------------------------------------------------------------------ Partições nos schedules
@@ -192,6 +198,7 @@ def test_grupos_por_dominio() -> None:
         valores_datasus,
         valores_estban,
         valores_inep,
+        valores_pam,
         valores_pncp,
         valores_siconfi,
         valores_snis,
@@ -207,3 +214,4 @@ def test_grupos_por_dominio() -> None:
     assert valores_snis.group_names_by_key[valores_snis.key] == "saneamento"
     assert valores_aneel.group_names_by_key[valores_aneel.key] == "energia"
     assert valores_ana.group_names_by_key[valores_ana.key] == "saneamento"
+    assert valores_pam.group_names_by_key[valores_pam.key] == "alimentacao"

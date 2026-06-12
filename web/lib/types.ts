@@ -561,3 +561,20 @@ export interface RioEmRiscoResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ----------------------------------------------------------------- PratoFrio (ALIM-01)
+
+export type NivelProducao = "alta" | "moderada" | "baixa" | "sem_dado";
+
+export interface PratoFrioResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  periodo: string | null;  // YYYY do exercício
+  valor_total: number | null;  // BRL total (soma das lavouras)
+  valor_por_hab: number | null;  // BRL/hab/ano
+  nivel: NivelProducao;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

@@ -1,7 +1,7 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
-EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02)."""
+EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01)."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from app.produtos.facade import (
     GiroLocalFacade,
     LuzNoMapaFacade,
     ObraVivaFacade,
+    PratoFrioFacade,
     PulsoProdutivoFacade,
     RadarEvasaoFacade,
     RegiaoEmpregaFacade,
@@ -32,6 +33,7 @@ from app.produtos.modelos import (
     ObraVivaOut,
     OndeFoiLista,
     OndeFoiOut,
+    PratoFrioOut,
     PulsoProdutivoOut,
     RadarEvasaoOut,
     RegiaoEmpregaOut,
@@ -215,3 +217,17 @@ async def rio_em_risco(
     404 quando não há dado ANA para o município.
     """
     return await RioEmRiscoFacade(session).rio_em_risco(codigo_ibge=codigo_ibge)
+
+
+@router.get("/prato-frio/{codigo_ibge}", response_model=PratoFrioOut)
+async def prato_frio(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> PratoFrioOut:
+    """Produção agrícola municipal per capita — IBGE PAM (PratoFrio — ALIM-01).
+
+    Valor total da produção (lavouras temporárias + permanentes, variável 762) em BRL por habitante.
+    Níveis: alta (≥ R$ 5.000/hab/ano), moderada (≥ R$ 500/hab/ano), baixa (< R$ 500/hab/ano).
+    Produção varia por bioma/clima — use como contexto, não ranking. Forma a confirmar na 1ª busca
+    real (servicodados.ibge.gov.br). 404 quando não há dado PAM para o município.
+    """
+    return await PratoFrioFacade(session).prato_frio(codigo_ibge=codigo_ibge)

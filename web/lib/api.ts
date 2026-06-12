@@ -12,6 +12,7 @@ import type {
   GiroLocalProduto,
   IndicadorDetalhe,
   LuzNoMapaResponse,
+  PratoFrioResponse,
   RioEmRiscoResponse,
   ObraVivaProduto,
   OndeFoiLista,
@@ -367,4 +368,12 @@ export async function buscarEsgotoInvisivel(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`EsgotoInvisivel ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<EsgotoInvisivelResponse>;
+}
+
+export async function buscarPratoFrio(codigo: string): Promise<PratoFrioResponse | null> {
+  const url = `${BASE}/v1/prato-frio/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`PratoFrio ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<PratoFrioResponse>;
 }

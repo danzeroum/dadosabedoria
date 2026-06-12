@@ -81,10 +81,16 @@ class AdaptadorDatasus:
         return df
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
+        # MUNIC_RES: campo numérico no DBF — dbfread pode retornar float 355030.0 → cast(Utf8)
+        # produz "355030.0" que falha no mapa6. Double-cast Float64→Int64→Utf8 normaliza.
         # DT_INTER → "YYYY-MM-DD" após DBF→polars→CSV; slice primeiros 7 chars = "YYYY-MM".
         # Concatena "-01" para obter "YYYY-MM-01" e parseia como date (1.º dia do mês).
         return df.select(
-            pl.col(COL_MUNICIPIO).cast(pl.Utf8).str.strip_chars().alias("cod_munres"),
+            pl.col(COL_MUNICIPIO)
+            .cast(pl.Float64, strict=False)
+            .cast(pl.Int64, strict=False)
+            .cast(pl.Utf8)
+            .alias("cod_munres"),
             pl.col(COL_DIAG).cast(pl.Utf8).str.strip_chars().alias("diag"),
             pl.concat_str(
                 pl.col(COL_DATA).cast(pl.Utf8).str.slice(0, 7),
@@ -197,9 +203,41 @@ class FetcherDatasusFTP:
                         os.unlink(p)
                     except OSError:
                         pass
-            # Descartar todos os campos além das 6 colunas do produto imediatamente.
+
+            # Normalizar nomes de coluna para UPPERCASE (alguns decoders DBF retornam minúsculas).
+            raw = raw.rename({c: c.strip().upper() for c in raw.columns})
             cols = [c for c in _COLUNAS_PRODUTO if c in raw.columns]
-            return raw.select(pl.col(c).cast(pl.Utf8) for c in cols)
+
+            # Log de diagnóstico: schema real dos campos do produto (detecta float vs int).
+            schema_produto = {c: str(raw.schema[c]) for c in cols}
+            _h = raw.height > 0
+            sample_munres = raw[COL_MUNICIPIO][0] if COL_MUNICIPIO in raw.columns and _h else None
+            sample_diag = raw[COL_DIAG][0] if COL_DIAG in raw.columns and _h else None
+            sample_dt = raw[COL_DATA][0] if COL_DATA in raw.columns and _h else None
+            logger.debug(
+                "DATASUS %s UF=%s: %d linhas, schema=%s, amostra %s=%r %s=%r %s=%r",
+                comp,
+                uf,
+                raw.height,
+                schema_produto,
+                COL_MUNICIPIO,
+                sample_munres,
+                COL_DIAG,
+                sample_diag,
+                COL_DATA,
+                sample_dt,
+            )
+
+            # Descartar todos os campos além das 6 colunas do produto imediatamente.
+            # Campos Float (MUNIC_RES como N no DBF) são normalizados via Int64 para evitar
+            # "355030.0" no CSV — o mesmo tratamento que transformar_prata aplica depois.
+            def _cast_col(c: str) -> pl.Expr:
+                dtype = raw.schema[c]
+                if dtype in (pl.Float32, pl.Float64):
+                    return pl.col(c).cast(pl.Int64, strict=False).cast(pl.Utf8).alias(c)
+                return pl.col(c).cast(pl.Utf8).alias(c)
+
+            return raw.select(_cast_col(c) for c in cols)
 
         frames: list[pl.DataFrame] = []
         ufs_ausentes: list[str] = []  # 550: competência não publicada — não é subcontagem
@@ -237,6 +275,18 @@ class FetcherDatasusFTP:
             )
 
         df_nacional = pl.concat(frames, how="diagonal_relaxed")
+        logger.info(
+            "DATASUS %s concat nacional: %d linhas, %d/%d UFs ok, cols=%s, amostra %s=%r",
+            comp,
+            df_nacional.height,
+            len(frames),
+            len(self.UFS_BR),
+            df_nacional.columns,
+            COL_MUNICIPIO,
+            df_nacional[COL_MUNICIPIO][0]
+            if COL_MUNICIPIO in df_nacional.columns and df_nacional.height > 0
+            else None,
+        )
         ausentes_nota = (
             f"; UFs ainda não publicadas: {', '.join(ufs_ausentes)}" if ufs_ausentes else ""
         )

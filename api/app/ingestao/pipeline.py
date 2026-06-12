@@ -537,8 +537,18 @@ async def executar_datasus(
     bruto, url = adaptador.baixar_bruto(janela)
     hash_origem = gravar_bronze(store, f"datasus/{janela.competencia}.csv", bruto)
     df = adaptador.parse(bruto)
+    _log.info("datasus_parse: %d linhas, cols=%s", df.height, df.columns)
     CONTRATO_DATASUS.validar(df)  # borda bronze: falha claro se o layout do SIH-RD mudar
-    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    prata = adaptador.transformar_prata(df)
+    _log.info(
+        "datasus_prata: %d linhas após filtro J%%, amostra=%s",
+        prata.height,
+        prata.head(3).to_dicts() if prata.height > 0 else "(vazio)",
+    )
+
+    agregado = adaptador.agregar(prata)
+    _log.info("datasus_agregar: %d pares município×mês", agregado.height)
 
     ind = await _carregar_indicador(conn, CODIGO_DATASUS)
     mapa6 = {k[:6]: v for k, v in (await _mapa_municipios(conn)).items()}  # SIH usa IBGE 6 díg.
@@ -563,6 +573,29 @@ async def executar_datasus(
                 fonte_id=ind.fonte_id,
             )
         )
+
+    _log.info(
+        "datasus_mapa6: %d células ok, %d ignorados (sem mapa6 de %d pares)",
+        len(celulas),
+        ignorados,
+        agregado.height,
+    )
+
+    # Guard anti-falha-silenciosa: 0 células com dado agregado indica bug no pipeline.
+    # A linhagem só é gravada se houver dado real — não registrar execuções fantasma.
+    if not celulas and agregado.height > 0:
+        raise RuntimeError(
+            f"datasus_sih {janela.competencia}: {agregado.height} pares município×mês agregados "
+            f"mas 0 células geradas ({ignorados} sem mapa6) — provável divergência de código IBGE "
+            f"ou bug no pipeline; abortando sem gravar linhagem."
+        )
+    if not celulas:
+        raise RuntimeError(
+            f"datasus_sih {janela.competencia}: 0 células geradas (parse={df.height} linhas, "
+            f"prata={prata.height} linhas J%, agregado={agregado.height} pares) — "
+            f"provável bug no pipeline; abortando sem gravar linhagem."
+        )
+
     return await _gravar_celulas(
         conn,
         ind,

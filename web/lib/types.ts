@@ -528,3 +528,21 @@ export interface EsgotoInvisivelResponse {
   meta_esgoto: MetaProveniencia | null;
   meta_agua: MetaProveniencia | null;
 }
+
+// ----------------------------------------------------------------- LuzNoMapa (SANE-04)
+
+export type NivelEnergia = "confiavel" | "regular" | "fragil" | "sem_dado";
+
+export interface LuzNoMapaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  periodo: string | null;
+  dec: number | null;   // horas de interrupção por consumidor/ano
+  fec: number | null;   // interrupções por consumidor/ano
+  nivel_dec: NivelEnergia;
+  nivel_fec: NivelEnergia;
+  nota: string;
+  meta_dec: MetaProveniencia | null;
+  meta_fec: MetaProveniencia | null;
+}

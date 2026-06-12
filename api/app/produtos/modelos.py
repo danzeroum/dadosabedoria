@@ -1,6 +1,6 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
-AguaViva (SANE-01), EsgotoInvisivel (SANE-03)."""
+AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.esgoto_invisivel import NivelGap
 from app.produtos.giro_local import NivelCredito, NivelEmprego
+from app.produtos.luz_no_mapa import NivelEnergia
 from app.produtos.obra_viva import NivelContratos
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
@@ -328,3 +329,24 @@ class EsgotoInvisivelOut(BaseModel):
     nota: str
     meta_esgoto: MetaProveniencia | None
     meta_agua: MetaProveniencia | None
+
+
+# --------------------------------------------------------- LuzNoMapa (SANE-04)
+
+
+class LuzNoMapaOut(BaseModel):
+    """Qualidade do fornecimento de energia elétrica por município — SANE-04 LuzNoMapa."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+
+    periodo: str | None
+    dec: float | None  # horas de interrupção por consumidor/ano
+    fec: float | None  # interrupções por consumidor/ano
+    nivel_dec: NivelEnergia
+    nivel_fec: NivelEnergia
+
+    nota: str
+    meta_dec: MetaProveniencia | None
+    meta_fec: MetaProveniencia | None

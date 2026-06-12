@@ -915,6 +915,77 @@ components:
       - metodologia
       title: IndicadorValorOut
       type: object
+    LuzNoMapaOut:
+      description: Qualidade do fornecimento de energia elétrica por município — SANE-04
+        LuzNoMapa.
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        dec:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Dec
+        fec:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Fec
+        meta_dec:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        meta_fec:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel_dec:
+          enum:
+          - confiavel
+          - regular
+          - fragil
+          - sem_dado
+          title: Nivel Dec
+          type: string
+        nivel_fec:
+          enum:
+          - confiavel
+          - regular
+          - fragil
+          - sem_dado
+          title: Nivel Fec
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - periodo
+      - dec
+      - fec
+      - nivel_dec
+      - nivel_fec
+      - nota
+      - meta_dec
+      - meta_fec
+      title: LuzNoMapaOut
+      type: object
     MesInternacoesOut:
       properties:
         internacoes:
@@ -2628,6 +2699,39 @@ paths:
       tags:
       - indicadores
       - ivm
+  /v1/luz-no-mapa/{codigo_ibge}:
+    get:
+      description: 'Qualidade do fornecimento de energia elétrica no município (LuzNoMapa
+        — SANE-04).
+
+
+        Indicadores DEC (horas de interrupção por consumidor/ano) e FEC (interrupções/consumidor/ano)
+
+        da ANEEL. Menor é melhor. 404 quando não há dado ANEEL para o município.'
+      operationId: luz_no_mapa_v1_luz_no_mapa__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuzNoMapaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Luz No Mapa
+      tags:
+      - produtos
   /v1/mapa/ivm:
     get:
       description: GeoJSON do IVM por município de uma UF — base da coropleta geográfica.

@@ -166,6 +166,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 548,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "aneel",
+        "nome": "ANEEL — Indicadores de Qualidade DEC/FEC",
+        "orgao": "ANEEL",
+        "url_doc": "https://dadosabertos.aneel.gov.br/dataset/indicadores-qualidade-distribuicao-dec-fec",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 365,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -370,6 +382,50 @@ INDICADORES: list[dict[str, Any]] = [
             "por prestador declarante ao SNIS por município/ano."
         ),
     },
+    {
+        "codigo": "energia.qualidade.dec",
+        "nome": "DEC — Duração Equivalente de Interrupção",
+        "descricao": "Horas de interrupção equivalentes por consumidor/ano (ANEEL).",
+        "dominio": "energia",
+        "subdominio": "qualidade",
+        "unidade": "horas",
+        "polaridade": "menor_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "aneel",
+        "codigo_externo": "DEC",
+        "metodologia": (
+            "Média do DEC (horas de interrupção por consumidor/ano) das distribuidoras "
+            "reguladas pela ANEEL no município. Forma a confirmar na 1ª busca real."
+        ),
+    },
+    {
+        "codigo": "energia.qualidade.fec",
+        "nome": "FEC — Frequência Equivalente de Interrupção",
+        "descricao": "Número de interrupções equivalentes por consumidor/ano (ANEEL).",
+        "dominio": "energia",
+        "subdominio": "qualidade",
+        "unidade": "contagem",
+        "polaridade": "menor_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 0,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "aneel",
+        "codigo_externo": "FEC",
+        "metodologia": (
+            "Média do FEC (interrupções por consumidor/ano) das distribuidoras "
+            "reguladas pela ANEEL no município. Forma a confirmar na 1ª busca real."
+        ),
+    },
 ]
 
 
@@ -564,6 +620,31 @@ async def _semear_fatos(
             com_cels,
             meta,
             ContextoLinhagem(f_pncp, com, "seed Onda 2A: prata->ouro (PNCP contratos)", "seed"),
+        )
+
+    # ENERGIA (ANEEL DEC/FEC, anual): qualidade do fornecimento elétrico por município/ano.
+    dec = ind_ids["energia.qualidade.dec"]
+    fec = ind_ids["energia.qualidade.fec"]
+    f_aneel = fonte_ids["aneel"]
+    if not await _tem_dados_reais(conn, dec):
+        dec_cels = [
+            CelulaOuro(dec, sp, date(2023, 1, 1), "anual", Decimal("3.52"), None, 4, f_aneel),
+            CelulaOuro(dec, cps, date(2023, 1, 1), "anual", Decimal("5.75"), None, 4, f_aneel),
+        ]
+        await grav.escrever_ouro(
+            dec_cels,
+            meta,
+            ContextoLinhagem(f_aneel, dec, "seed Onda 2C: prata->ouro (ANEEL DEC)", "seed"),
+        )
+    if not await _tem_dados_reais(conn, fec):
+        fec_cels = [
+            CelulaOuro(fec, sp, date(2023, 1, 1), "anual", Decimal("4.21"), None, 4, f_aneel),
+            CelulaOuro(fec, cps, date(2023, 1, 1), "anual", Decimal("5.10"), None, 4, f_aneel),
+        ]
+        await grav.escrever_ouro(
+            fec_cels,
+            meta,
+            ContextoLinhagem(f_aneel, fec, "seed Onda 2C: prata->ouro (ANEEL FEC)", "seed"),
         )
 
 

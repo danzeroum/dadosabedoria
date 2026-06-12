@@ -2,7 +2,7 @@
 
 **Pulso Produtivo** lê o saldo CAGED **já no ar** via o mesmo Repository de ``/v1/valores`` —
 reusa, não duplica a consulta. **Giro Local** reusa o mesmo repositório para CAGED + ESTBAN.
-OndeFoi usa o seu próprio ``RepositorioOndeFoi``.
+OndeFoi usa o seu próprio ``RepositorioOndeFoi``. **LuzNoMapa** lê DEC/FEC da ANEEL.
 """
 
 from __future__ import annotations
@@ -26,11 +26,14 @@ from app.produtos.giro_local import (
 from app.produtos.giro_local import (
     calcular as calcular_giro,
 )
+from app.produtos.luz_no_mapa import NOTA_HONESTA as NOTA_LUZ_NO_MAPA
+from app.produtos.luz_no_mapa import calcular as calcular_luz_no_mapa
 from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
     EsgotoInvisivelOut,
     GiroLocalOut,
+    LuzNoMapaOut,
     MesInternacoesOut,
     MesSaldoOut,
     MunicipioEmpregoOut,
@@ -62,6 +65,8 @@ CODIGO_DATASUS = "saude.resp.internacoes_j"
 CODIGO_PNCP = "compras.contratos.valor_total"
 CODIGO_AGUA_SNIS = "saneamento.agua.atendimento_pct"
 CODIGO_ESGOTO_SNIS = "saneamento.esgoto.coleta_pct"
+CODIGO_DEC = "energia.qualidade.dec"
+CODIGO_FEC = "energia.qualidade.fec"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -684,6 +689,78 @@ class AguaVivaFacade:
             nota=NOTA_AGUA_VIVA,
             meta_agua=_meta(meta_agua) if meta_agua else None,
             meta_esgoto=_meta(meta_esgoto) if meta_esgoto else None,
+        )
+
+
+class LuzNoMapaFacade:
+    """Fachada da qualidade do fornecimento elétrico por município — LuzNoMapa (SANE-04)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:luz-no-mapa")
+    async def luz_no_mapa(self, *, codigo_ibge: str) -> LuzNoMapaOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas_dec, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_DEC,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+        if not linhas_dec:
+            raise NaoEncontradoError(f"LuzNoMapa para município '{codigo_ibge}'")
+
+        linhas_fec, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_FEC,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=5,
+        )
+
+        ultimo_dec = linhas_dec[-1]
+        dec = float(ultimo_dec["valor"]) if ultimo_dec["valor"] is not None else None
+        periodo = (
+            ultimo_dec["periodo"].strftime("%Y") if ultimo_dec["periodo"] is not None else None
+        )
+
+        fec: float | None = None
+        if linhas_fec:
+            v = linhas_fec[-1]["valor"]
+            fec = float(v) if v is not None else None
+
+        lnm = calcular_luz_no_mapa(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            periodo=periodo,
+            dec=dec,
+            fec=fec,
+        )
+        meta_dec = await self._repo.meta_indicador(self._s, CODIGO_DEC)
+        meta_fec = await self._repo.meta_indicador(self._s, CODIGO_FEC)
+
+        return LuzNoMapaOut(
+            codigo_ibge=lnm.codigo_ibge,
+            nome=lnm.nome,
+            uf=lnm.uf,
+            periodo=lnm.periodo,
+            dec=lnm.dec,
+            fec=lnm.fec,
+            nivel_dec=lnm.nivel_dec,
+            nivel_fec=lnm.nivel_fec,
+            nota=NOTA_LUZ_NO_MAPA,
+            meta_dec=_meta(meta_dec) if meta_dec else None,
+            meta_fec=_meta(meta_fec) if meta_fec else None,
         )
 
 

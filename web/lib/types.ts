@@ -578,3 +578,20 @@ export interface PratoFrioResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------ SemeandoTransparencia (ALIM-05)
+
+export type NivelInvestimento = "alto" | "moderado" | "baixo" | "sem_dado";
+
+export interface SemeandoTransparenciaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;  // BRL — função 20 liquidado total
+  valor_por_hab: number | null;    // BRL/hab/ano
+  nivel: NivelInvestimento;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

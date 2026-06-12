@@ -2011,6 +2011,68 @@ components:
       - meta
       title: SalarioRadarOut
       type: object
+    SemeandoTransparenciaOut:
+      description: Investimento público municipal em agricultura — ALIM-05 SemeandoTransparência.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - alto
+          - moderado
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: SemeandoTransparenciaOut
+      type: object
     SentinelaRespOut:
       description: Internações respiratórias SUS por município/mês com supressão honesta
         (SAUDE-01).
@@ -3221,6 +3283,38 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Salario Radar
+      tags:
+      - produtos
+  /v1/semeando-transparencia/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em agricultura — SICONFI Função 20 (ALIM-05).
+
+
+        Despesa liquidada na função 20 por habitante. Níveis: alto (≥ R$100/hab/ano),
+
+        moderado (≥ R$10), baixo (< R$10). 404 quando não há dado SICONFI.'
+      operationId: semeando_transparencia_v1_semeando_transparencia__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SemeandoTransparenciaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Semeando Transparencia
       tags:
       - produtos
   /v1/sentinela-resp/{codigo_ibge}:

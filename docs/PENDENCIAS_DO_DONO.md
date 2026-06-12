@@ -6,6 +6,14 @@ fica parado** em nenhum destes — ele **anota e continua**, acumulando o que fo
 desbloqueio* do repo (ver §3). Quando você voltar, revise **este documento + a Lista de desbloqueio
 atualizada no `roadmap.md`** (o dev pode ter acrescentado itens).
 
+> **SESSÃO 2026-06-12 (PRs #129–#132):** completude de produtos + cobertura + rate-limit.
+> - **UI completa (PRs #130–#131):** homepage, SEO, DemoAviso para todas as famílias (CAGED/SNIS/
+>   DATASUS/INEP/PNCP), cobertura PNCP e SICONFI, generateMetadata em 10 páginas, panorama como hub.
+> - **Rate-limit tier profundo (PR #132, ADR-0038):** 1.000 req/h por chave, fixed-window Redis,
+>   degradação graciosa, cabeçalhos X-RateLimit-* + Retry-After.
+> - **Estado técnico geral:** backbone completo, 12 produtos ao vivo, tudo testado, CI verde.
+>   Bloqueios todos por gates externos (abaixo).
+>
 > **MODO DEV (2026-06-07 + 2026-06-08 + 2026-06-09):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI
 > e mergeia no verde sozinho** (barra inalterada: só verde genuíno). **O que mudou desde o último
 > checkpoint (sessão de 2026-06-09):**

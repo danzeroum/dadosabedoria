@@ -6,6 +6,14 @@ Plano completo das ondas de desenvolvimento, do estado atual até a escala multi
 decisões marcadas 🟡** (decisões de produto do dono). Fluxo de cada fatia: branch ← `origin/main` →
 implementar com teste → push → PR → **CI verde** → merge → marcar `[x]` aqui → próximo item.
 
+> **SESSÃO 2026-06-12 (PRs #129–#132):** completude de produtos + cobertura + rate-limit.
+> - **PRs #130–#131 — UI completa:** homepage (5 produtos), panorama como hub de navegação, SEO
+>   (sitemap, robots, generateMetadata em 10 páginas), DemoAviso para SNIS/DATASUS/INEP/PNCP,
+>   cobertura endpoints (SNIS, DATASUS, INEP, PNCP, SICONFI), DemoAvisoPncp (ObraViva).
+> - **PR #132 — Rate-limit tier profundo:** fixed-window 1.000 req/h por chave, ADR-0038.
+> - **Estado de gates:** CAGED/DATASUS/ESTBAN em FTP (VPS); INEP TLS; OIDC; LLM; domínio — tudo
+>   documentado em `docs/PENDENCIAS_DO_DONO.md` e Lista de desbloqueio. **Nenhum gate novo aberto.**
+>
 > **FIM DE SESSÃO — MODO DEV (2026-06-07/08 + 2026-06-08 #2 + **2026-06-09**): estado = VERDE.** 34 PRs mergeados.
 > **Sessão de 2026-06-08 (#2):** sonda dos 9 hosts (ADR-0033), conectores corrigidos e **ingestão nacional executada**:
 > - **PNCP ✅** — `pncp.gov.br` aberto; bug User-Agent corrigido (`FetcherPncpHTTP`); 35.910 contratos jan/2024.
@@ -402,8 +410,10 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [x] 🟢 **Camada profunda paga:** `POST /v1/consultas-lote` (lote sobre o acervo público — paga-se
   escala, não acesso), **auth por chave de API** (Bearer/X-API-Key) com **emissão/revogação por
   cliente no banco** (`chave_api`, só hash; api só lê, admin emite — least-privilege; CLI
-  `run_chaves`) + break-glass por `DEEP_API_KEYS` — ADR-0019/0020. *(Cotas/billing + rate-limit
-  autenticado no gateway + consulta-lote otimizada: próximos.)*
+  `run_chaves`) + break-glass por `DEEP_API_KEYS` — ADR-0019/0020. **Rate-limit fixed-window
+  1.000 req/h por chave entregue** (PR #132, ADR-0038; `RATE_LIMIT_PROFUNDO` configurável;
+  degradação graciosa se Redis offline; cabeçalhos X-RateLimit-*). *(Cotas/billing mensais +
+  rate-limit no gateway (Traefik) + consulta-lote otimizada: próximos — de menor prioridade.)*
 - [ ] 🟢 **Autenticação do cidadão (OIDC):** OIDC → JWT curto → cookie HttpOnly/Secure/SameSite →
   refresh. Hoje há **login v1** (JWT em cookie HttpOnly, ADR-0012); falta o OIDC real. 🟡 provedor.
 - [x] 🟢 **Serviço de consentimento (runtime):** escrita em `app`, cifragem de campo (+ **anel de

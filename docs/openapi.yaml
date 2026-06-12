@@ -2282,7 +2282,10 @@ paths:
         Rate-limiting: fixed-window 1.000 req/h por chave (``RATE_LIMIT_PROFUNDO``).
         Cabeçalhos de
 
-        resposta: ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, ``X-RateLimit-Reset``.'
+        resposta: ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, ``X-RateLimit-Reset``.
+
+        Concorrência interna: ``CONCORRENCIA_LOTE`` (padrão 5, igual ao pool_size
+        do banco).'
       operationId: consultas_lote_v1_consultas_lote_post
       requestBody:
         content:

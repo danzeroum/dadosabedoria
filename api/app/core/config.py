@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     deep_api_keys: str | None = Field(default=None)
     # Limite de requisições por hora por chave de API (tier profundo). Padrão: 1000/h.
     rate_limit_profundo: int = Field(default=1000)
+    # Máximo de consultas em paralelo dentro de um lote (semáforo asyncio). Padrão: 5 = pool_size.
+    concorrencia_lote: int = Field(default=5)
 
     # --- IA (fronteira; placeholder) ---
     llm_api_key: str | None = Field(default=None)

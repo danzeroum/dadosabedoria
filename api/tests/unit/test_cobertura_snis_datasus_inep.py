@@ -43,6 +43,7 @@ def _facade_inep(n: int) -> IndicadoresFacade:
 
 # ----------- SNIS -----------
 
+
 @pytest.mark.asyncio
 async def test_snis_demo_true_sem_dado() -> None:
     r: CoberturaSnis = await _fn_snis(_facade_snis(0))
@@ -78,6 +79,7 @@ async def test_snis_limiar_50_sai_demo() -> None:
 
 # ----------- DATASUS -----------
 
+
 @pytest.mark.asyncio
 async def test_datasus_demo_true_sem_dado() -> None:
     r: CoberturaDatasus = await _fn_datasus(_facade_datasus(0))
@@ -99,6 +101,7 @@ async def test_datasus_limiar_50_sai_demo() -> None:
 
 
 # ----------- INEP -----------
+
 
 @pytest.mark.asyncio
 async def test_inep_demo_true_sem_dado() -> None:

@@ -48,6 +48,15 @@ const PRODUTOS: {
     selo: null,
   },
   {
+    titulo: "ObraViva",
+    pergunta: "Quanto o município contrata publicamente via PNCP?",
+    descricao:
+      "Soma do valor global de contratos publicados no PNCP no exercício (obras, serviços e bens). Per capita para comparar municípios de portes diferentes. Nota: ausência de dado ≠ ausência de contratação — PNCP ainda não tem adesão universal.",
+    href: "/obra-viva/3550308",
+    cta: "Ver exemplo (São Paulo)",
+    selo: null,
+  },
+  {
     titulo: "Panorama do município",
     pergunta: "O que sabemos sobre o meu município?",
     descricao:

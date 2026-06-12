@@ -99,6 +99,12 @@ export default async function OndeFoiPage({ params }: { params: { codigo: string
         <SeloConfianca meta={d.meta} />
         <p className="metodologia">{d.meta.metodologia}</p>
       </section>
+
+      <p style={{ marginTop: "16px" }}>
+        <Link href={`/obra-viva/${d.codigo_ibge}`}>Ver o ObraViva (contratos via PNCP) →</Link>
+        <br />
+        <Link href={`/municipio/${d.codigo_ibge}`}>Ver o panorama completo do município →</Link>
+      </p>
     </main>
   );
 }

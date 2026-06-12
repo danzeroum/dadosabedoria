@@ -846,6 +846,69 @@ components:
       - nivel
       title: MunicipioEmpregoOut
       type: object
+    ObraVivaOut:
+      description: Contratações públicas municipais via PNCP per capita (ObraViva
+        — TRANSP-05).
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - elevado
+          - moderado
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        periodo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Periodo
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_contratos:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Valor Contratos
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - periodo
+      - valor_contratos
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: ObraVivaOut
+      type: object
     OndeFoiLista:
       description: 'Diretório de municípios do OndeFoi, ordenado por NOME (não ranking
         de execução).
@@ -2045,6 +2108,45 @@ paths:
       tags:
       - indicadores
       - ivm
+  /v1/obra-viva/{codigo_ibge}:
+    get:
+      description: 'Contratações públicas municipais via PNCP per capita (ObraViva
+        — TRANSP-05).
+
+
+        Soma do valor global de contratos publicados no PNCP pelo município no exercício.
+        Cobre
+
+        todos os tipos (obras, serviços, bens) — uso como contexto de intensidade
+        de contratação.
+
+        Nota: PNCP ainda não tem adesão universal — ausência ≠ ausência de contratação.
+
+        404 quando não há dado de contratos para o município.'
+      operationId: obra_viva_v1_obra_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObraVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Obra Viva
+      tags:
+      - produtos
   /v1/onde-foi:
     get:
       description: 'Diretório dos municípios do OndeFoi — ordenado por nome (dupla-face

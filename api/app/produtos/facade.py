@@ -28,11 +28,14 @@ from app.produtos.modelos import (
     MesInternacoesOut,
     MesSaldoOut,
     MunicipioEmpregoOut,
+    ObraVivaOut,
     PulsoProdutivoOut,
     RegiaoEmpregaOut,
     SalarioRadarOut,
     SentinelaRespOut,
 )
+from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
+from app.produtos.obra_viva import calcular as calcular_obra_viva
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
 from app.produtos.regiao_emprega import NOTA_HONESTA as NOTA_REGIAO
 from app.produtos.regiao_emprega import calcular as calcular_regiao
@@ -47,6 +50,7 @@ CODIGO_ESTBAN = "credito.operacoes.saldo_total"
 CODIGO_SALARIO = "trabalho.emprego.salario_medio_admissao"
 CODIGO_EDUCACAO = "educacao.matriculas.fundamental"
 CODIGO_DATASUS = "saude.resp.internacoes_j"
+CODIGO_PNCP = "compras.contratos.valor_total"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -487,5 +491,58 @@ class SentinelaRespFacade:
                 for m in s.meses
             ],
             nota=NOTA_SENTINELA,
+            meta=_meta(meta_row) if meta_row else None,
+        )
+
+
+class ObraVivaFacade:
+    """Fachada das contratações públicas municipais via PNCP (TRANSP-05)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:obra-viva")
+    async def obra_viva(self, *, codigo_ibge: str) -> ObraVivaOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        linhas, _ = await self._repo.listar_valores(
+            self._s,
+            indicador_codigo=CODIGO_PNCP,
+            territorio_codigo=codigo_ibge,
+            de=None,
+            ate=None,
+            pagina=1,
+            por_pagina=10,
+        )
+        if not linhas:
+            raise NaoEncontradoError(f"ObraViva para município '{codigo_ibge}'")
+
+        ultimo = linhas[-1]
+        valor_contratos = int(ultimo["valor"]) if ultimo["valor"] is not None else None
+        periodo = ultimo["periodo"].strftime("%Y") if ultimo["periodo"] is not None else None
+
+        o = calcular_obra_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            periodo=periodo,
+            valor_contratos=valor_contratos,
+        )
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_PNCP)
+
+        return ObraVivaOut(
+            codigo_ibge=o.codigo_ibge,
+            nome=o.nome,
+            uf=o.uf,
+            populacao=o.populacao,
+            periodo=o.periodo,
+            valor_contratos=o.valor_contratos,
+            valor_por_hab=o.valor_por_hab,
+            nivel=o.nivel,
+            nota=NOTA_OBRA_VIVA,
             meta=_meta(meta_row) if meta_row else None,
         )

@@ -1,5 +1,5 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
-Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01)."""
+Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05)."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from app.indicadores.modelos import MetaProveniencia
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.giro_local import NivelCredito, NivelEmprego
+from app.produtos.obra_viva import NivelContratos
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
 from app.produtos.regiao_emprega import NivelRegiao
@@ -237,5 +238,25 @@ class SentinelaRespOut(BaseModel):
     tendencia: TendenciaSentinela | None  # None com < 2 meses reais
 
     meses: list[MesInternacoesOut]  # série histórica (inclui meses suprimidos)
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# --------------------------------------------------------- ObraViva (TRANSP-05)
+
+
+class ObraVivaOut(BaseModel):
+    """Contratações públicas municipais via PNCP per capita (ObraViva — TRANSP-05)."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    periodo: str | None  # YYYY do exercício mais recente
+    valor_contratos: int | None  # R$ total dos contratos
+    valor_por_hab: float | None  # R$/hab
+    nivel: NivelContratos
+
     nota: str
     meta: MetaProveniencia | None

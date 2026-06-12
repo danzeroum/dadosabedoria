@@ -2151,7 +2151,13 @@ paths:
       description: 'Tier PROFUNDO: várias consultas de valores num só request. Mesmo
         dado público; o que muda é
 
-        a conveniência/escala (open-core). Requer chave de API válida (Bearer ou X-API-Key).'
+        a conveniência/escala (open-core). Requer chave de API válida (Bearer ou X-API-Key).
+
+
+        Rate-limiting: fixed-window 1.000 req/h por chave (``RATE_LIMIT_PROFUNDO``).
+        Cabeçalhos de
+
+        resposta: ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, ``X-RateLimit-Reset``.'
       operationId: consultas_lote_v1_consultas_lote_post
       requestBody:
         content:

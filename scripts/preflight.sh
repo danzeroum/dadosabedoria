@@ -23,17 +23,18 @@ set -Eeuo pipefail
 
 ENV_FILE="${1:-.env}"
 
-RED='\033[0;31m'
-YEL='\033[1;33m'
-GRN='\033[0;32m'
-NC='\033[0m'
+RED=$'\033[0;31m'
+YEL=$'\033[1;33m'
+GRN=$'\033[0;32m'
+NC=$'\033[0m'
 
 FALHAS=0
 ALERTAS=0
 
-falha()  { printf "${RED}[ERRO]${NC}  %s\n" "$1" >&2; FALHAS=$(( FALHAS + 1 )); }
-alerta() { printf "${YEL}[AVISO]${NC} %s\n" "$1"; ALERTAS=$(( ALERTAS + 1 )); }
-ok()     { printf "${GRN}[OK]${NC}    %s\n" "$1"; }
+# SC2059: variáveis ANSI nos argumentos (%s), nunca no formato.
+falha()  { printf '%s[ERRO]%s  %s\n' "$RED" "$NC" "$1" >&2; FALHAS=$(( FALHAS + 1 )); }
+alerta() { printf '%s[AVISO]%s %s\n' "$YEL" "$NC" "$1";    ALERTAS=$(( ALERTAS + 1 )); }
+ok()     { printf '%s[OK]%s    %s\n' "$GRN" "$NC" "$1"; }
 
 # -------------------------------------------------------------------------- 1. leitura do .env
 
@@ -118,7 +119,7 @@ printf '\n--- Verificações de alerta ---\n\n'
 # TLS / domínio
 if [ -z "${PUBLIC_DOMAIN:-}" ] || [ -z "${ACME_EMAIL:-}" ]; then
     alerta "PUBLIC_DOMAIN e/ou ACME_EMAIL não definidos → Traefik em dev-mode (sem TLS real)."
-    alerta "  → Para produção: defina ambos e reinicie o proxy (see docs/runbooks/deploy.md §2)."
+    alerta "  → Para produção: defina ambos e reinicie o proxy (docs/runbooks/deploy.md §2)."
 else
     ok "TLS: PUBLIC_DOMAIN=${PUBLIC_DOMAIN}, ACME_EMAIL=${ACME_EMAIL}."
 fi
@@ -152,10 +153,12 @@ fi
 
 printf '\n=== Resumo ===\n'
 if [ "$FALHAS" -gt 0 ]; then
-    printf "${RED}FALHOU: %d erro(s) bloqueante(s). Corrija antes de subir a stack.${NC}\n" "$FALHAS" >&2
+    printf '%sFALHOU: %d erro(s) bloqueante(s). Corrija antes de subir a stack.%s\n' \
+        "$RED" "$FALHAS" "$NC" >&2
     exit 1
 elif [ "$ALERTAS" -gt 0 ]; then
-    printf "${GRN}PASSOU com %d alerta(s). Revise os avisos acima se for produção.${NC}\n" "$ALERTAS"
+    printf '%sPASSOU com %d alerta(s). Revise os avisos acima se for produção.%s\n' \
+        "$GRN" "$ALERTAS" "$NC"
 else
-    printf "${GRN}PASSOU. Stack pronta para subir.${NC}\n"
+    printf '%sPASSOU. Stack pronta para subir.%s\n' "$GRN" "$NC"
 fi

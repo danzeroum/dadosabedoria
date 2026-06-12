@@ -18,6 +18,7 @@ import dagster as dg
 
 from app.core.config import get_settings
 from app.core.db import connect
+from app.ingestao.adaptadores.ana import AdaptadorAna, FetcherAnaHTTP
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import AdaptadorCaged, FetcherCagedFTP
 from app.ingestao.adaptadores.datasus import AdaptadorDatasus, FetcherDatasusFTP
@@ -34,6 +35,7 @@ from app.ingestao.adaptadores.siconfi import (
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
 from app.ingestao.pipeline import (
+    executar_ana,
     executar_aneel,
     executar_caged,
     executar_datasus,
@@ -168,6 +170,13 @@ async def _rodar_aneel(janela: Janela) -> None:  # pragma: no cover - rede
         )
 
 
+async def _rodar_ana(janela: Janela) -> None:  # pragma: no cover - rede
+    settings = get_settings()
+    adaptador = AdaptadorAna(FetcherAnaHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_ana(janela, conn, adaptador, construir_store_padrao(), responsavel="dagster")
+
+
 # ------------------------------------------------------------------ Assets (Degrau 2)
 
 
@@ -295,6 +304,21 @@ def valores_aneel(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  #
     return dg.MaterializeResult(metadata={"ano": context.partition_key})
 
 
+@dg.asset(
+    partitions_def=_ANUAL,
+    group_name="saneamento",
+    description=(
+        "Índice de seca por município — ANA Monitor de Secas (metodologia USDM adaptada)."
+    ),
+    metadata={"fonte": "ANA", "lag_tipico": "~2 meses"},
+)
+def valores_ana(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # pragma: no cover
+    comp = _comp_de_anual(context.partition_key)
+    context.log.info(f"ANA Monitor de Secas: ano {context.partition_key}")
+    asyncio.run(_rodar_ana(Janela.de_competencia(comp)))
+    return dg.MaterializeResult(metadata={"ano": context.partition_key})
+
+
 # ------------------------------------------------------------------ Asset jobs
 
 job_valores_caged = dg.define_asset_job("job_valores_caged", selection=["valores_caged"])
@@ -306,6 +330,7 @@ job_valores_pncp = dg.define_asset_job("job_valores_pncp", selection=["valores_p
 job_valores_datasus = dg.define_asset_job("job_valores_datasus", selection=["valores_datasus"])
 job_valores_snis = dg.define_asset_job("job_valores_snis", selection=["valores_snis"])
 job_valores_aneel = dg.define_asset_job("job_valores_aneel", selection=["valores_aneel"])
+job_valores_ana = dg.define_asset_job("job_valores_ana", selection=["valores_ana"])
 
 
 # ------------------------------------------------------------------ Schedules
@@ -373,6 +398,12 @@ def schedule_aneel_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest
     return dg.RunRequest(partition_key=str(ano))
 
 
+@dg.schedule(job=job_valores_ana, cron_schedule="0 8 15 2 *")  # 15/fev: dados do ano anterior
+def schedule_ana_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(partition_key=str(ano))
+
+
 # ------------------------------------------------------------------ Definições
 
 defs = dg.Definitions(
@@ -386,6 +417,7 @@ defs = dg.Definitions(
         valores_datasus,
         valores_snis,
         valores_aneel,
+        valores_ana,
     ],
     jobs=[
         job_valores_caged,
@@ -397,6 +429,7 @@ defs = dg.Definitions(
         job_valores_datasus,
         job_valores_snis,
         job_valores_aneel,
+        job_valores_ana,
     ],
     schedules=[
         schedule_caged_mensal,
@@ -408,5 +441,6 @@ defs = dg.Definitions(
         schedule_datasus_mensal,
         schedule_snis_anual,
         schedule_aneel_anual,
+        schedule_ana_anual,
     ],
 )

@@ -19,6 +19,9 @@ from app.core import metricas
 from app.core.observabilidade import get_logger
 from app.core.tables import execucao_funcao as t_execucao_funcao
 from app.core.tables import linhagem as t_linhagem
+from app.ingestao.adaptadores.ana import CODIGO_SECA as CODIGO_SECA_ANA
+from app.ingestao.adaptadores.ana import CONTRATO as CONTRATO_ANA
+from app.ingestao.adaptadores.ana import AdaptadorAna
 from app.ingestao.adaptadores.base import Janela
 from app.ingestao.adaptadores.caged import CODIGO_INDICADOR as CODIGO_CAGED
 from app.ingestao.adaptadores.caged import CODIGO_SALARIO as CODIGO_SALARIO_CAGED
@@ -788,3 +791,59 @@ async def executar_snis(
             ignorados=0,
         )
     return resumo
+
+
+async def executar_ana(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorAna,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira ANA Monitor de Secas (anual) — risco hídrico de seca por município.
+
+    Grava um indicador: seca_indice (0–5, pior mês do ano).
+    Vivo-pronto: forma a confirmar na 1ª busca real (#0, host monitordesecas.ana.gov.br).
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"ana/{janela.ano}.csv", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_ANA.validar(df)
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind_seca = await _carregar_indicador(conn, CODIGO_SECA_ANA)
+    mapa7 = await _mapa_municipios(conn)
+
+    celulas: list[CelulaOuro] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind_seca.id,
+                territorio_id=territorio_id,
+                periodo=janela.periodo,
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["seca_indice"]), 4))),
+                n_amostra=None,
+                confiabilidade=3,
+                fonte_id=ind_seca.fonte_id,
+            )
+        )
+
+    return await _gravar_celulas(
+        conn,
+        ind_seca,
+        celulas,
+        janela,
+        fonte_codigo="ana",
+        transformacoes=f"ana {janela.ano}: bronze->prata->ouro (seca_indice)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )

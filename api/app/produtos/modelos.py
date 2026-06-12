@@ -17,6 +17,7 @@ from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.pulso_produtivo import Pulso, Tendencia
 from app.produtos.radar_evasao import NivelEvasao
 from app.produtos.regiao_emprega import NivelRegiao
+from app.produtos.rio_em_risco import NivelSeca
 from app.produtos.salario_radar import NivelSalario
 from app.produtos.sentinela_resp import NivelSentinela, TendenciaSentinela
 
@@ -350,3 +351,21 @@ class LuzNoMapaOut(BaseModel):
     nota: str
     meta_dec: MetaProveniencia | None
     meta_fec: MetaProveniencia | None
+
+
+# --------------------------------------------------------- RioEmRisco (SANE-02)
+
+
+class RioEmRiscoOut(BaseModel):
+    """Risco hídrico de seca por município — SANE-02 RioEmRisco."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+
+    periodo: str | None
+    seca_indice: float | None  # 0–5: Normal=0, D0=1, D1=2, D2=3, D3=4, D4=5
+    nivel: NivelSeca
+
+    nota: str
+    meta: MetaProveniencia | None

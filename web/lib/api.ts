@@ -4,6 +4,7 @@ import type {
   FeatureCollectionIVM,
   GiroLocalProduto,
   IndicadorDetalhe,
+  ObraVivaProduto,
   OndeFoiLista,
   OndeFoiProduto,
   Panorama,
@@ -260,6 +261,21 @@ export async function perguntarIA(corpo: PerguntaInput): Promise<RespostaIA> {
   });
   if (!resp.ok) {
     throw new Error(`Falha ao perguntar à IA (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarObraViva(
+  codigoIbge: string,
+): Promise<ObraVivaProduto | null> {
+  const resp = await fetch(new URL(`/v1/obra-viva/${codigoIbge}`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar o ObraViva (${resp.status})`);
   }
   return resp.json();
 }

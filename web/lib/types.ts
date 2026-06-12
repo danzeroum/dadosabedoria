@@ -420,3 +420,20 @@ export interface RespostaFontes {
   dados: FonteAcervo[];
   total: number;
 }
+
+// ----------------------------------------------------------------- ObraViva (TRANSP-05)
+
+export type NivelContratos = "elevado" | "moderado" | "baixo" | "sem_dado";
+
+export interface ObraVivaProduto {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  periodo: string | null; // YYYY
+  valor_contratos: number | null; // R$ total dos contratos
+  valor_por_hab: number | null; // R$/hab
+  nivel: NivelContratos;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

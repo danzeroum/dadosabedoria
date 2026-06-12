@@ -1,6 +1,6 @@
 """Rotas dos produtos nomeados: OndeFoi, Pulso Produtivo (TRAB-01), Giro Local (TRAB-03),
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
-Sentinela Respiratória (SAUDE-01)."""
+Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from app.core.db import get_session
 from app.produtos.facade import (
     BussolaEduTrabFacade,
     GiroLocalFacade,
+    ObraVivaFacade,
     PulsoProdutivoFacade,
     RegiaoEmpregaFacade,
     SalarioRadarFacade,
@@ -19,6 +20,7 @@ from app.produtos.facade import (
 from app.produtos.modelos import (
     BussolaEduTrabOut,
     GiroLocalOut,
+    ObraVivaOut,
     OndeFoiLista,
     OndeFoiOut,
     PulsoProdutivoOut,
@@ -128,3 +130,15 @@ async def sentinela_resp(
     404 quando não há nenhum dado disponível para o município.
     """
     return await SentinelaRespFacade(session).sentinela_resp(codigo_ibge=codigo_ibge)
+
+
+@router.get("/obra-viva/{codigo_ibge}", response_model=ObraVivaOut)
+async def obra_viva(codigo_ibge: str, session: AsyncSession = Depends(get_session)) -> ObraVivaOut:
+    """Contratações públicas municipais via PNCP per capita (ObraViva — TRANSP-05).
+
+    Soma do valor global de contratos publicados no PNCP pelo município no exercício. Cobre
+    todos os tipos (obras, serviços, bens) — uso como contexto de intensidade de contratação.
+    Nota: PNCP ainda não tem adesão universal — ausência ≠ ausência de contratação.
+    404 quando não há dado de contratos para o município.
+    """
+    return await ObraVivaFacade(session).obra_viva(codigo_ibge=codigo_ibge)

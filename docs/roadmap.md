@@ -347,7 +347,10 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [x] 🔵 **TRANSP-06 OndeFoi (SICONFI)** — tela **ao vivo** com dado real (SICONFI Anexo I-E,
   exercício 2024, ~5.541 municípios); banda calibrada 95/90 (ADR-0035); meta "sem dados
   disponíveis" quando tabela vazia (ADR-0033/PR-93). Lacunas adiantadas:
-  TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud); TRANSP-05 ObraViva.
+  TRANSP-03 Fornecedor Transparente (PNCP+Receita+DataJud).
+- [x] 🔵 **TRANSP-05 ObraViva** (PNCP) — endpoint `GET /v1/obra-viva/{ibge}` + tela `/obra-viva/{ibge}`;
+  soma do valorGlobal dos contratos PNCP per capita; níveis elevado/moderado/baixo; dupla face §17
+  (agregado, sem fornecedores); nota honesta (adesão não universal); 12 testes unitários; 2026-06-12.
 - [x] 🟢 IVM **completo** (multidomínio) — incorpora o subíndice de **saúde** (SIH) a emprego+finanças
   (`versao_metodologia=v1.1`, min-max; z-score=v2 ao atingir cobertura nacional) — ADR-0025. Os
   indicadores **neutros** (matrículas, transferências, contratos) seguem descritivos (fora do índice

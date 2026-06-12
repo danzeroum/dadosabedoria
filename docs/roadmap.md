@@ -368,8 +368,11 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [ ] 🔵 Adaptador DATASUS **robusto** (DBC→Parquet, incremental/idempotente, mapa IBGE 6→7) +
   Dagster; demais sistemas (SIA/CNES/SINAN/SINASC/SIM) — o de maior atrito.
 - [ ] 🔵 SAUDE-04 Fila Visível; SAUDE-06 Receita Cidadã; SAUDE-05 Navegador de Acesso.
-- [ ] 🔵 SAUDE-01 Sentinela Respiratória; SAUDE-02 Caçador de Arboviroses; SAUDE-03 Materno-Infantil;
-  SAUDE-11 Burnout. *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*
+- [x] 🔵 SAUDE-01 Sentinela Respiratória: produto completo do dado à tela — domínio (`sentinela_resp.py`),
+  facade, rota `/v1/sentinela-resp/{ibge}`, tela Next.js com supressão k-anon honesta, meses parciais
+  marcados, guard zero-registros no pipeline. **Forma real confirmada** em produção (RDRO2603):
+  `DT_INTER=YYYYMMDD`, `MUNIC_RES=String`, loop 27 UFs, 550 separado de erro transitório (ADR-0024
+  §grain-v2). Gabarito: Porto Velho ≈207/mês, total RO ≈1.727 J%. (PR #116–#121)
 
 ### 2C. Saneamento, água, energia, alimentação
 **Fontes:** ANA/HidroWeb, SNIS, ANEEL (DEC/FEC), IBGE PAM, CEPEA/CONAB, SICAR/MapBiomas.

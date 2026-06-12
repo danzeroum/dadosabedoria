@@ -3,6 +3,7 @@
 - **Status:** aceito — forma real confirmada
 - **Data:** 2026-06-06
 - **Atualização:** 2026-06-11 — forma real validada contra RDRO2604 (Rondônia, 2026-04)
+- **Atualização:** 2026-06-12 — política de UF ausente (550) revisada; ver §grain-v2
 
 ## Contexto
 Concluída a sequência de fontes abertas de menor atrito da Onda 2A (SICONFI/INEP/PNCP), a Onda 2B
@@ -61,6 +62,29 @@ Justificativa:
 **Meses recentes parciais:** os últimos 1–3 meses do SIH têm AIH ainda em faturamento; a série
 estabiliza após ~3–6 meses da competência. A tela marca esses meses com `*parcial`; a `NOTA_HONESTA`
 e o `lag_tipico_dias=90` já comunicam o atraso estrutural.
+
+## Política de UF ausente: 550 vs. erro transitório (§grain-v2, 2026-06-12)
+
+Observado em produção (comp 2604): AC e RR retornaram 550 file-not-found — estados pequenos que
+atrasam a publicação da competência. Retry é inútil: 550 é permanente até a UF publicar.
+
+**Decisão: distinguir 550 de erro transitório e tratar de forma diferente.**
+
+| Tipo de falha | Comportamento |
+|---|---|
+| Erro transitório (conexão, timeout, 4xx) | Abortar tudo — sem subcontagem (política original) |
+| 550 file-not-found (`UFNaoPublicadaError`) | Ingere as UFs disponíveis; registra ausentes na proveniência |
+| Nenhuma UF disponível (todas 550) | Abortar com mensagem clara |
+
+**Justificativa para não abortar em 550:**
+Via `MUNIC_RES`, a única subcontagem seria residentes da UF ausente que se internaram nela mesma.
+Para AC (894 k hab, ~0,4 % da pop.) e RR (652 k hab, ~0,3 %) esse impacto é desprezível no
+indicador nacional. Bloquear os outros 25 estados por duas UFs minúsculas prejudicaria a cobertura
+sem benefício real de privacidade ou precisão.
+
+**Proveniência honesta:** a string de URL retornada pelo fetcher passa a incluir
+`UFs ainda não publicadas: AC, RR` — gravada nos metadados de cada carga e visível na API.
+A mensagem de log orienta: *"use a competência anterior ou aguarde a publicação"* (não "tente novamente").
 
 ## Consequências / a evoluir
 - 1ª fonte sensível com adaptador no ar; a supressão passa a ser exercida sobre uma fonte externa

@@ -29,7 +29,6 @@ SERVICO="api"                # serviço-alvo no docker-compose
 TAG_CANARY="dadosabedoria-api:canary"
 TAG_PROD="dadosabedoria-api:latest"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
-HEALTH_URL="http://localhost:8000/health"   # interno; acessa o canário diretamente
 HEALTH_PORT=8001             # porta temporária exposta pelo canário para health check
 MAX_TENTATIVAS=10
 INTERVALO_SAUDE=10           # segundos entre tentativas de health check

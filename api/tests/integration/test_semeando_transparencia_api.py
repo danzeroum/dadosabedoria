@@ -6,7 +6,7 @@ Semeia execucao_funcao diretamente para controlar os dados de função 20.
 from __future__ import annotations
 
 import os
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from httpx import AsyncClient
@@ -37,7 +37,7 @@ async def _seed_funcao20(conn_url: str) -> None:
             await conn.execute(text("SELECT id FROM fonte WHERE codigo = 'siconfi'"))
         ).scalar_one()
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         periodo = date(2023, 1, 1)
 
         _ins = (

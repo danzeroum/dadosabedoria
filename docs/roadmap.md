@@ -338,8 +338,13 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   **Pipeline VIVO-PRONTO:** `executar_pncp` + `run_pncp` + **Dagster** (`job_pncp` + `schedule_pncp_anual`);
   fetcher real exercitado no CI por fake — **forma a confirmar na 1ª busca real** (#0, host `pncp.gov.br`).
   _Falta: dado real (#0), produtos TRANSP-03/05 (telas, dupla face §17)._
-- [ ] 🔵 Demais adaptadores 2A (DATASUS → …) + contratos; **Dagster Degrau 2** (assets c/ linhagem)
-  e **Degrau 3** (sensors por chegada de arquivo, partições por período/domínio).
+- [x] 🔵 **Dagster Degrau 2** — software-defined assets com linhagem e partições por período:
+  7 ativos particionados (mensal: CAGED/ESTBAN/DATASUS; anual: SICONFI/INEP/PNCP) com grupos por
+  domínio (trabalho/financas/educacao/compras/saude), metadados de fonte/lag e `MaterializeResult`.
+  Schedules convertidos para `partition_key` (ex.: `"2026-04-01"` em vez de `run_config` de ops).
+  12 testes de orquestração cobrindo conversores, nomes, grupos e defasagens; 2026-06-12.
+- [ ] 🔵 Demais adaptadores 2A (DATASUS → …); **Dagster Degrau 3** (sensors por chegada de arquivo,
+  backfills automáticos) — aguarda acesso FTP na VPS para DATASUS/CAGED.
 - [x] 🔵 **EDU-01 Bússola Educação-Trabalho** (INEP+CAGED+IBGE) — endpoint
   `GET /v1/bussola-edu-trabalho/{ibge}` + tela `/bussola-edu-trabalho/{ibge}`; matrículas
   fundamental + saldo emprego + salário médio; CONTEXTO explícito (não causal); degrada com dado

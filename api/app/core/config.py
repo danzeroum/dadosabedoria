@@ -56,6 +56,8 @@ class Settings(BaseSettings):
     # --- Tier profundo (open-core pago): SHA-256 (hex, CSV) das chaves de API emitidas a clientes.
     # Guarda-se o HASH, não a chave bruta. Vazio ⇒ tier profundo sem chaves válidas (tudo 401).
     deep_api_keys: str | None = Field(default=None)
+    # Limite de requisições por hora por chave de API (tier profundo). Padrão: 1000/h.
+    rate_limit_profundo: int = Field(default=1000)
 
     # --- IA (fronteira; placeholder) ---
     llm_api_key: str | None = Field(default=None)

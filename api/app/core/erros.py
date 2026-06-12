@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from fastapi import FastAPI, Request, status
@@ -42,6 +43,16 @@ class NaoAutorizadoError(Exception):
         super().__init__(mensagem)
 
 
+class RateLimitError(Exception):
+    """Limite de requisições atingido → 429."""
+
+    def __init__(self, limite: int, restante: int, reset: int) -> None:
+        self.limite = limite
+        self.restante = restante
+        self.reset = reset  # Unix timestamp da próxima janela
+        super().__init__(f"limite de {limite} req/h atingido")
+
+
 def _trace_id() -> str:
     span = trace.get_current_span()
     ctx = span.get_span_context() if span else None
@@ -75,6 +86,19 @@ def instalar_handlers(app: FastAPI) -> None:
     @app.exception_handler(NaoAutorizadoError)
     async def _nao_autorizado(_req: Request, exc: NaoAutorizadoError) -> JSONResponse:
         return _envelope("nao_autorizado", exc.mensagem, status.HTTP_401_UNAUTHORIZED)
+
+    @app.exception_handler(RateLimitError)
+    async def _rate_limit(_req: Request, exc: RateLimitError) -> JSONResponse:
+        resp = _envelope(
+            "rate_limit",
+            f"Limite de {exc.limite} requisições/hora atingido.",
+            status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+        resp.headers["X-RateLimit-Limit"] = str(exc.limite)
+        resp.headers["X-RateLimit-Remaining"] = "0"
+        resp.headers["X-RateLimit-Reset"] = str(exc.reset)
+        resp.headers["Retry-After"] = str(max(0, exc.reset - int(time.time())))
+        return resp
 
     @app.exception_handler(RequestValidationError)
     async def _req_validacao(_req: Request, exc: RequestValidationError) -> JSONResponse:

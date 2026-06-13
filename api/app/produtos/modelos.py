@@ -2,7 +2,8 @@
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
 CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11),
-CasaViva (HAB-02), ViaViva (MOB-01), EcoVivo (AMB-01)."""
+CasaViva (HAB-02), ViaViva (MOB-01), EcoVivo (AMB-01),
+EscolaViva (EDU-03), SaneFundo (SANE-05)."""
 
 from __future__ import annotations
 
@@ -14,6 +15,7 @@ from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.cacador_arboviroses import NivelArboviroses
 from app.produtos.casa_viva import NivelHabitacao
 from app.produtos.eco_vivo import NivelAmbiental
+from app.produtos.escola_viva import NivelEducacaoPublica
 from app.produtos.esgoto_invisivel import NivelGap
 from app.produtos.fome_oculta import NivelFomeOculta
 from app.produtos.giro_local import NivelCredito, NivelEmprego
@@ -27,6 +29,7 @@ from app.produtos.radar_evasao import NivelEvasao
 from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.rio_em_risco import NivelSeca
 from app.produtos.salario_radar import NivelSalario
+from app.produtos.sane_fundo import NivelSaneamento
 from app.produtos.semeando_transparencia import NivelInvestimento
 from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
 from app.produtos.sentinela_materna import NivelMaterno
@@ -518,6 +521,46 @@ class CasaVivaOut(BaseModel):
     valor_liquidado: float | None  # BRL — função 16 liquidado total
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelHabitacao
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- EscolaViva (EDU-03)
+
+
+class EscolaVivaOut(BaseModel):
+    """Investimento municipal em educação per capita — EDU-03 EscolaViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 12 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelEducacaoPublica
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- SaneFundo (SANE-05)
+
+
+class SaneFundoOut(BaseModel):
+    """Investimento municipal em saneamento per capita — SANE-05 SaneFundo."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 17 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelSaneamento
 
     nota: str
     meta: MetaProveniencia | None

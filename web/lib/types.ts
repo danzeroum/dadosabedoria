@@ -712,3 +712,37 @@ export interface EcoVivaResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------- EscolaViva (EDU-03)
+
+export type NivelEducacaoPublica = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface EscolaVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelEducacaoPublica;
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
+// ------------------------------------------------- SaneFundo (SANE-05)
+
+export type NivelSaneamento = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface SaneFundoResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelSaneamento;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

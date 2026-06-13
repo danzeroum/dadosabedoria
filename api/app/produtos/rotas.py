@@ -4,7 +4,7 @@ Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
 SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
 CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11), CasaViva (HAB-02),
-ViaViva (MOB-01), EcoVivo (AMB-01)."""
+ViaViva (MOB-01), EcoVivo (AMB-01), EscolaViva (EDU-03), SaneFundo (SANE-05)."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from app.produtos.facade import (
     CacadorArbovirosesFacade,
     CasaVivaFacade,
     EcoVivaFacade,
+    EscolaVivaFacade,
     EsgotoInvisivelFacade,
     FomeOcultaFacade,
     GiroLocalFacade,
@@ -30,6 +31,7 @@ from app.produtos.facade import (
     RegiaoEmpregaFacade,
     RioEmRiscoFacade,
     SalarioRadarFacade,
+    SaneFundoFacade,
     SemeandoTransparenciaFacade,
     SentinelaMaternаFacade,
     SentinelaRespFacade,
@@ -41,6 +43,7 @@ from app.produtos.modelos import (
     CacadorArboviroesOut,
     CasaVivaOut,
     EcoVivaOut,
+    EscolaVivaOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -55,6 +58,7 @@ from app.produtos.modelos import (
     RegiaoEmpregaOut,
     RioEmRiscoOut,
     SalarioRadarOut,
+    SaneFundoOut,
     SemeandoTransparenciaOut,
     SentinelaMaternаOut,
     SentinelaRespOut,
@@ -358,3 +362,34 @@ async def eco_vivo(codigo_ibge: str, session: AsyncSession = Depends(get_session
     404 quando não há dado SICONFI para o município.
     """
     return await EcoVivaFacade(session).eco_vivo(codigo_ibge=codigo_ibge)
+
+
+@router.get("/escola-viva/{codigo_ibge}", response_model=EscolaVivaOut)
+async def escola_viva(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> EscolaVivaOut:
+    """Investimento municipal em educação — SICONFI Função 12 (EDU-03).
+
+    Despesa liquidada na função 12 (Educação) por habitante. Proxy do esforço orçamentário
+    com o ensino público municipal. Não inclui repasses diretos do FNDE/FUNDEB fora do
+    liquidado municipal. CF/88 exige mínimo de 25% da receita em educação.
+    Níveis: expressivo (≥ R$600/hab/ano), moderado (≥ R$200), incipiente (< R$200).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await EscolaVivaFacade(session).escola_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/sane-fundo/{codigo_ibge}", response_model=SaneFundoOut)
+async def sane_fundo(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> SaneFundoOut:
+    """Investimento municipal em saneamento — SICONFI Função 17 (SANE-05).
+
+    Despesa liquidada na função 17 (Saneamento) por habitante. Proxy do esforço orçamentário
+    direto com saneamento básico. Em municípios com concessão estadual (SABESP, COPASA),
+    o gasto municipal pode ser próximo de zero mesmo com boa cobertura.
+    Use em conjunto com AguaViva (SANE-01) para contexto real de cobertura.
+    Níveis: expressivo (≥ R$60/hab/ano), moderado (≥ R$15), incipiente (< R$15).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await SaneFundoFacade(session).sane_fundo(codigo_ibge=codigo_ibge)

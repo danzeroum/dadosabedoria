@@ -3,7 +3,7 @@ Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalh
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
 SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
-CaçadorArboviroses (SAUDE-02)."""
+CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11)."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from app.produtos.facade import (
     LuzNoMapaFacade,
     ObraVivaFacade,
     PratoFrioFacade,
+    PressaoSusFacade,
     PulsoProdutivoFacade,
     RadarEvasaoFacade,
     RegiaoEmpregaFacade,
@@ -42,6 +43,7 @@ from app.produtos.modelos import (
     OndeFoiLista,
     OndeFoiOut,
     PratoFrioOut,
+    PressaoSusOut,
     PulsoProdutivoOut,
     RadarEvasaoOut,
     RegiaoEmpregaOut,
@@ -296,3 +298,17 @@ async def cacador_arboviroses(
     Inclui k-anonimato (n_minimo=5) — municípios com < 5 casos têm dado suprimido.
     """
     return await CacadorArbovirosesFacade(session).cacador_arboviroses(codigo_ibge=codigo_ibge)
+
+
+@router.get("/pressao-sus/{codigo_ibge}", response_model=PressaoSusOut)
+async def pressao_sus(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> PressaoSusOut:
+    """Capacidade de financiamento do SUS local — SICONFI Função 10 (SAUDE-11).
+
+    Despesa liquidada na função 10 (Saúde) por habitante. Proxy estrutural de pressão
+    sobre profissionais de saúde: financiamento insuficiente → sistema sobrecarregado.
+    Níveis: adequado (≥ R$500/hab/ano), atenção (≥ R$200), crítico (< R$200).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await PressaoSusFacade(session).pressao_sus(codigo_ibge=codigo_ibge)

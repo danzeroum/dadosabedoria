@@ -644,3 +644,20 @@ export interface CacadorArboviroesResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------- PressaoSus (SAUDE-11)
+
+export type NivelPressaoSus = "adequado" | "atenção" | "crítico" | "sem_dado";
+
+export interface PressaoSusResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelPressaoSus;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

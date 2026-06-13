@@ -1624,6 +1624,69 @@ components:
       - meta
       title: PratoFrioOut
       type: object
+    PressaoSusOut:
+      description: Capacidade de financiamento do SUS local — SAUDE-11 Pressão no
+        SUS.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - adequado
+          - atenção
+          - crítico
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: PressaoSusOut
+      type: object
     PulsoProdutivoOut:
       description: 'Pulso do emprego formal (Novo CAGED): a batida atual + o momento
         + a janela como contexto.'
@@ -3344,6 +3407,43 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Prato Frio
+      tags:
+      - produtos
+  /v1/pressao-sus/{codigo_ibge}:
+    get:
+      description: 'Capacidade de financiamento do SUS local — SICONFI Função 10 (SAUDE-11).
+
+
+        Despesa liquidada na função 10 (Saúde) por habitante. Proxy estrutural de
+        pressão
+
+        sobre profissionais de saúde: financiamento insuficiente → sistema sobrecarregado.
+
+        Níveis: adequado (≥ R$500/hab/ano), atenção (≥ R$200), crítico (< R$200).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: pressao_sus_v1_pressao_sus__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PressaoSusOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Pressao Sus
       tags:
       - produtos
   /v1/pulso-produtivo/{codigo_ibge}:

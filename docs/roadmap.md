@@ -402,6 +402,7 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   ≥100, moderado ≥20); nota honesta sobre subnotificação (3-10x) e lag (6-12 meses); Dagster asset
   `valores_sinan` + schedule `schedule_sinan_anual` (1/jul); 2026-06-13.
 - [x] 🔵 **SAUDE-03 Sentinela Materna** (SISVAN gestante) — endpoint `GET /v1/sentinela-materna/{ibge}` + tela `/sentinela-materna/{ibge}`; % gestantes com baixo peso (CO_ESTADO_NUTRI_GESTANTE=1) acompanhadas pelo SISVAN; k-anonimato n_minimo=5; limiares crítico≥30%/elevado≥20%/moderado≥10%; nota honesta (cobertura CadÚnico, lag 6-12m, sem PII); Dagster asset `valores_sisvan_gestante` + schedule `schedule_sisvan_gestante_anual` (1/jun); 2026-06-13.
+- [x] 🔵 **SAUDE-11 Pressão no SUS** (SICONFI Função 10) — endpoint `GET /v1/pressao-sus/{ibge}` + tela `/pressao-sus/{ibge}`; despesa liquidada na função 10 (Saúde) por habitante como proxy estrutural de pressão sobre profissionais (burnout); limiares adequado≥R$500/hab, atenção≥R$200, crítico<R$200; nota honesta (proxy via SICONFI — burnout real requer CAT/INSS, gate pendente; Lei 141/2012; dupla face §17); sem novo pipeline (reutiliza `execucao_funcao`); 9 testes (unit+integração+API); 2026-06-13.
 
 ### 2C. Saneamento, água, energia, alimentação
 **Fontes:** ANA/HidroWeb, SNIS, ANEEL (DEC/FEC), IBGE PAM, CEPEA/CONAB, SICAR/MapBiomas.

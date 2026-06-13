@@ -1,5 +1,6 @@
 import type {
   AguaVivaResponse,
+  CacadorArboviroesResponse,
   CoberturaDatasus,
   CoberturaInep,
   CoberturaPncp,
@@ -396,4 +397,14 @@ export async function buscarFomeOculta(codigo: string): Promise<FomeOcultaRespon
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`FomeOculta ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<FomeOcultaResponse>;
+}
+
+export async function buscarCacadorArboviroses(
+  codigo: string,
+): Promise<CacadorArboviroesResponse | null> {
+  const url = `${BASE}/v1/cacador-arboviroses/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`CacadorArboviroses ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<CacadorArboviroesResponse>;
 }

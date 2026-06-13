@@ -179,6 +179,70 @@ components:
       - meta_salario
       title: BussolaEduTrabOut
       type: object
+    CacadorArboviroesOut:
+      description: Casos confirmados de dengue por 100k hab — SAUDE-02 Caçador de
+        Arboviroses.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        casos_confirmados:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Casos Confirmados
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        incidencia_100k:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Incidencia 100K
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - crítico
+          - elevado
+          - moderado
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - casos_confirmados
+      - incidencia_100k
+      - nivel
+      - nota
+      - meta
+      title: CacadorArboviroesOut
+      type: object
     Citacao:
       properties:
         fonte:
@@ -2432,6 +2496,42 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Bussola Edu Trabalho
+      tags:
+      - produtos
+  /v1/cacador-arboviroses/{codigo_ibge}:
+    get:
+      description: 'Casos confirmados de dengue/100k hab. 404 quando não há dado SINAN.
+
+
+        Incidência de dengue confirmada (CLASSI_FIN 1-3) do SINAN/MS por município/ano.
+
+        Níveis: crítico (≥ 300/100k → epidemia), elevado (≥ 100/100k → alto risco),
+
+        moderado (≥ 20/100k), baixo (< 20/100k).
+
+        Inclui k-anonimato (n_minimo=5) — municípios com < 5 casos têm dado suprimido.'
+      operationId: cacador_arboviroses_v1_cacador_arboviroses__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacadorArboviroesOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Cacador Arboviroses
       tags:
       - produtos
   /v1/cobertura/caged:

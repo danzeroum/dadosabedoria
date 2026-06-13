@@ -1,6 +1,7 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
-AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01)."""
+AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
+CaçadorArboviroses (SAUDE-02)."""
 
 from __future__ import annotations
 
@@ -9,6 +10,7 @@ from pydantic import BaseModel
 from app.indicadores.modelos import MetaProveniencia
 from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
+from app.produtos.cacador_arboviroses import NivelArboviroses
 from app.produtos.esgoto_invisivel import NivelGap
 from app.produtos.fome_oculta import NivelFomeOculta
 from app.produtos.giro_local import NivelCredito, NivelEmprego
@@ -429,6 +431,26 @@ class SemeandoTransparenciaOut(BaseModel):
     valor_liquidado: float | None  # BRL — função 20 liquidado total
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelInvestimento
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- CaçadorArboviroses (SAUDE-02)
+
+
+class CacadorArboviroesOut(BaseModel):
+    """Casos confirmados de dengue por 100k hab — SAUDE-02 Caçador de Arboviroses."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None  # exercício de referência (ano de notificação)
+    casos_confirmados: int | None  # contagem após k-anon (None = suprimido)
+    incidencia_100k: float | None  # casos / pop × 100k; None sem população ou suprimido
+    nivel: NivelArboviroses
 
     nota: str
     meta: MetaProveniencia | None

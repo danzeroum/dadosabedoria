@@ -2,7 +2,7 @@
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
 CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11),
-CasaViva (HAB-02)."""
+CasaViva (HAB-02), ViaViva (MOB-01), EcoVivo (AMB-01)."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.cacador_arboviroses import NivelArboviroses
 from app.produtos.casa_viva import NivelHabitacao
+from app.produtos.eco_vivo import NivelAmbiental
 from app.produtos.esgoto_invisivel import NivelGap
 from app.produtos.fome_oculta import NivelFomeOculta
 from app.produtos.giro_local import NivelCredito, NivelEmprego
@@ -30,6 +31,7 @@ from app.produtos.semeando_transparencia import NivelInvestimento
 from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
 from app.produtos.sentinela_materna import NivelMaterno
 from app.produtos.sentinela_resp import NivelSentinela, TendenciaSentinela
+from app.produtos.via_viva import NivelTransporte
 
 
 class FuncaoOut(BaseModel):
@@ -516,6 +518,46 @@ class CasaVivaOut(BaseModel):
     valor_liquidado: float | None  # BRL — função 16 liquidado total
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelHabitacao
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- ViaViva (MOB-01)
+
+
+class ViaVivaOut(BaseModel):
+    """Investimento municipal em transporte per capita — MOB-01 ViaViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 26 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelTransporte
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- EcoVivo (AMB-01)
+
+
+class EcoVivaOut(BaseModel):
+    """Investimento municipal em gestão ambiental per capita — AMB-01 EcoVivo."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 18 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelAmbiental
 
     nota: str
     meta: MetaProveniencia | None

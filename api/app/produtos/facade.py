@@ -26,6 +26,8 @@ from app.produtos.cacador_arboviroses import NOTA_HONESTA as NOTA_CACADOR
 from app.produtos.cacador_arboviroses import calcular as calcular_cacador
 from app.produtos.casa_viva import NOTA_HONESTA as NOTA_CASA_VIVA
 from app.produtos.casa_viva import calcular as calcular_casa_viva
+from app.produtos.eco_vivo import NOTA_HONESTA as NOTA_ECO_VIVO
+from app.produtos.eco_vivo import calcular as calcular_eco_vivo
 from app.produtos.esgoto_invisivel import NOTA_HONESTA as NOTA_ESGOTO_INVISIVEL
 from app.produtos.esgoto_invisivel import calcular as calcular_esgoto_invisivel
 from app.produtos.fome_oculta import NOTA_HONESTA as NOTA_FOME_OCULTA
@@ -43,6 +45,7 @@ from app.produtos.modelos import (
     BussolaEduTrabOut,
     CacadorArboviroesOut,
     CasaVivaOut,
+    EcoVivaOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -61,6 +64,7 @@ from app.produtos.modelos import (
     SemeandoTransparenciaOut,
     SentinelaMaternаOut,
     SentinelaRespOut,
+    ViaVivaOut,
 )
 from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
 from app.produtos.obra_viva import calcular as calcular_obra_viva
@@ -84,6 +88,8 @@ from app.produtos.sentinela_materna import calcular as calcular_sentinela_matern
 from app.produtos.sentinela_resp import NOTA_HONESTA as NOTA_SENTINELA
 from app.produtos.sentinela_resp import MesInternacoes
 from app.produtos.sentinela_resp import calcular as calcular_sentinela
+from app.produtos.via_viva import NOTA_HONESTA as NOTA_VIA_VIVA
+from app.produtos.via_viva import calcular as calcular_via_viva
 
 CODIGO_CAGED = "trabalho.emprego.saldo_caged"
 CODIGO_ESTBAN = "credito.operacoes.saldo_total"
@@ -1380,5 +1386,151 @@ class CasaVivaFacade:
             valor_por_hab=cv.valor_por_hab,
             nivel=cv.nivel,
             nota=NOTA_CASA_VIVA,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- ViaViva (MOB-01)
+
+
+class ViaVivaFacade:
+    """Fachada do investimento público municipal em transporte — MOB-01."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:via-viva")
+    async def via_viva(self, *, codigo_ibge: str) -> ViaVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"ViaViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "26",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        vv = calcular_via_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return ViaVivaOut(
+            codigo_ibge=vv.codigo_ibge,
+            nome=vv.nome,
+            uf=vv.uf,
+            populacao=vv.populacao,
+            ano=vv.ano,
+            valor_liquidado=vv.valor_liquidado,
+            valor_por_hab=vv.valor_por_hab,
+            nivel=vv.nivel,
+            nota=NOTA_VIA_VIVA,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- EcoVivo (AMB-01)
+
+
+class EcoVivaFacade:
+    """Fachada do investimento público municipal em gestão ambiental — AMB-01."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:eco-vivo")
+    async def eco_vivo(self, *, codigo_ibge: str) -> EcoVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"EcoVivo para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "18",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        ev = calcular_eco_vivo(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return EcoVivaOut(
+            codigo_ibge=ev.codigo_ibge,
+            nome=ev.nome,
+            uf=ev.uf,
+            populacao=ev.populacao,
+            ano=ev.ano,
+            valor_liquidado=ev.valor_liquidado,
+            valor_por_hab=ev.valor_por_hab,
+            nivel=ev.nivel,
+            nota=NOTA_ECO_VIVO,
             meta=None,
         )

@@ -7,13 +7,15 @@ OndeFoi usa o seu próprio ``RepositorioOndeFoi``. **LuzNoMapa** lê DEC/FEC da 
 
 from __future__ import annotations
 
-from sqlalchemy import RowMapping, func, select
+from sqlalchemy import RowMapping, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.core.tables import execucao_funcao as t_ef
+from app.core.tables import indicador as t_ind
 from app.core.tables import territorio as t_terr
+from app.core.tables import valor as t_val
 from app.indicadores.modelos import MetaProveniencia
 from app.indicadores.repositorio import RepositorioIndicadores
 from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
@@ -1050,19 +1052,26 @@ class FomeOcultaFacade:
         if meta_row is None:  # pragma: no cover - indicador sempre semeado
             raise NaoEncontradoError(f"indicador '{CODIGO_SISVAN}'")
 
-        linhas, _ = await self._repo.listar_valores(
-            self._s,
-            indicador_codigo=CODIGO_SISVAN,
-            territorio_codigo=codigo_ibge,
-            de=None,
-            ate=None,
-            pagina=1,
-            por_pagina=1,
+        _j = t_val.join(t_ind, t_ind.c.id == t_val.c.indicador_id).join(
+            t_terr, t_terr.c.id == t_val.c.territorio_id
         )
-        if not linhas:
+        _val_col = case((t_val.c.suprimido, None), else_=t_val.c.valor).label("valor")
+        _n_col = case((t_val.c.suprimido, None), else_=t_val.c.n_amostra).label("n_amostra")
+        _q = (
+            select(t_val.c.periodo, _val_col, _n_col, t_val.c.suprimido)
+            .select_from(_j)
+            .where(
+                t_ind.c.codigo == CODIGO_SISVAN,
+                t_ind.c.publico.is_(True),
+                t_terr.c.codigo_ibge == codigo_ibge,
+            )
+            .order_by(t_val.c.periodo.desc())
+            .limit(1)
+        )
+        row = (await self._s.execute(_q)).mappings().first()
+        if row is None:
             raise NaoEncontradoError(f"Fome Oculta para município '{codigo_ibge}'")
 
-        row = linhas[0]
         pct = float(row["valor"]) if row["valor"] is not None else None
         n_acomp = int(row["n_amostra"]) if row["n_amostra"] is not None else None
         ano = row["periodo"].year if row["periodo"] is not None else None

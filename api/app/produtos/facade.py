@@ -20,12 +20,16 @@ from app.indicadores.modelos import MetaProveniencia
 from app.indicadores.repositorio import RepositorioIndicadores
 from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
 from app.produtos.agua_viva import calcular as calcular_agua_viva
+from app.produtos.assis_viva import NOTA_HONESTA as NOTA_ASSIS_VIVA
+from app.produtos.assis_viva import calcular as calcular_assis_viva
 from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
 from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
 from app.produtos.cacador_arboviroses import NOTA_HONESTA as NOTA_CACADOR
 from app.produtos.cacador_arboviroses import calcular as calcular_cacador
 from app.produtos.casa_viva import NOTA_HONESTA as NOTA_CASA_VIVA
 from app.produtos.casa_viva import calcular as calcular_casa_viva
+from app.produtos.cultura_viva import NOTA_HONESTA as NOTA_CULTURA_VIVA
+from app.produtos.cultura_viva import calcular as calcular_cultura_viva
 from app.produtos.eco_vivo import NOTA_HONESTA as NOTA_ECO_VIVO
 from app.produtos.eco_vivo import calcular as calcular_eco_vivo
 from app.produtos.escola_viva import NOTA_HONESTA as NOTA_ESCOLA_VIVA
@@ -44,9 +48,11 @@ from app.produtos.luz_no_mapa import NOTA_HONESTA as NOTA_LUZ_NO_MAPA
 from app.produtos.luz_no_mapa import calcular as calcular_luz_no_mapa
 from app.produtos.modelos import (
     AguaVivaOut,
+    AssisVivaOut,
     BussolaEduTrabOut,
     CacadorArboviroesOut,
     CasaVivaOut,
+    CulturaVivaOut,
     EcoVivaOut,
     EscolaVivaOut,
     EsgotoInvisivelOut,
@@ -1684,5 +1690,151 @@ class SaneFundoFacade:
             valor_por_hab=sf.valor_por_hab,
             nivel=sf.nivel,
             nota=NOTA_SANE_FUNDO,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- AssisViva (SOCIAL-01)
+
+
+class AssisVivaFacade:
+    """Fachada do investimento público municipal em assistência social — SOCIAL-01."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:assis-viva")
+    async def assis_viva(self, *, codigo_ibge: str) -> AssisVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"AssisViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "08",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        av = calcular_assis_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return AssisVivaOut(
+            codigo_ibge=av.codigo_ibge,
+            nome=av.nome,
+            uf=av.uf,
+            populacao=av.populacao,
+            ano=av.ano,
+            valor_liquidado=av.valor_liquidado,
+            valor_por_hab=av.valor_por_hab,
+            nivel=av.nivel,
+            nota=NOTA_ASSIS_VIVA,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- CulturaViva (CULT-01)
+
+
+class CulturaVivaFacade:
+    """Fachada do investimento público municipal em cultura — CULT-01."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:cultura-viva")
+    async def cultura_viva(self, *, codigo_ibge: str) -> CulturaVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"CulturaViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "13",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        cv = calcular_cultura_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return CulturaVivaOut(
+            codigo_ibge=cv.codigo_ibge,
+            nome=cv.nome,
+            uf=cv.uf,
+            populacao=cv.populacao,
+            ano=cv.ano,
+            valor_liquidado=cv.valor_liquidado,
+            valor_por_hab=cv.valor_por_hab,
+            nivel=cv.nivel,
+            nota=NOTA_CULTURA_VIVA,
             meta=None,
         )

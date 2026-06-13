@@ -70,6 +70,69 @@ components:
       - meta_esgoto
       title: AguaVivaOut
       type: object
+    AssisVivaOut:
+      description: Investimento municipal em assistência social per capita — SOCIAL-01
+        AssisViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: AssisVivaOut
+      type: object
     BussolaEduTrabOut:
       description: 'Bússola Educação-Trabalho: base educacional (INEP) + mercado de
         trabalho formal (CAGED).'
@@ -540,6 +603,68 @@ components:
       required:
       - consultas
       title: ConsultaLoteIn
+      type: object
+    CulturaVivaOut:
+      description: Investimento municipal em cultura per capita — CULT-01 CulturaViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: CulturaVivaOut
       type: object
     EcoVivaOut:
       description: Investimento municipal em gestão ambiental per capita — AMB-01
@@ -2903,6 +3028,46 @@ paths:
       summary: Agua Viva
       tags:
       - produtos
+  /v1/assis-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em assistência social — SICONFI Função
+        08 (SOCIAL-01).
+
+
+        Despesa liquidada na função 08 (Assistência Social) por habitante. Proxy do
+        esforço
+
+        orçamentário com CRAS/CREAS e benefícios municipais do SUAS. Não inclui transferências
+
+        federais (Bolsa Família, BPC) que não transitam pelo liquidado municipal.
+
+        Níveis: expressivo (≥ R$150/hab/ano), moderado (≥ R$50), incipiente (< R$50).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: assis_viva_v1_assis_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssisVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Assis Viva
+      tags:
+      - produtos
   /v1/bussola-edu-trabalho/{codigo_ibge}:
     get:
       description: 'Base educacional e mercado de trabalho formal do município (Bússola
@@ -3197,6 +3362,46 @@ paths:
       summary: Consultas Lote
       tags:
       - profundo
+  /v1/cultura-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em cultura — SICONFI Função 13 (CULT-01).
+
+
+        Despesa liquidada na função 13 (Cultura) por habitante. Proxy do compromisso
+        orçamentário
+
+        com equipamentos e políticas culturais locais (bibliotecas, museus, teatros).
+        Não inclui
+
+        recursos da Lei Rouanet nem fundos estaduais/federais fora do orçamento municipal.
+
+        Níveis: expressivo (≥ R$30/hab/ano), moderado (≥ R$10), incipiente (< R$10).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: cultura_viva_v1_cultura_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CulturaVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Cultura Viva
+      tags:
+      - produtos
   /v1/eco-vivo/{codigo_ibge}:
     get:
       description: 'Investimento municipal em gestão ambiental — SICONFI Função 18

@@ -3,7 +3,8 @@ Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraV
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
 CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11),
 CasaViva (HAB-02), ViaViva (MOB-01), EcoVivo (AMB-01),
-EscolaViva (EDU-03), SaneFundo (SANE-05)."""
+EscolaViva (EDU-03), SaneFundo (SANE-05),
+AssisViva (SOCIAL-01), CulturaViva (CULT-01)."""
 
 from __future__ import annotations
 
@@ -11,9 +12,11 @@ from pydantic import BaseModel
 
 from app.indicadores.modelos import MetaProveniencia
 from app.produtos.agua_viva import NivelAcesso
+from app.produtos.assis_viva import NivelAssistencia
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.cacador_arboviroses import NivelArboviroses
 from app.produtos.casa_viva import NivelHabitacao
+from app.produtos.cultura_viva import NivelCultura
 from app.produtos.eco_vivo import NivelAmbiental
 from app.produtos.escola_viva import NivelEducacaoPublica
 from app.produtos.esgoto_invisivel import NivelGap
@@ -601,6 +604,46 @@ class EcoVivaOut(BaseModel):
     valor_liquidado: float | None  # BRL — função 18 liquidado total
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelAmbiental
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- AssisViva (SOCIAL-01)
+
+
+class AssisVivaOut(BaseModel):
+    """Investimento municipal em assistência social per capita — SOCIAL-01 AssisViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 08 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelAssistencia
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- CulturaViva (CULT-01)
+
+
+class CulturaVivaOut(BaseModel):
+    """Investimento municipal em cultura per capita — CULT-01 CulturaViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 13 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelCultura
 
     nota: str
     meta: MetaProveniencia | None

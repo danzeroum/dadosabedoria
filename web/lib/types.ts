@@ -746,3 +746,37 @@ export interface SaneFundoResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------- AssisViva (SOCIAL-01)
+
+export type NivelAssistencia = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface AssisVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelAssistencia;
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
+// ------------------------------------------------- CulturaViva (CULT-01)
+
+export type NivelCultura = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface CulturaVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelCultura;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

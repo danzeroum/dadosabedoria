@@ -368,6 +368,68 @@ components:
       - meta
       title: CasaVivaOut
       type: object
+    CidadeVivaOut:
+      description: Investimento municipal em urbanismo per capita — URB-01 CidadeViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: CidadeVivaOut
+      type: object
     Citacao:
       properties:
         fonte:
@@ -2575,6 +2637,69 @@ components:
       - meta
       title: SaneFundoOut
       type: object
+    SegurancaVivaOut:
+      description: Investimento municipal em segurança pública per capita — SEG-01
+        SegurançaViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: SegurancaVivaOut
+      type: object
     SemeandoTransparenciaOut:
       description: Investimento público municipal em agricultura — ALIM-05 SemeandoTransparência.
       properties:
@@ -3177,6 +3302,47 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Casa Viva
+      tags:
+      - produtos
+  /v1/cidade-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em urbanismo — SICONFI Função 15 (URB-01).
+
+
+        Despesa liquidada na função 15 (Urbanismo) por habitante. Proxy do compromisso
+
+        orçamentário com infraestrutura urbana: pavimentação, parques, iluminação
+        pública,
+
+        drenagem e limpeza urbana. Não inclui obras estaduais/federais fora do orçamento
+
+        municipal. Municípios em expansão tendem a ter maior gasto per capita.
+
+        Níveis: expressivo (≥ R$200/hab/ano), moderado (≥ R$80), incipiente (< R$80).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: cidade_viva_v1_cidade_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CidadeVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Cidade Viva
       tags:
       - produtos
   /v1/cobertura/caged:
@@ -4324,6 +4490,50 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Sane Fundo
+      tags:
+      - produtos
+  /v1/seguranca-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em segurança pública — SICONFI Função 06
+        (SEG-01).
+
+
+        Despesa liquidada na função 06 (Segurança Pública) por habitante. Proxy do
+        esforço
+
+        orçamentário com GCM, Defesa Civil e monitoramento local. A maior parte da
+        segurança
+
+        pública no Brasil é custeada pelos estados — municípios sem GCM podem ter
+        gasto próximo
+
+        de zero mesmo com cobertura policial estadual adequada.
+
+        Níveis: expressivo (≥ R$100/hab/ano), moderado (≥ R$30), incipiente (< R$30).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: seguranca_viva_v1_seguranca_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SegurancaVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Seguranca Viva
       tags:
       - produtos
   /v1/semeando-transparencia/{codigo_ibge}:

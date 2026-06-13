@@ -28,6 +28,8 @@ from app.produtos.cacador_arboviroses import NOTA_HONESTA as NOTA_CACADOR
 from app.produtos.cacador_arboviroses import calcular as calcular_cacador
 from app.produtos.casa_viva import NOTA_HONESTA as NOTA_CASA_VIVA
 from app.produtos.casa_viva import calcular as calcular_casa_viva
+from app.produtos.cidade_viva import NOTA_HONESTA as NOTA_CIDADE_VIVA
+from app.produtos.cidade_viva import calcular as calcular_cidade_viva
 from app.produtos.cultura_viva import NOTA_HONESTA as NOTA_CULTURA_VIVA
 from app.produtos.cultura_viva import calcular as calcular_cultura_viva
 from app.produtos.eco_vivo import NOTA_HONESTA as NOTA_ECO_VIVO
@@ -52,6 +54,7 @@ from app.produtos.modelos import (
     BussolaEduTrabOut,
     CacadorArboviroesOut,
     CasaVivaOut,
+    CidadeVivaOut,
     CulturaVivaOut,
     EcoVivaOut,
     EscolaVivaOut,
@@ -71,6 +74,7 @@ from app.produtos.modelos import (
     RioEmRiscoOut,
     SalarioRadarOut,
     SaneFundoOut,
+    SegurancaVivaOut,
     SemeandoTransparenciaOut,
     SentinelaMaternаOut,
     SentinelaRespOut,
@@ -93,6 +97,8 @@ from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
 from app.produtos.sane_fundo import NOTA_HONESTA as NOTA_SANE_FUNDO
 from app.produtos.sane_fundo import calcular as calcular_sane_fundo
+from app.produtos.seguranca_viva import NOTA_HONESTA as NOTA_SEGURANCA_VIVA
+from app.produtos.seguranca_viva import calcular as calcular_seguranca_viva
 from app.produtos.semeando_transparencia import NOTA_HONESTA as NOTA_SEMEANDO
 from app.produtos.semeando_transparencia import calcular as calcular_semeando
 from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
@@ -1836,5 +1842,151 @@ class CulturaVivaFacade:
             valor_por_hab=cv.valor_por_hab,
             nivel=cv.nivel,
             nota=NOTA_CULTURA_VIVA,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- SegurançaViva (SEG-01)
+
+
+class SegurancaVivaFacade:
+    """Fachada do investimento público municipal em segurança pública — SEG-01."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:seguranca-viva")
+    async def seguranca_viva(self, *, codigo_ibge: str) -> SegurancaVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"SegurançaViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "06",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        sv = calcular_seguranca_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return SegurancaVivaOut(
+            codigo_ibge=sv.codigo_ibge,
+            nome=sv.nome,
+            uf=sv.uf,
+            populacao=sv.populacao,
+            ano=sv.ano,
+            valor_liquidado=sv.valor_liquidado,
+            valor_por_hab=sv.valor_por_hab,
+            nivel=sv.nivel,
+            nota=NOTA_SEGURANCA_VIVA,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- CidadeViva (URB-01)
+
+
+class CidadeVivaFacade:
+    """Fachada do investimento público municipal em urbanismo — URB-01."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:cidade-viva")
+    async def cidade_viva(self, *, codigo_ibge: str) -> CidadeVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"CidadeViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "15",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        cv = calcular_cidade_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return CidadeVivaOut(
+            codigo_ibge=cv.codigo_ibge,
+            nome=cv.nome,
+            uf=cv.uf,
+            populacao=cv.populacao,
+            ano=cv.ano,
+            valor_liquidado=cv.valor_liquidado,
+            valor_por_hab=cv.valor_por_hab,
+            nivel=cv.nivel,
+            nota=NOTA_CIDADE_VIVA,
             meta=None,
         )

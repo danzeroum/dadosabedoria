@@ -59,10 +59,10 @@ def test_calcular_com_populacao_e_casos() -> None:
     assert ca.populacao == 11_451_245
     assert ca.ano == 2023
     assert ca.casos_confirmados == 8000
-    # incidência: 8000/11451245*100000 ≈ 69.87
+    # incidência: 8000/11451245*100000 ≈ 69.87 → moderado (≥20, <100)
     assert ca.incidencia_100k is not None
     assert abs(ca.incidencia_100k - 69.87) < 0.5
-    assert ca.nivel == "elevado"
+    assert ca.nivel == "moderado"
 
 
 def test_calcular_sem_casos_retorna_sem_dado() -> None:

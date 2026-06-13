@@ -5,8 +5,10 @@ import type {
   CasaVivaResponse,
   CidadeVivaResponse,
   CulturaVivaResponse,
+  DistribuicaoFuncaoResponse,
   EcoVivaResponse,
   EscolaVivaResponse,
+  PerfilOrcamentarioResponse,
   PressaoSusResponse,
   SaneFundoResponse,
   SegurancaVivaResponse,
@@ -528,4 +530,24 @@ export async function buscarCidadeViva(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`CidadeViva ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<CidadeVivaResponse>;
+}
+
+export async function buscarPerfilOrcamentario(
+  codigo: string,
+): Promise<PerfilOrcamentarioResponse | null> {
+  const url = `${BASE}/v1/inferencia/municipio/${codigo}/orcamento`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`PerfilOrcamentario ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<PerfilOrcamentarioResponse>;
+}
+
+export async function buscarDistribuicaoFuncao(
+  funcaoCod: string,
+): Promise<DistribuicaoFuncaoResponse | null> {
+  const url = `${BASE}/v1/inferencia/distribuicao-funcao/${funcaoCod}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`DistribuicaoFuncao ${funcaoCod}: HTTP ${res.status}`);
+  return res.json() as Promise<DistribuicaoFuncaoResponse>;
 }

@@ -396,7 +396,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   + tela `/sentinela-resp/{ibge}`; contagem de AIH grupo J do CID-10 por mês com k-anonimato
   (supressão < 5); níveis elevado/moderado/baixo/suprimido; tendência mês vs. anterior; série
   histórica com barras; dupla face §17 (sem identificação de pacientes).
-- [ ] 🔵 SAUDE-02 Caçador de Arboviroses; SAUDE-03 Materno-Infantil; SAUDE-11 Burnout.
+- [x] 🔵 **SAUDE-02 Caçador de Arboviroses** (SINAN/MS) — endpoint `GET /v1/cacador-arboviroses/{ibge}`
+  + tela `/cacador-arboviroses/{ibge}`; casos confirmados de dengue (CLASSI_FIN 1-3) por 100k hab
+  por município/ano; k-anonimato n_minimo=5; limiares epidemiológicos MS/PAHO (crítico ≥300, elevado
+  ≥100, moderado ≥20); nota honesta sobre subnotificação (3-10x) e lag (6-12 meses); Dagster asset
+  `valores_sinan` + schedule `schedule_sinan_anual` (1/jul); 2026-06-13.
+- [ ] 🔵 SAUDE-03 Materno-Infantil; SAUDE-11 Burnout.
   *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*
 
 ### 2C. Saneamento, água, energia, alimentação

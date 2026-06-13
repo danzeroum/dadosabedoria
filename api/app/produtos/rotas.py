@@ -2,7 +2,7 @@
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
-SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02)."""
+SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), CaçadorArboviroses (SAUDE-02)."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from app.core.db import get_session
 from app.produtos.facade import (
     AguaVivaFacade,
     BussolaEduTrabFacade,
+    CacadorArbovirosesFacade,
     EsgotoInvisivelFacade,
     FomeOcultaFacade,
     GiroLocalFacade,
@@ -30,6 +31,7 @@ from app.produtos.facade import (
 from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
+    CacadorArboviroesOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -263,3 +265,17 @@ async def fome_oculta(
     404 quando não há dado SISVAN para o município.
     """
     return await FomeOcultaFacade(session).fome_oculta(codigo_ibge=codigo_ibge)
+
+
+@router.get("/cacador-arboviroses/{codigo_ibge}", response_model=CacadorArboviroesOut)
+async def cacador_arboviroses(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> CacadorArboviroesOut:
+    """Casos confirmados de dengue/100k hab. 404 quando não há dado SINAN.
+
+    Incidência de dengue confirmada (CLASSI_FIN 1-3) do SINAN/MS por município/ano.
+    Níveis: crítico (≥ 300/100k → epidemia), elevado (≥ 100/100k → alto risco),
+    moderado (≥ 20/100k), baixo (< 20/100k).
+    Inclui k-anonimato (n_minimo=5) — municípios com < 5 casos têm dado suprimido.
+    """
+    return await CacadorArbovirosesFacade(session).cacador_arboviroses(codigo_ibge=codigo_ibge)

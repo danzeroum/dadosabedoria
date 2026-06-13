@@ -661,3 +661,20 @@ export interface PressaoSusResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------- CasaViva (HAB-02)
+
+export type NivelHabitacao = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface CasaVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelHabitacao;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

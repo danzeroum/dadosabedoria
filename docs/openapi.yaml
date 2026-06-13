@@ -243,6 +243,68 @@ components:
       - meta
       title: CacadorArboviroesOut
       type: object
+    CasaVivaOut:
+      description: Investimento municipal em habitação per capita — HAB-02 CasaViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: CasaVivaOut
+      type: object
     Citacao:
       properties:
         fonte:
@@ -2663,6 +2725,44 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Cacador Arboviroses
+      tags:
+      - produtos
+  /v1/casa-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em habitação — SICONFI Função 16 (HAB-02).
+
+
+        Despesa liquidada na função 16 (Habitação) por habitante. Proxy do compromisso
+
+        orçamentário com política habitacional. Não inclui recursos federais (MCMV/FGTS)
+
+        que não transitam pelo orçamento municipal.
+
+        Níveis: expressivo (≥ R$50/hab/ano), moderado (≥ R$10), incipiente (< R$10).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: casa_viva_v1_casa_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasaVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Casa Viva
       tags:
       - produtos
   /v1/cobertura/caged:

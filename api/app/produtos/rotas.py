@@ -3,7 +3,7 @@ Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalh
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
 SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
-CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11)."""
+CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11), CasaViva (HAB-02)."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from app.produtos.facade import (
     AguaVivaFacade,
     BussolaEduTrabFacade,
     CacadorArbovirosesFacade,
+    CasaVivaFacade,
     EsgotoInvisivelFacade,
     FomeOcultaFacade,
     GiroLocalFacade,
@@ -35,6 +36,7 @@ from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
     CacadorArboviroesOut,
+    CasaVivaOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -312,3 +314,16 @@ async def pressao_sus(
     404 quando não há dado SICONFI para o município.
     """
     return await PressaoSusFacade(session).pressao_sus(codigo_ibge=codigo_ibge)
+
+
+@router.get("/casa-viva/{codigo_ibge}", response_model=CasaVivaOut)
+async def casa_viva(codigo_ibge: str, session: AsyncSession = Depends(get_session)) -> CasaVivaOut:
+    """Investimento municipal em habitação — SICONFI Função 16 (HAB-02).
+
+    Despesa liquidada na função 16 (Habitação) por habitante. Proxy do compromisso
+    orçamentário com política habitacional. Não inclui recursos federais (MCMV/FGTS)
+    que não transitam pelo orçamento municipal.
+    Níveis: expressivo (≥ R$50/hab/ano), moderado (≥ R$10), incipiente (< R$10).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await CasaVivaFacade(session).casa_viva(codigo_ibge=codigo_ibge)

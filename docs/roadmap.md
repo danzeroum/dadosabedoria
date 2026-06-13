@@ -462,8 +462,8 @@ monetizável; cidadão assina alerta com consentimento isolado e auditado; IA s�
 **Objetivo:** completar o catálogo, extrair serviços por dor, capacidades analíticas avançadas,
 operação multi-cliente B2G.
 
-- [ ] 🔵 Habitação: HAB-01 Alerta de Despejo, HAB-02, HAB-03 Escudo Antigentrificação, HAB-04 Risco
-  Moradia-Clima, HAB-05 (com mitigação de dupla face onde marcada).
+- [x] 🔵 **HAB-02 CasaViva** (SICONFI Função 16) — endpoint `GET /v1/casa-viva/{ibge}` + tela `/casa-viva/{codigo}`; despesa liquidada na função 16 (Habitação) por habitante; níveis expressivo≥R$50/hab, moderado≥R$10, incipiente<R$10; lê `execucao_funcao` (padrão SemeandoTransparência/PressaoSus, sem pipeline novo); nota honesta (MCMV/FGTS federal não incluso; COHABs podem subregistrar; dupla face §17); 12 testes unitários + 4 integração; 2026-06-13.
+- [ ] 🔵 Habitação pendente: HAB-01 Alerta de Despejo (DataJud — 🔴 gate credencial), HAB-03 Escudo Antigentrificação (dados mercado imobiliário — fonte a definir), HAB-04 Risco Moradia-Clima (🔴 gate Conselho PbD), HAB-05 (a definir).
 - [ ] 🔵 Justiça/Direitos/Crédito: JUST-01, DIR-01 (via Defensoria, zero PII), CRED-01 (só índice agregado).
 - [ ] 🔵 Mobilidade (MOB-01), Meio Ambiente (AMB-01/02), Alimentação (ALIM-03/04), Transparência
   (TRANSP-04/07), e os produtos score-4 de Saúde/Educação/Saneamento.

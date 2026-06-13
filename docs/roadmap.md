@@ -481,8 +481,11 @@ operação multi-cliente B2G.
   grafo. Sempre pela fronteira do plugin.
 - [ ] 🔵 Migração de compute gerenciado→K8s só se >3 réplicas; broker durável (Kafka) se >5.000
   eventos/min; OLAP dedicado (ClickHouse) se consulta recorrente >5 s.
-- [ ] 🔵 Runbooks completos (incidentes, depreciação, multi-serviço); SLAs/alertas de frescor por
-  ativo (Dagster Degrau 4, backfills gerenciados).
+- [x] 🔵 Runbooks completos (incidentes, depreciação, multi-serviço); SLAs/alertas de frescor por
+  ativo (Dagster Degrau 4, backfills gerenciados). **FreshnessPolicy** (cron para mensais, time_window
+  para anuais) em todos os 14 ativos; **BackfillPolicy.multi_run(1)** declarativa; endpoint
+  **GET /v1/frescor** (status ok/atencao/atrasado/sem_dado por fonte via linhagem); 8 testes Dagster +
+  17 testes unit; 2026-06-13.
 - [ ] 🟡 Ordem fina dos produtos (comitê trimestral) · metas de north star · foco de canal/parcerias B2G.
 
 **Critério de saída:** catálogo coberto nos domínios priorizados; serviços extraídos com seus próprios

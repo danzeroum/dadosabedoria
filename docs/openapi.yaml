@@ -1132,6 +1132,45 @@ components:
       - n_indicadores
       title: FonteAcervoOut
       type: object
+    FonteFrescorOut:
+      properties:
+        dias_desde_execucao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Dias Desde Execucao
+        fonte:
+          title: Fonte
+          type: string
+        lag_tipico_dias:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lag Tipico Dias
+        nome:
+          title: Nome
+          type: string
+        periodicidade:
+          title: Periodicidade
+          type: string
+        status:
+          title: Status
+          type: string
+        ultima_execucao:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ultima Execucao
+      required:
+      - fonte
+      - nome
+      - periodicidade
+      - lag_tipico_dias
+      - ultima_execucao
+      - dias_desde_execucao
+      - status
+      title: FonteFrescorOut
+      type: object
     FonteOut:
       properties:
         ate:
@@ -3897,6 +3936,23 @@ paths:
       tags:
       - indicadores
       - proveniencia
+  /v1/frescor:
+    get:
+      description: Lista o status de frescor de cada fonte de dados ingerida.
+      operationId: listar_frescor_v1_frescor_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FonteFrescorOut'
+                title: Response Listar Frescor V1 Frescor Get
+                type: array
+          description: Successful Response
+      summary: Listar Frescor
+      tags:
+      - frescor
   /v1/giro-local/{codigo_ibge}:
     get:
       description: 'Dinamismo econômico local per capita: criação de emprego formal

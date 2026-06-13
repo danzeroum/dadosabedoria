@@ -112,7 +112,7 @@ def test_calcular_zero_liquidado_nivel_critico() -> None:
 
 
 def test_nota_honesta_presente() -> None:
-    assert "Função 10" in NOTA_HONESTA
+    assert "função 10" in NOTA_HONESTA
     assert "burnout" in NOTA_HONESTA
-    assert "proxy" in NOTA_HONESTA
+    assert "Proxy" in NOTA_HONESTA
     assert "CAT/INSS" in NOTA_HONESTA

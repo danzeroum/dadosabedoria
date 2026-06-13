@@ -747,6 +747,40 @@ export interface SaneFundoResponse {
   meta: MetaProveniencia | null;
 }
 
+// ------------------------------------------------- SegurançaViva (SEG-01)
+
+export type NivelSeguranca = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface SegurancaVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelSeguranca;
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
+// ------------------------------------------------- CidadeViva (URB-01)
+
+export type NivelUrbanismo = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface CidadeVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelUrbanismo;
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
 // ------------------------------------------------- AssisViva (SOCIAL-01)
 
 export type NivelAssistencia = "expressivo" | "moderado" | "incipiente" | "sem_dado";

@@ -5,7 +5,8 @@ EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio
 SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
 CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11), CasaViva (HAB-02),
 ViaViva (MOB-01), EcoVivo (AMB-01), EscolaViva (EDU-03), SaneFundo (SANE-05),
-AssisViva (SOCIAL-01), CulturaViva (CULT-01)."""
+AssisViva (SOCIAL-01), CulturaViva (CULT-01),
+SegurançaViva (SEG-01), CidadeViva (URB-01)."""
 
 from __future__ import annotations
 
@@ -19,6 +20,7 @@ from app.produtos.facade import (
     BussolaEduTrabFacade,
     CacadorArbovirosesFacade,
     CasaVivaFacade,
+    CidadeVivaFacade,
     CulturaVivaFacade,
     EcoVivaFacade,
     EscolaVivaFacade,
@@ -35,6 +37,7 @@ from app.produtos.facade import (
     RioEmRiscoFacade,
     SalarioRadarFacade,
     SaneFundoFacade,
+    SegurancaVivaFacade,
     SemeandoTransparenciaFacade,
     SentinelaMaternаFacade,
     SentinelaRespFacade,
@@ -46,6 +49,7 @@ from app.produtos.modelos import (
     BussolaEduTrabOut,
     CacadorArboviroesOut,
     CasaVivaOut,
+    CidadeVivaOut,
     CulturaVivaOut,
     EcoVivaOut,
     EscolaVivaOut,
@@ -64,6 +68,7 @@ from app.produtos.modelos import (
     RioEmRiscoOut,
     SalarioRadarOut,
     SaneFundoOut,
+    SegurancaVivaOut,
     SemeandoTransparenciaOut,
     SentinelaMaternаOut,
     SentinelaRespOut,
@@ -428,3 +433,35 @@ async def cultura_viva(
     404 quando não há dado SICONFI para o município.
     """
     return await CulturaVivaFacade(session).cultura_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/seguranca-viva/{codigo_ibge}", response_model=SegurancaVivaOut)
+async def seguranca_viva(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> SegurancaVivaOut:
+    """Investimento municipal em segurança pública — SICONFI Função 06 (SEG-01).
+
+    Despesa liquidada na função 06 (Segurança Pública) por habitante. Proxy do esforço
+    orçamentário com GCM, Defesa Civil e monitoramento local. A maior parte da segurança
+    pública no Brasil é custeada pelos estados — municípios sem GCM podem ter gasto próximo
+    de zero mesmo com cobertura policial estadual adequada.
+    Níveis: expressivo (≥ R$100/hab/ano), moderado (≥ R$30), incipiente (< R$30).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await SegurancaVivaFacade(session).seguranca_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/cidade-viva/{codigo_ibge}", response_model=CidadeVivaOut)
+async def cidade_viva(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> CidadeVivaOut:
+    """Investimento municipal em urbanismo — SICONFI Função 15 (URB-01).
+
+    Despesa liquidada na função 15 (Urbanismo) por habitante. Proxy do compromisso
+    orçamentário com infraestrutura urbana: pavimentação, parques, iluminação pública,
+    drenagem e limpeza urbana. Não inclui obras estaduais/federais fora do orçamento
+    municipal. Municípios em expansão tendem a ter maior gasto per capita.
+    Níveis: expressivo (≥ R$200/hab/ano), moderado (≥ R$80), incipiente (< R$80).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await CidadeVivaFacade(session).cidade_viva(codigo_ibge=codigo_ibge)

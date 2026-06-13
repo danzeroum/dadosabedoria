@@ -3,11 +3,13 @@ import type {
   AssisVivaResponse,
   CacadorArboviroesResponse,
   CasaVivaResponse,
+  CidadeVivaResponse,
   CulturaVivaResponse,
   EcoVivaResponse,
   EscolaVivaResponse,
   PressaoSusResponse,
   SaneFundoResponse,
+  SegurancaVivaResponse,
   CoberturaDatasus,
   CoberturaInep,
   CoberturaPncp,
@@ -506,4 +508,24 @@ export async function buscarCulturaViva(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`CulturaViva ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<CulturaVivaResponse>;
+}
+
+export async function buscarSegurancaViva(
+  codigo: string,
+): Promise<SegurancaVivaResponse | null> {
+  const url = `${BASE}/v1/seguranca-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`SegurancaViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<SegurancaVivaResponse>;
+}
+
+export async function buscarCidadeViva(
+  codigo: string,
+): Promise<CidadeVivaResponse | null> {
+  const url = `${BASE}/v1/cidade-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`CidadeViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<CidadeVivaResponse>;
 }

@@ -4,7 +4,8 @@ AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (A
 CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11),
 CasaViva (HAB-02), ViaViva (MOB-01), EcoVivo (AMB-01),
 EscolaViva (EDU-03), SaneFundo (SANE-05),
-AssisViva (SOCIAL-01), CulturaViva (CULT-01)."""
+AssisViva (SOCIAL-01), CulturaViva (CULT-01),
+SegurançaViva (SEG-01), CidadeViva (URB-01)."""
 
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ from app.produtos.assis_viva import NivelAssistencia
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.cacador_arboviroses import NivelArboviroses
 from app.produtos.casa_viva import NivelHabitacao
+from app.produtos.cidade_viva import NivelUrbanismo
 from app.produtos.cultura_viva import NivelCultura
 from app.produtos.eco_vivo import NivelAmbiental
 from app.produtos.escola_viva import NivelEducacaoPublica
@@ -33,6 +35,7 @@ from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.rio_em_risco import NivelSeca
 from app.produtos.salario_radar import NivelSalario
 from app.produtos.sane_fundo import NivelSaneamento
+from app.produtos.seguranca_viva import NivelSeguranca
 from app.produtos.semeando_transparencia import NivelInvestimento
 from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
 from app.produtos.sentinela_materna import NivelMaterno
@@ -644,6 +647,46 @@ class CulturaVivaOut(BaseModel):
     valor_liquidado: float | None  # BRL — função 13 liquidado total
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelCultura
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- SegurançaViva (SEG-01)
+
+
+class SegurancaVivaOut(BaseModel):
+    """Investimento municipal em segurança pública per capita — SEG-01 SegurançaViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 06 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelSeguranca
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- CidadeViva (URB-01)
+
+
+class CidadeVivaOut(BaseModel):
+    """Investimento municipal em urbanismo per capita — URB-01 CidadeViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 15 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelUrbanismo
 
     nota: str
     meta: MetaProveniencia | None

@@ -1,6 +1,7 @@
 import type {
   AguaVivaResponse,
   CacadorArboviroesResponse,
+  PressaoSusResponse,
   CoberturaDatasus,
   CoberturaInep,
   CoberturaPncp,
@@ -418,4 +419,14 @@ export async function buscarCacadorArboviroses(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`CacadorArboviroses ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<CacadorArboviroesResponse>;
+}
+
+export async function buscarPressaoSus(
+  codigo: string,
+): Promise<PressaoSusResponse | null> {
+  const url = `${BASE}/v1/pressao-sus/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`PressaoSus ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<PressaoSusResponse>;
 }

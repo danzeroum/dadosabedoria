@@ -1,7 +1,7 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
-CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03)."""
+CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11)."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from app.produtos.luz_no_mapa import NivelEnergia
 from app.produtos.obra_viva import NivelContratos
 from app.produtos.onde_foi import Banda, ExeEstado
 from app.produtos.prato_frio import NivelProducao
+from app.produtos.pressao_sus import NivelPressaoSus
 from app.produtos.pulso_produtivo import Pulso, Tendencia
 from app.produtos.radar_evasao import NivelEvasao
 from app.produtos.regiao_emprega import NivelRegiao
@@ -473,6 +474,26 @@ class CacadorArboviroesOut(BaseModel):
     casos_confirmados: int | None  # contagem após k-anon (None = suprimido)
     incidencia_100k: float | None  # casos / pop × 100k; None sem população ou suprimido
     nivel: NivelArboviroses
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- PressaoSus (SAUDE-11)
+
+
+class PressaoSusOut(BaseModel):
+    """Capacidade de financiamento do SUS local — SAUDE-11 Pressão no SUS."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 10 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelPressaoSus
 
     nota: str
     meta: MetaProveniencia | None

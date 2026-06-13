@@ -49,6 +49,7 @@ from app.produtos.modelos import (
     MunicipioEmpregoOut,
     ObraVivaOut,
     PratoFrioOut,
+    PressaoSusOut,
     PulsoProdutivoOut,
     RadarEvasaoOut,
     RegiaoEmpregaOut,
@@ -62,6 +63,8 @@ from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
 from app.produtos.obra_viva import calcular as calcular_obra_viva
 from app.produtos.prato_frio import NOTA_HONESTA as NOTA_PRATO_FRIO
 from app.produtos.prato_frio import calcular as calcular_prato_frio
+from app.produtos.pressao_sus import NOTA_HONESTA as NOTA_PRESSAO_SUS
+from app.produtos.pressao_sus import calcular as calcular_pressao_sus
 from app.produtos.pulso_produtivo import NOTA_HONESTA, MesSaldo, calcular
 from app.produtos.radar_evasao import NOTA_HONESTA as NOTA_RADAR
 from app.produtos.radar_evasao import calcular as calcular_radar
@@ -94,6 +97,7 @@ CODIGO_PAM = "alimentacao.producao.valor_total"
 CODIGO_SISVAN = "alimentacao.nutricao.baixo_peso_pct"
 CODIGO_SISVAN_GESTANTE = "saude.materno.gestante_baixo_peso_pct"
 CODIGO_SINAN = "saude.arboviroses.dengue_casos"
+_FUNCAO_SAUDE = "10"  # SICONFI Função 10 — Saúde
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -1228,4 +1232,77 @@ class CacadorArbovirosesFacade:
             nivel=ca.nivel,
             nota=NOTA_CACADOR,
             meta=_meta(meta_row),
+        )
+
+
+# ------------------------------------------------- PressaoSus (SAUDE-11)
+
+
+class PressaoSusFacade:
+    """Fachada do produto Pressão no SUS — SAUDE-11."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:pressao-sus")
+    async def pressao_sus(self, *, codigo_ibge: str) -> PressaoSusOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"Pressão no SUS para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == _FUNCAO_SAUDE,
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        ps = calcular_pressao_sus(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return PressaoSusOut(
+            codigo_ibge=ps.codigo_ibge,
+            nome=ps.nome,
+            uf=ps.uf,
+            populacao=ps.populacao,
+            ano=ps.ano,
+            valor_liquidado=ps.valor_liquidado,
+            valor_por_hab=ps.valor_por_hab,
+            nivel=ps.nivel,
+            nota=NOTA_PRESSAO_SUS,
+            meta=None,
         )

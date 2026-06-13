@@ -4,7 +4,8 @@ Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
 SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
 CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11), CasaViva (HAB-02),
-ViaViva (MOB-01), EcoVivo (AMB-01), EscolaViva (EDU-03), SaneFundo (SANE-05)."""
+ViaViva (MOB-01), EcoVivo (AMB-01), EscolaViva (EDU-03), SaneFundo (SANE-05),
+AssisViva (SOCIAL-01), CulturaViva (CULT-01)."""
 
 from __future__ import annotations
 
@@ -14,9 +15,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_session
 from app.produtos.facade import (
     AguaVivaFacade,
+    AssisVivaFacade,
     BussolaEduTrabFacade,
     CacadorArbovirosesFacade,
     CasaVivaFacade,
+    CulturaVivaFacade,
     EcoVivaFacade,
     EscolaVivaFacade,
     EsgotoInvisivelFacade,
@@ -39,9 +42,11 @@ from app.produtos.facade import (
 )
 from app.produtos.modelos import (
     AguaVivaOut,
+    AssisVivaOut,
     BussolaEduTrabOut,
     CacadorArboviroesOut,
     CasaVivaOut,
+    CulturaVivaOut,
     EcoVivaOut,
     EscolaVivaOut,
     EsgotoInvisivelOut,
@@ -393,3 +398,33 @@ async def sane_fundo(
     404 quando não há dado SICONFI para o município.
     """
     return await SaneFundoFacade(session).sane_fundo(codigo_ibge=codigo_ibge)
+
+
+@router.get("/assis-viva/{codigo_ibge}", response_model=AssisVivaOut)
+async def assis_viva(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> AssisVivaOut:
+    """Investimento municipal em assistência social — SICONFI Função 08 (SOCIAL-01).
+
+    Despesa liquidada na função 08 (Assistência Social) por habitante. Proxy do esforço
+    orçamentário com CRAS/CREAS e benefícios municipais do SUAS. Não inclui transferências
+    federais (Bolsa Família, BPC) que não transitam pelo liquidado municipal.
+    Níveis: expressivo (≥ R$150/hab/ano), moderado (≥ R$50), incipiente (< R$50).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await AssisVivaFacade(session).assis_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/cultura-viva/{codigo_ibge}", response_model=CulturaVivaOut)
+async def cultura_viva(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> CulturaVivaOut:
+    """Investimento municipal em cultura — SICONFI Função 13 (CULT-01).
+
+    Despesa liquidada na função 13 (Cultura) por habitante. Proxy do compromisso orçamentário
+    com equipamentos e políticas culturais locais (bibliotecas, museus, teatros). Não inclui
+    recursos da Lei Rouanet nem fundos estaduais/federais fora do orçamento municipal.
+    Níveis: expressivo (≥ R$30/hab/ano), moderado (≥ R$10), incipiente (< R$10).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await CulturaVivaFacade(session).cultura_viva(codigo_ibge=codigo_ibge)

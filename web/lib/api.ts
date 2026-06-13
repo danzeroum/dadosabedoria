@@ -1,7 +1,9 @@
 import type {
   AguaVivaResponse,
+  AssisVivaResponse,
   CacadorArboviroesResponse,
   CasaVivaResponse,
+  CulturaVivaResponse,
   EcoVivaResponse,
   EscolaVivaResponse,
   PressaoSusResponse,
@@ -484,4 +486,24 @@ export async function buscarSaneFundo(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`SaneFundo ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<SaneFundoResponse>;
+}
+
+export async function buscarAssisViva(
+  codigo: string,
+): Promise<AssisVivaResponse | null> {
+  const url = `${BASE}/v1/assis-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`AssisViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<AssisVivaResponse>;
+}
+
+export async function buscarCulturaViva(
+  codigo: string,
+): Promise<CulturaVivaResponse | null> {
+  const url = `${BASE}/v1/cultura-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`CulturaViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<CulturaVivaResponse>;
 }

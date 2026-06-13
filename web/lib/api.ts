@@ -9,6 +9,7 @@ import type {
   BussolaEduTrabProduto,
   CoberturaCAGED,
   FeatureCollectionIVM,
+  FomeOcultaResponse,
   GiroLocalProduto,
   IndicadorDetalhe,
   LuzNoMapaResponse,
@@ -387,4 +388,12 @@ export async function buscarSemeandoTransparencia(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`SemeandoTransparencia ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<SemeandoTransparenciaResponse>;
+}
+
+export async function buscarFomeOculta(codigo: string): Promise<FomeOcultaResponse | null> {
+  const url = `${BASE}/v1/fome-oculta/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`FomeOculta ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<FomeOcultaResponse>;
 }

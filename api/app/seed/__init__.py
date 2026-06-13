@@ -202,6 +202,18 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 365,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "sisvan",
+        "nome": "SISVAN — Sistema de Vigilância Alimentar e Nutricional",
+        "orgao": "Ministério da Saúde",
+        "url_doc": "https://sisvan.saude.gov.br/",
+        "licenca": "LAI/Dados Abertos",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 365,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
@@ -503,6 +515,33 @@ INDICADORES: list[dict[str, Any]] = [
             "Forma a confirmar na 1ª busca real (servicodados.ibge.gov.br)."
         ),
     },
+    {
+        "codigo": "alimentacao.nutricao.baixo_peso_pct",
+        "nome": "Prevalência de baixo peso em crianças < 5 anos",
+        "descricao": (
+            "% de crianças menores de 5 anos com magreza ou magreza acentuada "
+            "(CO_ESTADO_NUTRI_CRIANCA in [1,2]) entre as acompanhadas pelo SISVAN/MS "
+            "no município. Proxy de fome oculta (insegurança nutricional)."
+        ),
+        "dominio": "alimentacao",
+        "subdominio": "nutricao",
+        "unidade": "%",
+        "polaridade": "menor_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 5,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": False,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "sisvan",
+        "codigo_externo": "SISVAN_baixo_peso_pct",
+        "metodologia": (
+            "% de crianças < 5 anos com magreza acentuada (cód. 1) + magreza (cód. 2) "
+            "no estado nutricional do SISVAN, por município/ano. "
+            "Forma a confirmar na 1ª busca real (s3.sa-east-1.amazonaws.com/ckan.saude.gov.br)."
+        ),
+    },
 ]
 
 
@@ -757,6 +796,24 @@ async def _semear_fatos(
             meta,
             ContextoLinhagem(
                 f_pam, producao, "seed ALIM-01: prata->ouro (IBGE PAM valor_brl)", "seed"
+            ),
+        )
+
+    # ALIMENTAÇÃO (SISVAN, anual): % de crianças < 5 com baixo peso por município/ano.
+    baixo_peso = ind_ids["alimentacao.nutricao.baixo_peso_pct"]
+    f_sisvan = fonte_ids["sisvan"]
+    if not await _tem_dados_reais(conn, baixo_peso):
+        bp_cels = [
+            # SP: 2% → moderado (fixture: grau-demo)
+            CelulaOuro(baixo_peso, sp, date(2023, 1, 1), "anual", Decimal("2.0"), 50, 3, f_sisvan),
+            # Campinas: 5% → elevado (fixture: grau-demo)
+            CelulaOuro(baixo_peso, cps, date(2023, 1, 1), "anual", Decimal("5.0"), 20, 3, f_sisvan),
+        ]
+        await grav.escrever_ouro(
+            bp_cels,
+            meta,
+            ContextoLinhagem(
+                f_sisvan, baixo_peso, "seed ALIM-02: prata->ouro (SISVAN baixo_peso_pct)", "seed"
             ),
         )
 

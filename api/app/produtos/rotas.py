@@ -2,7 +2,7 @@
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
-SemeandoTransparência (ALIM-05)."""
+SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02)."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from app.produtos.facade import (
     AguaVivaFacade,
     BussolaEduTrabFacade,
     EsgotoInvisivelFacade,
+    FomeOcultaFacade,
     GiroLocalFacade,
     LuzNoMapaFacade,
     ObraVivaFacade,
@@ -30,6 +31,7 @@ from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
     EsgotoInvisivelOut,
+    FomeOcultaOut,
     GiroLocalOut,
     LuzNoMapaOut,
     ObraVivaOut,
@@ -248,3 +250,16 @@ async def semeando_transparencia(
     return await SemeandoTransparenciaFacade(session).semeando_transparencia(
         codigo_ibge=codigo_ibge
     )
+
+
+@router.get("/fome-oculta/{codigo_ibge}", response_model=FomeOcultaOut)
+async def fome_oculta(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> FomeOcultaOut:
+    """Insegurança nutricional de crianças < 5 anos — SISVAN/MS (ALIM-02).
+
+    % de crianças < 5 com magreza ou magreza acentuada acompanhadas pelo SISVAN.
+    Níveis: crítico (≥ 10%), elevado (≥ 5%), moderado (≥ 2%), baixo (< 2%).
+    404 quando não há dado SISVAN para o município.
+    """
+    return await FomeOcultaFacade(session).fome_oculta(codigo_ibge=codigo_ibge)

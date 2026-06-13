@@ -33,6 +33,7 @@ from app.ingestao.adaptadores.siconfi import (
     FetcherSiconfiFuncoesHTTP,
     FetcherSiconfiHTTP,
 )
+from app.ingestao.adaptadores.sisvan import AdaptadorSisvan, FetcherSisvanHTTP
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
 from app.ingestao.pipeline import (
@@ -46,6 +47,7 @@ from app.ingestao.pipeline import (
     executar_pncp,
     executar_siconfi,
     executar_siconfi_funcoes,
+    executar_sisvan,
     executar_snis,
 )
 
@@ -184,6 +186,15 @@ async def _rodar_pam(janela: Janela) -> None:  # pragma: no cover - rede
     adaptador = AdaptadorPam(FetcherPamHTTP())
     async with connect(settings.database_url) as conn:
         await executar_pam(janela, conn, adaptador, construir_store_padrao(), responsavel="dagster")
+
+
+async def _rodar_sisvan(janela: Janela) -> None:  # pragma: no cover - rede
+    settings = get_settings()
+    adaptador = AdaptadorSisvan(FetcherSisvanHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_sisvan(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
 
 
 # ------------------------------------------------------------------ Assets (Degrau 2)
@@ -344,6 +355,22 @@ def valores_pam(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # p
     return dg.MaterializeResult(metadata={"ano": context.partition_key})
 
 
+@dg.asset(
+    partitions_def=_ANUAL,
+    group_name="alimentacao",
+    description=(
+        "% de crianças < 5 anos com magreza ou magreza acentuada por município — "
+        "SISVAN/MS (estado nutricional). Proxy de fome oculta (ALIM-02)."
+    ),
+    metadata={"fonte": "SISVAN/Ministério da Saúde", "lag_tipico": "~12 meses"},
+)
+def valores_sisvan(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # pragma: no cover
+    comp = _comp_de_anual(context.partition_key)
+    context.log.info(f"SISVAN: ano {context.partition_key}")
+    asyncio.run(_rodar_sisvan(Janela.de_competencia(comp)))
+    return dg.MaterializeResult(metadata={"ano": context.partition_key})
+
+
 # ------------------------------------------------------------------ Asset jobs
 
 job_valores_caged = dg.define_asset_job("job_valores_caged", selection=["valores_caged"])
@@ -357,6 +384,7 @@ job_valores_snis = dg.define_asset_job("job_valores_snis", selection=["valores_s
 job_valores_aneel = dg.define_asset_job("job_valores_aneel", selection=["valores_aneel"])
 job_valores_ana = dg.define_asset_job("job_valores_ana", selection=["valores_ana"])
 job_valores_pam = dg.define_asset_job("job_valores_pam", selection=["valores_pam"])
+job_valores_sisvan = dg.define_asset_job("job_valores_sisvan", selection=["valores_sisvan"])
 
 
 # ------------------------------------------------------------------ Schedules
@@ -438,6 +466,14 @@ def schedule_pam_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
     return dg.RunRequest(partition_key=str(ano))
 
 
+@dg.schedule(
+    job=job_valores_sisvan, cron_schedule="0 8 1 6 *"
+)  # 1/jun — dados SISVAN do exercício anterior
+def schedule_sisvan_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(partition_key=str(ano))
+
+
 # ------------------------------------------------------------------ Definições
 
 defs = dg.Definitions(
@@ -453,6 +489,7 @@ defs = dg.Definitions(
         valores_aneel,
         valores_ana,
         valores_pam,
+        valores_sisvan,
     ],
     jobs=[
         job_valores_caged,
@@ -466,6 +503,7 @@ defs = dg.Definitions(
         job_valores_aneel,
         job_valores_ana,
         job_valores_pam,
+        job_valores_sisvan,
     ],
     schedules=[
         schedule_caged_mensal,
@@ -479,5 +517,6 @@ defs = dg.Definitions(
         schedule_aneel_anual,
         schedule_ana_anual,
         schedule_pam_anual,
+        schedule_sisvan_anual,
     ],
 )

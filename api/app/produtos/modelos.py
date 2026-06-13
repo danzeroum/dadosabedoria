@@ -10,6 +10,7 @@ from app.indicadores.modelos import MetaProveniencia
 from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.esgoto_invisivel import NivelGap
+from app.produtos.fome_oculta import NivelFomeOculta
 from app.produtos.giro_local import NivelCredito, NivelEmprego
 from app.produtos.luz_no_mapa import NivelEnergia
 from app.produtos.obra_viva import NivelContratos
@@ -388,6 +389,26 @@ class PratoFrioOut(BaseModel):
     valor_total: float | None  # BRL total (soma das lavouras)
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelProducao
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- FomeOculta (ALIM-02)
+
+
+class FomeOcultaOut(BaseModel):
+    """Insegurança nutricional de crianças < 5 anos — ALIM-02 Fome Oculta."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    n_acompanhadas: int | None  # total de crianças acompanhadas (n_amostra)
+    baixo_peso_pct: float | None  # % com magreza/magreza acentuada
+    nivel: NivelFomeOculta
 
     nota: str
     meta: MetaProveniencia | None

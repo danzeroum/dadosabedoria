@@ -18,19 +18,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             DadoSabedoria
           </Link>
           <nav className="topo-nav" aria-label="Produtos">
+            <Link href="/produtos">Produtos</Link>
             <Link href="/ivm">IVM</Link>
             <Link href="/comparar">Comparar</Link>
-            <Link href="/pulso/3550308">Pulso</Link>
-            <Link href="/onde-foi/3304557">OndeFoi</Link>
             <Link href="/perguntar">Perguntar</Link>
+            <Link href="/sobre">Sobre</Link>
           </nav>
         </header>
         <div className="conteudo">{children}</div>
         <footer className="rodape">
           <nav className="rodape-nav" aria-label="Transparência">
+            <Link href="/produtos">Produtos</Link>
+            <Link href="/sobre">Sobre</Link>
+            <Link href="/metodologia">Metodologia</Link>
             <Link href="/fontes">Fontes &amp; confiança</Link>
-            <Link href="/comparar">Comparar municípios</Link>
-            <Link href="/ivm">Mapa do IVM</Link>
+            <Link href="/privacidade">Privacidade</Link>
+            <Link href="/termos">Termos</Link>
+            <Link href="/acessibilidade">Acessibilidade</Link>
+            <Link href="/desenvolvedores">API &amp; Desenvolvedores</Link>
           </nav>
           <p className="rodape-nota">
             Dados públicos abertos. Privacidade estrutural e proveniência em cada número —

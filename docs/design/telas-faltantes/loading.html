@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Carregando · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">loading.tsx <span class="prio prio-p1">P1</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo" data-screen-label="loading" aria-busy="true" aria-label="Carregando conteúdo">
+  <div class="skeleton">
+    <div class="sk-bloco sk-titulo"></div>
+    <div class="sk-bloco sk-linha"></div>
+    <div class="sk-bloco sk-linha curta"></div>
+    <div class="sk-grid">
+      <div class="sk-bloco sk-card"></div>
+      <div class="sk-bloco sk-card"></div>
+      <div class="sk-bloco sk-card"></div>
+      <div class="sk-bloco sk-card"></div>
+      <div class="sk-bloco sk-card"></div>
+      <div class="sk-bloco sk-card"></div>
+    </div>
+    <p class="sr-only">Carregando os dados do acervo…</p>
+  </div>
+</main>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p1">P1</span><h2>Skeleton de carregamento — <span class="mono">app/loading.tsx</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Feedback durante o SSR <span class="mono">force-dynamic</span> (todo fetch é server-side e pode levar segundos). Reduz a percepção de lentidão sem mentir sobre o conteúdo.</dd></div>
+      <div><dt>Dados</dt><dd>Nenhum. <span class="mono">loading.tsx</span> renderiza enquanto o segmento resolve. Some sozinho quando a página real chega.</dd></div>
+      <div><dt>Componentes do DS</dt><dd><strong>Novo (opcional):</strong> <span class="mono">.skeleton / .sk-bloco / .sk-card</span>. Espelha a grade do conteúdo que vai chegar (título + linhas + grade de cards).</dd></div>
+      <div><dt>Estados</dt><dd>É o estado de carregamento. Único.</dd></div>
+      <div class="spec-larga"><dt>Acessibilidade</dt><dd><span class="mono">aria-busy="true"</span> no container + texto <span class="mono">.sr-only</span> "Carregando…". A animação respeita <span class="mono">prefers-reduced-motion</span> (sem brilho quando reduzido). Skeleton é decorativo: o leitor de tela ouve o aviso, não os blocos.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p1">P1</span> — percepção de qualidade.</dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

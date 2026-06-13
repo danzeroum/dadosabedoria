@@ -1,0 +1,327 @@
+/* =============================================================================
+   DadoSabedoria — DS de handoff (telas faltantes)
+   Tokens e utilitários LIFTADOS de web/app/globals.css (DS implementado, ADR-0009).
+   Acrescenta apenas as seções NOVAS que o plano pede (catálogo, institucional,
+   sistema, desenvolvedores, cidadão) + o chrome do próprio handoff (.hf-*, .spec).
+   Regra: nenhum hex novo de semáforo; reusar --exec-* e tons AA existentes.
+   ========================================================================== */
+:root {
+  --cor-fundo: #f8fafc;
+  --cor-superficie: #ffffff;
+  --cor-texto: #0f172a;
+  --cor-texto-suave: #475569;
+  --cor-borda: #e2e8f0;
+  --cor-marca: #0f766e;
+  --raio: 10px;
+  --sombra: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --largura-max: 1100px;
+
+  /* OndeFoi / execução — herdados do globals.css */
+  --exec-alta: var(--cor-marca);
+  --exec-alta-tint: #e6f3f1;
+  --exec-parcial: #92400e;
+  --exec-parcial-tint: #fef3c7;
+  --exec-baixa: #991b1b;
+  --exec-baixa-tint: #fee2e2;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+}
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--cor-marca); outline-offset: 2px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------- Chrome do site (layout.tsx) */
+.topo {
+  background: var(--cor-marca);
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.topo-marca {
+  text-decoration: none; font-weight: 700; letter-spacing: 0.02em; color: #fff;
+}
+.topo-nav { display: flex; gap: 16px; font-size: 0.9rem; flex-wrap: wrap; }
+.topo-nav a { color: #fff; text-decoration: none; opacity: 0.92; }
+.topo-nav a:hover { opacity: 1; text-decoration: underline; }
+.topo-nav a.ext::after { content: " ↗"; font-size: 0.8em; opacity: 0.7; }
+.topo-nav a[aria-current="page"] { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+
+.conteudo { max-width: var(--largura-max); margin: 0 auto; padding: 24px 20px 48px; }
+
+.rodape {
+  max-width: var(--largura-max); margin: 0 auto; padding: 24px 20px 40px;
+  color: var(--cor-texto-suave); font-size: 0.85rem;
+  border-top: 1px solid var(--cor-borda);
+}
+.rodape-nav { display: flex; flex-wrap: wrap; gap: 16px 20px; margin-bottom: 12px; }
+.rodape-nav a { color: var(--cor-marca); text-decoration: none; font-weight: 600; }
+.rodape-nav a:hover { text-decoration: underline; }
+.rodape-nota { margin: 0; max-width: 80ch; line-height: 1.5; }
+
+/* ------------------------------------------------------------ Página / tipografia */
+.pagina h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.subtitulo { margin: 0 0 8px; color: var(--cor-texto-suave); }
+.home-lead { color: var(--cor-texto-suave); font-size: 1.05rem; line-height: 1.5; margin: 0 0 8px; max-width: 760px; }
+.metodologia { color: var(--cor-texto-suave); font-size: 0.9rem; max-width: 78ch; line-height: 1.55; }
+.nota, .vazio { color: var(--cor-texto-suave); font-size: 0.9rem; }
+.erro { color: #b91c1c; }
+.voltar {
+  display: inline-block; margin-bottom: 12px;
+  color: var(--cor-marca); text-decoration: none; font-weight: 600;
+}
+section h2 { font-size: 1.15rem; margin: 28px 0 10px; }
+
+/* ---------------------------------------------------------------- Catálogo (NOVO) */
+/* Reusa .home-produtos/.home-card do globals.css; acrescenta o agrupamento por domínio. */
+.home-hero { margin: 8px 0 24px; max-width: 760px; }
+.home-hero h1 { font-size: 1.8rem; margin: 0 0 10px; }
+.home-acervo {
+  display: inline-block; margin-top: 14px; padding: 8px 15px;
+  border: 1px solid var(--cor-borda); border-radius: 999px;
+  background: var(--cor-superficie); color: var(--cor-texto-suave);
+  text-decoration: none; font-size: 0.9rem;
+}
+.home-acervo strong { color: var(--cor-marca); }
+.home-acervo:hover { border-color: var(--cor-marca); }
+
+.cat-dominio { margin: 34px 0 14px; }
+.cat-dominio:first-of-type { margin-top: 18px; }
+.cat-dominio h2 {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin: 0; font-size: 1.05rem; color: var(--cor-texto);
+}
+.cat-dominio-conta { font-size: 0.78rem; font-weight: 600; color: var(--cor-texto-suave); }
+.cat-dominio-desc { margin: 4px 0 0; color: var(--cor-texto-suave); font-size: 0.88rem; max-width: 70ch; }
+
+.home-produtos {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
+}
+.home-card {
+  display: flex; flex-direction: column;
+  background: var(--cor-superficie); border: 1px solid var(--cor-borda);
+  border-radius: var(--raio); padding: 18px; text-decoration: none; color: inherit;
+  box-shadow: var(--sombra); transition: border-color 0.15s ease;
+}
+.home-card:hover, .home-card:focus-visible { border-color: var(--cor-marca); }
+.home-card-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.home-card-topo h3 { font-size: 1.05rem; margin: 0; color: var(--cor-marca); }
+.home-selo {
+  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #b45309; border: 1px solid #f59e0b; border-radius: 999px; padding: 1px 8px; white-space: nowrap;
+}
+.home-pergunta { font-weight: 600; margin: 10px 0 6px; }
+.home-descricao { color: var(--cor-texto-suave); font-size: 0.9rem; line-height: 1.45; margin: 0 0 12px; }
+.home-fonte {
+  font-size: 0.72rem; color: var(--cor-texto-suave);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin: 0 0 12px;
+}
+.home-cta { color: var(--cor-marca); font-weight: 600; font-size: 0.9rem; margin-top: auto; }
+.home-nota { color: var(--cor-texto-suave); font-size: 0.82rem; margin-top: 28px; max-width: 760px; line-height: 1.5; }
+
+/* ----------------------------------------------------------- Institucional (NOVO) */
+/* Prosa legível: medida confortável conforme o plano (.legal { max-width: 75ch }). */
+.legal { max-width: 75ch; }
+.legal p, .legal li { line-height: 1.65; }
+.legal h2 { font-size: 1.2rem; margin-top: 34px; }
+.legal h3 { font-size: 1rem; margin: 22px 0 6px; }
+.legal ul { padding-left: 20px; }
+.legal li { margin: 6px 0; }
+.legal .atualizado { color: var(--cor-texto-suave); font-size: 0.85rem; margin: 0 0 24px; }
+
+/* Três pilares (Sobre) — reusa o idioma .home-card */
+.pilares { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 18px 0 8px; }
+.pilar { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-left: 4px solid var(--cor-marca); border-radius: var(--raio); padding: 18px; }
+.pilar h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--cor-marca); }
+.pilar p { margin: 0; color: var(--cor-texto-suave); font-size: 0.92rem; line-height: 1.5; }
+
+/* Bloco "moldura honesta" — herdado do .honesto do OndeFoi */
+.honesto {
+  background: #fef3c7; border: 1px solid rgba(180, 83, 9, 0.28); border-radius: var(--raio);
+  padding: 14px 16px; margin: 18px 0; font-size: 0.92rem; color: #7c2d12; max-width: 92ch; line-height: 1.55;
+}
+.honesto strong { color: #7c2d12; }
+
+/* Bloco de revisão jurídica (marcador de handoff) */
+.revisao {
+  border: 1px dashed #b45309; border-radius: var(--raio); background: #fffbeb;
+  color: #92400e; padding: 10px 14px; font-size: 0.84rem; margin: 14px 0; max-width: 75ch;
+}
+
+/* --------------------------------------------------------------- Sistema (NOVO) */
+.sistema-centro {
+  min-height: 52vh; display: grid; place-content: center; text-align: center;
+  gap: 10px; padding: 40px 16px;
+}
+.sistema-codigo { font-size: 3.4rem; font-weight: 700; color: var(--cor-marca); line-height: 1; letter-spacing: -0.02em; }
+.sistema-centro h1 { margin: 0; font-size: 1.5rem; }
+.sistema-centro p { margin: 0 auto; color: var(--cor-texto-suave); max-width: 52ch; line-height: 1.55; }
+.sistema-acoes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.botao {
+  display: inline-block; padding: 9px 16px; border-radius: var(--raio);
+  font-weight: 600; font-size: 0.92rem; text-decoration: none; cursor: pointer; border: 1px solid var(--cor-marca);
+}
+.botao-primario { background: var(--cor-marca); color: #fff; }
+.botao-primario:hover { filter: brightness(1.08); }
+.botao-secundario { background: var(--cor-superficie); color: var(--cor-marca); }
+.botao-secundario:hover { background: var(--exec-alta-tint); }
+
+/* Skeleton (loading.tsx) */
+.skeleton { display: grid; gap: 14px; max-width: var(--largura-max); }
+.sk-bloco {
+  background: linear-gradient(100deg, #eef2f7 30%, #f6f9fc 50%, #eef2f7 70%);
+  background-size: 200% 100%;
+  border-radius: var(--raio);
+  animation: sk-brilho 1.3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .sk-bloco { animation: none; } }
+@keyframes sk-brilho { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.sk-titulo { height: 34px; width: 46%; }
+.sk-linha { height: 16px; }
+.sk-linha.curta { width: 64%; }
+.sk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 10px; }
+.sk-card { height: 150px; }
+
+/* -------------------------------------------------------- Desenvolvedores (NOVO) */
+.dev-intro { max-width: 72ch; }
+.endpoint {
+  border: 1px solid var(--cor-borda); border-radius: var(--raio);
+  background: var(--cor-superficie); margin: 12px 0; overflow: hidden;
+}
+.endpoint-cab {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 11px 14px; border-bottom: 1px solid var(--cor-borda); background: var(--cor-fundo);
+}
+.metodo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+  padding: 2px 8px; border-radius: 6px; border: 1px solid;
+}
+.metodo-get { color: var(--cor-marca); background: var(--exec-alta-tint); border-color: #9ad0c9; }
+.metodo-post { color: var(--exec-parcial); background: var(--exec-parcial-tint); border-color: rgba(180,83,9,0.3); }
+.endpoint-rota { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem; }
+.endpoint-tag { margin-left: auto; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cor-texto-suave); border: 1px solid var(--cor-borda); border-radius: 999px; padding: 1px 8px; }
+.endpoint-corpo { padding: 12px 14px; }
+.endpoint-corpo p { margin: 0 0 10px; font-size: 0.9rem; color: var(--cor-texto-suave); }
+.bloco-codigo {
+  display: block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem; line-height: 1.55; background: #0f172a; color: #e2e8f0;
+  border-radius: var(--raio); padding: 12px 14px; white-space: pre-wrap; word-break: break-word; overflow-x: auto;
+}
+.bloco-codigo .cmt { color: #7c8aa0; }
+.bloco-codigo .tok { color: #5eead4; }
+
+/* Planos (open-core) */
+.planos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 18px 0 8px; align-items: start; }
+.plano { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); padding: 22px; box-shadow: var(--sombra); }
+.plano-destaque { border-color: var(--cor-marca); border-width: 2px; }
+.plano-nome { font-size: 1.05rem; font-weight: 700; margin: 0 0 4px; color: var(--cor-marca); }
+.plano-preco { font-size: 1.9rem; font-weight: 700; margin: 6px 0; font-variant-numeric: tabular-nums; }
+.plano-preco small { font-size: 0.8rem; font-weight: 500; color: var(--cor-texto-suave); }
+.plano-desc { color: var(--cor-texto-suave); font-size: 0.88rem; margin: 0 0 14px; line-height: 1.5; }
+.plano-lista { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; font-size: 0.88rem; }
+.plano-lista li { display: flex; gap: 8px; align-items: flex-start; }
+.plano-lista li::before { content: "✓"; color: var(--cor-marca); font-weight: 700; flex: 0 0 auto; }
+.plano-lista li.nao { color: var(--cor-texto-suave); }
+.plano-lista li.nao::before { content: "—"; color: var(--cor-texto-suave); }
+
+/* Painel de cota — BarraQuota (padrão SVG do Donut) */
+.cota-painel { display: grid; grid-template-columns: auto 1fr; gap: 26px; align-items: center; background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); box-shadow: var(--sombra); padding: 24px; margin: 18px 0; max-width: 640px; }
+@media (max-width: 540px) { .cota-painel { grid-template-columns: 1fr; gap: 16px; } }
+.barra-quota { position: relative; width: 132px; height: 132px; flex: 0 0 auto; }
+.barra-quota-num { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.barra-quota-num b { font-size: 1.8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.barra-quota-num span { font-size: 0.68rem; color: var(--cor-texto-suave); display: block; margin-top: 2px; }
+.cota-meta { display: grid; gap: 12px; }
+.cota-meta dt { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cor-texto-suave); }
+.cota-meta dd { margin: 2px 0 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cota-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 14px 0; }
+.cota-form label { font-size: 0.82rem; color: var(--cor-texto-suave); font-weight: 600; display: block; margin-bottom: 4px; }
+.cota-form input { padding: 8px 11px; border: 1px solid var(--cor-borda); border-radius: var(--raio); font: inherit; min-width: 280px; }
+
+/* ----------------------------------------------------------- Cidadão / gate (NOVO) */
+/* Reusa o idioma do .demo-aviso (role="note"); o lugar já está preparado. */
+.portao {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 18px; margin: 18px 0; border: 1px solid #b45309; border-left: 4px solid #b45309;
+  border-radius: var(--raio); background: #fffbeb; color: #92400e; max-width: 75ch; line-height: 1.55;
+}
+.portao strong { color: #78350f; }
+.portao-icone { font-size: 1.2rem; line-height: 1; flex: 0 0 auto; }
+.gov-botao {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 18px; border-radius: var(--raio); border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo); color: var(--cor-texto-suave); font-weight: 700; font-size: 0.95rem;
+  cursor: not-allowed; opacity: 0.85;
+}
+.gov-botao .gov-marca { color: var(--cor-marca); }
+.gov-nota { font-size: 0.82rem; color: var(--cor-texto-suave); margin: 8px 0 0; }
+.toggle-fake { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 14px; border: 1px solid var(--cor-borda); border-radius: var(--raio); background: var(--cor-superficie); margin: 8px 0; opacity: 0.7; }
+.toggle-fake span { font-size: 0.92rem; }
+.toggle-pino { width: 42px; height: 24px; border-radius: 999px; background: var(--cor-borda); position: relative; flex: 0 0 auto; }
+.toggle-pino::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; left: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+/* ----------------------------------------------- Chrome do HANDOFF (.hf-* / .spec) */
+.hf-bar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: #0f172a; color: #e2e8f0;
+  padding: 8px 20px; font-size: 0.82rem;
+}
+.hf-bar a { color: #e2e8f0; text-decoration: none; }
+.hf-back { font-weight: 600; }
+.hf-back:hover { text-decoration: underline; }
+.hf-screen { display: inline-flex; align-items: center; gap: 8px; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.hf-spec-link { margin-left: auto; color: #5eead4; font-weight: 600; }
+.hf-spec-link:hover { text-decoration: underline; }
+
+.prio { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; padding: 1px 7px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.prio-p0 { color: #fff; background: var(--exec-baixa); border-color: var(--exec-baixa); }
+.prio-p1 { color: #7c2d12; background: var(--exec-parcial-tint); border-color: rgba(180,83,9,0.4); }
+.prio-p2 { color: var(--cor-texto-suave); background: var(--cor-fundo); border-color: var(--cor-borda); }
+.flag-gate { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; padding: 1px 7px; border-radius: 999px; background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; white-space: nowrap; }
+
+.spec {
+  border-top: 3px solid var(--cor-marca);
+  background: #0f172a; color: #cbd5e1;
+}
+.spec-inner { max-width: var(--largura-max); margin: 0 auto; padding: 26px 20px 40px; }
+.spec-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.spec-head h2 { margin: 0; font-size: 1.05rem; color: #fff; }
+.spec-eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #5eead4; margin: 0 0 18px; }
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 28px; margin: 0; }
+.spec-grid dt { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #5eead4; font-weight: 700; margin-bottom: 5px; }
+.spec-grid dd { margin: 0; font-size: 0.88rem; line-height: 1.55; color: #cbd5e1; }
+.spec-grid dd code, .spec-grid dd .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82em; color: #5eead4; background: rgba(94,234,212,0.08); padding: 1px 5px; border-radius: 5px;
+}
+.spec-grid ul { margin: 0; padding-left: 16px; }
+.spec-grid li { margin: 3px 0; }
+.spec-larga { grid-column: 1 / -1; }
+.spec-fonte { color: #5eead4; }
+
+/* ------------------------------------------------------------ Migalhas / estados-chip */
+.migalha { font-size: 0.85rem; color: var(--cor-texto-suave); margin: 0 0 14px; }
+.migalha a { color: var(--cor-marca); text-decoration: none; font-weight: 600; }
+.migalha a:hover { text-decoration: underline; }
+.estado-chip {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem;
+  color: var(--cor-texto-suave); border: 1px solid var(--cor-borda); border-radius: 999px; padding: 2px 10px;
+}
+.estado-suprimido { border-color: #f59e0b; }

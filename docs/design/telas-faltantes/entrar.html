@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Entrar · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/entrar <span class="prio prio-p1">P1</span> <span class="flag-gate">gate OIDC</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina legal" data-screen-label="/entrar">
+  <a class="voltar" href="index.html">← Início</a>
+  <h1>Entrar</h1>
+  <p class="home-lead">
+    O login será pela conta <strong>gov.br</strong> — para receber alertas e gerir seu consentimento, nunca
+    para acessar dados públicos (esses são abertos a todos, sem conta).
+  </p>
+
+  <div style="max-width:420px;margin:22px 0;">
+    <button class="gov-botao" type="button" disabled aria-disabled="true">
+      Entrar com <span class="gov-marca">gov.br</span>
+    </button>
+    <p class="gov-nota">Botão desabilitado — a integração OIDC ainda não foi liberada.</p>
+  </div>
+
+  <div class="portao" role="note">
+    <span class="portao-icone" aria-hidden="true">🔒</span>
+    <div>
+      <strong>Ainda não liberado.</strong> A entrada por gov.br depende de uma habilitação externa (OIDC) que
+      ainda não está no ar. O lugar já está preparado: quando o gate abrir, este botão funciona e a área do
+      cidadão liga junto — sem redesenho.
+    </div>
+  </div>
+
+  <h2>Enquanto isso, sem login</h2>
+  <ul>
+    <li>Todos os <strong>dados públicos</strong> e os 24 produtos seguem abertos — <a href="produtos.html">explore o catálogo</a>.</li>
+    <li>A <strong>API de leitura</strong> não exige conta — veja <a href="desenvolvedores.html">Desenvolvedores</a>.</li>
+    <li>Só <strong>alertas</strong> e <strong>consentimento</strong> aguardam o login — prévia em <a href="cidadao.html">Área do cidadão</a>.</li>
+  </ul>
+
+  <p class="metodologia">Não pediremos nenhum dado pessoal antes do gov.br estar ativo. Como tratamos contato e consentimento está na <a href="privacidade.html">Privacidade</a>.</p>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p1">P1</span><h2>Entrar (gov.br) — <span class="mono">/entrar</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Preparar o login OIDC gov.br, honesto sobre estar bloqueado. "O lugar já está preparado" (tom de <span class="mono">AcoesOndeFoi.tsx</span>).</dd></div>
+      <div><dt>Dados</dt><dd>Estático até o gate. Lê <span class="mono">AUTH_HABILITADO</span> (env, default <span class="mono">false</span>) de <strong>nova</strong> <span class="mono">lib/auth.ts</span>. Quando ligar, só essa flag muda.</dd></div>
+      <div><dt>Componentes do DS</dt><dd><strong>Novo:</strong> <span class="mono">.gov-botao</span> (desabilitado) e <span class="mono">.portao</span> (idioma do <span class="mono">.demo-aviso</span>, <span class="mono">role="note"</span>). Reusa <span class="mono">.legal</span>.</dd></div>
+      <div><dt>Estados</dt><dd><strong>Gated</strong> (mostrado, <span class="mono">AUTH_HABILITADO=false</span>) · <strong>habilitado</strong> (botão ativo → fluxo OIDC). Mesma tela, dois caminhos.</dd></div>
+      <div class="spec-larga"><dt>Invariantes</dt><dd>Login é só para alertas/consentimento — nunca condição para ver dado público. A tela reforça as 3 saídas sem conta. SSR puro: sem React Context, sem <span class="mono">"use client"</span> (<span class="mono">PortaoAuth.tsx</span> é server).</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p1">P1</span> · <span class="flag-gate">gate OIDC</span></dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

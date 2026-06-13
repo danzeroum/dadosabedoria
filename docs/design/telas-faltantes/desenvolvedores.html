@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>API &amp; Desenvolvedores · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/desenvolvedores <span class="prio prio-p1">P1</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina" data-screen-label="/desenvolvedores">
+  <a class="voltar" href="index.html">← Início</a>
+  <h1>API &amp; Desenvolvedores</h1>
+  <p class="home-lead dev-intro">
+    Tudo que o site mostra vem de uma API pública com proveniência. Os endpoints <code>/v1/*</code> de
+    leitura são abertos e grátis; o tier profundo (lote e cota) usa chave. Toda resposta carrega a fonte.
+  </p>
+  <p class="migalha"><a href="planos.html">Planos &amp; preços</a> · <a href="cota.html">Painel de cota</a> · <a href="https://dadosabedoria.buildtovalue.cloud/fontes" target="_blank" rel="noopener">Licenças por fonte</a></p>
+
+  <h2>Base &amp; autenticação</h2>
+  <div class="endpoint">
+    <div class="endpoint-cab"><span class="metodo metodo-get">BASE</span><span class="endpoint-rota">https://api.dadosabedoria.org/v1</span></div>
+    <div class="endpoint-corpo">
+      <p>Endpoints de leitura são públicos. O tier profundo exige a chave no header — nunca em querystring nem no bundle do front.</p>
+      <code class="bloco-codigo"><span class="cmt"># leitura pública — sem chave</span>
+curl https://api.dadosabedoria.org/v1/fontes
+
+<span class="cmt"># tier profundo — chave no header</span>
+curl https://api.dadosabedoria.org/v1/quota \
+  -H <span class="tok">"Authorization: Bearer SUA_CHAVE"</span></code>
+    </div>
+  </div>
+
+  <h2>Endpoints públicos</h2>
+  <div class="endpoint">
+    <div class="endpoint-cab"><span class="metodo metodo-get">GET</span><span class="endpoint-rota">/v1/fontes</span><span class="endpoint-tag">público</span></div>
+    <div class="endpoint-corpo">
+      <p>Catálogo de fontes do acervo: domínios, cadência, atraso típico, licença e base legal.</p>
+      <code class="bloco-codigo">curl https://api.dadosabedoria.org/v1/fontes</code>
+    </div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-cab"><span class="metodo metodo-get">GET</span><span class="endpoint-rota">/v1/municipios/{codigo}</span><span class="endpoint-tag">público</span></div>
+    <div class="endpoint-corpo">
+      <p>Panorama de um município pelo código IBGE — todos os indicadores do acervo, com proveniência. O protegido vem como protegido (<code>null</code> + motivo), nunca como zero.</p>
+      <code class="bloco-codigo">curl https://api.dadosabedoria.org/v1/municipios/3550308</code>
+    </div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-cab"><span class="metodo metodo-get">GET</span><span class="endpoint-rota">/v1/mapa/ivm</span><span class="endpoint-tag">público</span></div>
+    <div class="endpoint-corpo">
+      <p>IVM por UF como GeoJSON (<code>FeatureCollection</code>). Onde falta a malha geométrica, degrada para cartograma de tiles.</p>
+      <code class="bloco-codigo">curl <span class="tok">"https://api.dadosabedoria.org/v1/mapa/ivm?uf=35"</span></code>
+    </div>
+  </div>
+
+  <h2>Tier profundo <span style="font-size:0.7rem;font-weight:600;color:var(--cor-texto-suave);vertical-align:middle;">requer chave</span></h2>
+  <div class="endpoint">
+    <div class="endpoint-cab"><span class="metodo metodo-get">GET</span><span class="endpoint-rota">/v1/quota</span><span class="endpoint-tag">chave</span></div>
+    <div class="endpoint-corpo">
+      <p>Consumo da sua chave na janela atual. Alimenta o <a href="cota.html">Painel de cota</a>.</p>
+      <code class="bloco-codigo">curl https://api.dadosabedoria.org/v1/quota \
+  -H <span class="tok">"Authorization: Bearer SUA_CHAVE"</span>
+
+<span class="cmt"># 200 →</span>
+{ <span class="tok">"limite"</span>: 1000, <span class="tok">"usado"</span>: 342, <span class="tok">"restante"</span>: 658,
+  <span class="tok">"janela"</span>: <span class="tok">"hora"</span>, <span class="tok">"reinicia_em"</span>: <span class="tok">"2026-06-13T18:00:00Z"</span> }</code>
+    </div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-cab"><span class="metodo metodo-post">POST</span><span class="endpoint-rota">/v1/consultas-lote</span><span class="endpoint-tag">chave</span></div>
+    <div class="endpoint-corpo">
+      <p>Até <strong>50</strong> consultas por requisição — vários municípios × indicadores de uma vez. Cada item da resposta mantém sua própria proveniência e estado de supressão.</p>
+      <code class="bloco-codigo">curl -X POST https://api.dadosabedoria.org/v1/consultas-lote \
+  -H <span class="tok">"Authorization: Bearer SUA_CHAVE"</span> \
+  -H <span class="tok">"Content-Type: application/json"</span> \
+  -d <span class="tok">'{ "consultas": [
+        { "municipio": "3550308", "indicador": "ivm" },
+        { "municipio": "3304557", "indicador": "onde-foi" }
+      ] }'</span></code>
+    </div>
+  </div>
+
+  <div class="honesto">
+    <strong>Contrato de honestidade da API.</strong> Todo número vem com <code style="font-family:ui-monospace,monospace">fonte</code>, <code style="font-family:ui-monospace,monospace">periodo</code> e <code style="font-family:ui-monospace,monospace">lag</code>.
+    Dado suprimido por privacidade volta como <code style="font-family:ui-monospace,monospace">null</code> com <code style="font-family:ui-monospace,monospace">motivo: "k_anon"</code> — nunca como zero. Sem cobertura é <code style="font-family:ui-monospace,monospace">motivo: "sem_cobertura"</code>. Sua aplicação deve distinguir os dois.
+  </div>
+
+  <p class="metodologia">Limites, preços e o que cada plano libera estão em <a href="planos.html">Planos &amp; preços</a>. As licenças de redistribuição variam por fonte — confira em <a href="https://dadosabedoria.buildtovalue.cloud/fontes" target="_blank" rel="noopener">Fontes &amp; confiança</a>.</p>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p1">P1</span><h2>Docs da API — <span class="mono">/desenvolvedores</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Tornar a API legível: endpoints públicos + tier profundo (lote, cota), com <span class="mono">curl</span> copiável e o contrato de honestidade explícito.</dd></div>
+      <div><dt>Dados</dt><dd>Estático + <span class="mono">buscarFontes()</span> para a seção de licenças. Exemplos refletem <span class="mono">POST /v1/consultas-lote</span> e <span class="mono">GET /v1/quota</span> (espelhar tipos em <span class="mono">api/app/profundo/modelos.py</span>).</dd></div>
+      <div><dt>Componentes do DS</dt><dd><strong>Novo:</strong> <span class="mono">.endpoint / .metodo / .bloco-codigo</span>. Reusa <span class="mono">.honesto, .metodologia, .migalha</span>.</dd></div>
+      <div><dt>Estados</dt><dd>Estático. A seção de licenças degrada se <span class="mono">buscarFontes()</span> retornar <span class="mono">null</span>.</dd></div>
+      <div class="spec-larga"><dt>Invariantes</dt><dd>Documentar que suprimido = <span class="mono">null + motivo</span>, nunca zero — a invariante de privacidade precisa estar no contrato da API, não só na UI. Chave sempre no header; o exemplo nunca a coloca em querystring.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p1">P1</span> — monetização/adoção.</dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Algo deu errado · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">error.tsx <span class="prio prio-p0">P0</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo" data-screen-label="error">
+  <div class="sistema-centro">
+    <p class="sistema-codigo" aria-hidden="true">⚠</p>
+    <h1>Algo deu errado ao montar esta página</h1>
+    <p>
+      O erro é nosso, não seu. Pode ser uma fonte pública temporariamente fora do ar ou uma falha nossa
+      ao consultar o acervo. Os dados em si não se perdem — só esta consulta falhou.
+    </p>
+    <div class="sistema-acoes">
+      <button class="botao botao-primario" type="button" onclick="location.reload()">Tentar de novo</button>
+      <a class="botao botao-secundario" href="produtos.html">Ver os produtos</a>
+    </div>
+    <p class="nota" style="margin-top:18px;">Se persistir, a página de <a href="https://dadosabedoria.buildtovalue.cloud/fontes" target="_blank" rel="noopener" style="color:var(--cor-marca);font-weight:600;">Fontes</a> mostra o frescor de cada origem.</p>
+    <p class="nota" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.78rem;opacity:0.8;">ref: 7f3a — informe este código no contato (digest do erro)</p>
+  </div>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+    <a href="desenvolvedores.html">API &amp; Desenvolvedores</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p0">P0</span><h2>Boundary de erro — <span class="mono">app/error.tsx</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Capturar exceções de render/fetch (fonte fora do ar, falha de SSR) sem tela branca. Honesto: "o erro é nosso".</dd></div>
+      <div><dt>Dados</dt><dd>É <span class="mono">"use client"</span> (exigência do Next para <span class="mono">error.tsx</span>) e recebe <span class="mono">{ error, reset }</span>. O botão chama <span class="mono">reset()</span>; aqui o mock usa <span class="mono">location.reload()</span>.</dd></div>
+      <div><dt>Componentes do DS</dt><dd>Reusa <span class="mono">.sistema-centro / .botao</span> e o tom da classe <span class="mono">.erro</span>. Exibe o <span class="mono">error.digest</span> para suporte.</dd></div>
+      <div><dt>Estados</dt><dd>É o estado de erro. Único.</dd></div>
+      <div class="spec-larga"><dt>Invariantes &amp; moldura honesta</dt><dd>Não responsabiliza o usuário; distingue "falha na consulta" de "dado perdido" (os dados não se perdem). Único arquivo que precisa de <span class="mono">"use client"</span> — quebra a cultura cliente-zero só onde o Next obriga.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p0">P0</span> — robustez.</dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

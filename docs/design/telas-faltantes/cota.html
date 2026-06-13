@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel de cota · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/desenvolvedores/cota <span class="prio prio-p1">P1</span> <span class="flag-gate">requer chave</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina" data-screen-label="/desenvolvedores/cota">
+  <a class="voltar" href="desenvolvedores.html">← API &amp; Desenvolvedores</a>
+  <h1>Painel de cota</h1>
+  <p class="home-lead">Consumo da sua chave na janela atual, lido de <code style="font-family:ui-monospace,monospace;font-size:0.9rem;">GET /v1/quota</code>. A chave é processada no servidor — nunca vai para o navegador.</p>
+
+  <form class="cota-form" onsubmit="return false">
+    <div>
+      <label for="chave">Chave de API</label>
+      <input id="chave" type="password" placeholder="Bearer •••••••••••••••" value="••••••••••••••••••" autocomplete="off" />
+    </div>
+    <button class="botao botao-primario" type="submit">Consultar cota</button>
+  </form>
+
+  <!-- Estado: COM CHAVE (consumo carregado) -->
+  <div class="cota-painel">
+    <div class="barra-quota" role="img" aria-label="342 de 1.000 requisições usadas nesta hora — 66% restante">
+      <svg viewBox="0 0 132 132" width="132" height="132" aria-hidden="true">
+        <circle cx="66" cy="66" r="58" fill="none" stroke="#e2e8f0" stroke-width="14"></circle>
+        <circle cx="66" cy="66" r="58" fill="none" stroke="#0f766e" stroke-width="14" stroke-linecap="round"
+                stroke-dasharray="364.4" stroke-dashoffset="123.9" transform="rotate(-90 66 66)"></circle>
+      </svg>
+      <div class="barra-quota-num"><b>658</b><span>restantes nesta hora</span></div>
+    </div>
+    <dl class="cota-meta">
+      <div><dt>Limite (janela)</dt><dd>1.000 req / hora</dd></div>
+      <div><dt>Usado</dt><dd>342 req <span style="font-weight:400;color:var(--cor-texto-suave);">(34%)</span></dd></div>
+      <div><dt>Reinicia em</dt><dd>18:00 UTC · ~37 min</dd></div>
+      <div><dt>Lote</dt><dd>até 50 consultas / requisição</dd></div>
+    </dl>
+  </div>
+
+  <h2>Outros estados</h2>
+  <p class="metodologia" style="margin-bottom:8px;">A mesma tela degrada com honestidade:</p>
+  <ul class="metodologia" style="line-height:1.9;">
+    <li><strong>Sem chave / chave inválida</strong> (<code style="font-family:ui-monospace,monospace">404 → null</code>): o painel some, fica o formulário + aviso "Informe uma chave válida do tier profundo".</li>
+    <li><strong>Cota esgotada</strong> (restante 0): anel cheio, número em tom de alerta (<code style="font-family:ui-monospace,monospace">--exec-baixa</code>), texto "Limite atingido — reinicia às 18:00".</li>
+    <li><strong>Erro de rede</strong>: mensagem no tom do <code style="font-family:ui-monospace,monospace">.erro</code>, sem inventar número.</li>
+  </ul>
+
+  <div class="honesto">
+    <strong>Segurança por construção.</strong> A consulta a <code style="font-family:ui-monospace,monospace">/v1/quota</code> roda numa Server Action: a chave fica server-side e jamais entra no bundle do cliente. O front só recebe os números agregados de consumo.
+  </div>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="desenvolvedores.html">API &amp; Desenvolvedores</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p1">P1</span><h2>Painel de cota — <span class="mono">/desenvolvedores/cota</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Mostrar consumo da chave (usado / limite / reinício) para quem está no tier profundo.</dd></div>
+      <div><dt>Dados</dt><dd><span class="mono">GET /v1/quota</span> via <strong>nova</strong> <span class="mono">consultarQuota(chave)</span> em <span class="mono">lib/api.ts</span> (header <span class="mono">Authorization</span>, <span class="mono">no-store</span>, <span class="mono">404→null</span>). Tipo novo <span class="spec-fonte">RespostaQuota</span> em <span class="mono">lib/types.ts</span>.</dd></div>
+      <div><dt>Componentes do DS</dt><dd><strong>Novo:</strong> <span class="mono">&lt;BarraQuota&gt;</span> (SVG, padrão do <span class="mono">Donut.tsx</span>) + <span class="mono">.cota-painel / .cota-form</span>. Reusa tokens <span class="mono">--exec-*</span> para os limiares.</dd></div>
+      <div class="spec-larga"><dt>Estados</dt><dd><strong>Com chave</strong> (mostrado) · <strong>sem chave / inválida</strong> (404→null: só o form + aviso) · <strong>cota esgotada</strong> (anel cheio, tom <span class="mono">--exec-baixa</span>) · <strong>erro de rede</strong> (tom <span class="mono">.erro</span>, sem número inventado).</dd></div>
+      <div class="spec-larga"><dt>Invariantes &amp; gate</dt><dd>Form POST/Server Action: a chave vive <strong>server-side</strong>, nunca no bundle. <span class="flag-gate">requer chave</span> — sem chave, esta é uma das poucas telas que não tem "estado pleno" demonstrável.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p1">P1</span> — depende de chave.</dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

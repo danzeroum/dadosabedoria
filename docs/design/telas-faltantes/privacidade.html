@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacidade · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/privacidade <span class="prio prio-p0">P0</span> <span class="flag-gate" style="background:#fee2e2;color:#991b1b;border-color:rgba(220,38,38,0.3)">revisão jurídica</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina legal" data-screen-label="/privacidade">
+  <a class="voltar" href="index.html">← Início</a>
+  <h1>Privacidade</h1>
+  <p class="atualizado">Atualizado em <time datetime="2026-06-13">13 de junho de 2026</time> · conforme a LGPD (Lei nº 13.709/2018)</p>
+
+  <div class="revisao">⚠ <strong>[REVISÃO JURÍDICA]</strong> — texto-base de handoff. Toda a linguagem desta página precisa de validação por jurídico antes de publicar; os fatos técnicos abaixo refletem a arquitetura implementada.</div>
+
+  <p class="home-lead">
+    A privacidade aqui não é uma promessa no rodapé — é uma escolha de <strong>arquitetura</strong>.
+    Trabalhamos com dados públicos agregados; o pouco dado pessoal que existe (contato de quem opta por
+    alertas) vive isolado do resto.
+  </p>
+
+  <h2>1. O que processamos</h2>
+  <h3>Dados públicos agregados</h3>
+  <p>
+    A maior parte do que mostramos vem de fontes públicas abertas, sempre no grão
+    <strong>território × período</strong> — nunca por pessoa. Não há identificação de indivíduos nesses dados.
+  </p>
+  <h3>Dado pessoal (apenas se você optar)</h3>
+  <p>
+    Se você pedir alertas ("Avise-me") ou criar conta, tratamos o mínimo necessário (e-mail, identificador
+    de login gov.br). Esse contato vive num <strong>schema isolado</strong> (<code>app</code>) que a camada
+    analítica não consegue ler — uma separação garantida por teste que reprova o build se vazar.
+  </p>
+
+  <h2>2. Supressão antes de gravar</h2>
+  <p>
+    Dados de origem sensível (saúde) com contagem pequena são <strong>suprimidos na ingestão</strong>, antes
+    de chegar ao banco de leitura. A consequência prática: não existe um "número por baixo do cadeado" para
+    vazar — ele nunca foi gravado. É privacidade por estrutura, não por permissão de acesso.
+  </p>
+
+  <h2>3. Base legal (LGPD)</h2>
+  <ul>
+    <li><strong>Dados públicos:</strong> tratamento de dado tornado manifestamente público e dados de acesso público (art. 7º, §§ 3º e 4º), com finalidade de transparência e interesse público.</li>
+    <li><strong>Contato para alertas:</strong> <strong>consentimento</strong> do titular (art. 7º, I), revogável a qualquer momento.</li>
+  </ul>
+
+  <h2>4. Seus direitos</h2>
+  <p>
+    Você pode confirmar a existência de tratamento, acessar, corrigir, e <strong>revogar o consentimento</strong>
+    e apagar o contato a qualquer momento — pela área do cidadão, quando o login estiver disponível, ou pelos
+    canais abaixo. Não vendemos nem compartilhamos contato com terceiros.
+  </p>
+
+  <h2>5. Cookies</h2>
+  <p>
+    O site funciona sem cookies de rastreamento. Usamos apenas o essencial para sessão e preferências; não há
+    perfilamento publicitário.
+  </p>
+
+  <h2>6. Contato (Encarregado / DPO)</h2>
+  <p>
+    Dúvidas ou solicitações sobre seus dados: <a href="#">privacidade@dadosabedoria.org</a>
+    <span class="nota">[placeholder — definir canal real com jurídico]</span>.
+  </p>
+
+  <div class="honesto">
+    <strong>Em uma frase.</strong> Não temos a chave de ninguém: o que é público é agregado, o que é sensível
+    é suprimido antes de existir no banco, e o que é seu (contato) fica isolado e sob seu controle.
+  </div>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+    <a href="desenvolvedores.html">API &amp; Desenvolvedores</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p0">P0</span><h2>Privacidade — <span class="mono">/privacidade</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Cumprir LGPD e tornar a privacidade-por-estrutura legível: schema <span class="mono">app</span> isolado, supressão antes de gravar, sem chave de pessoa.</dd></div>
+      <div><dt>Dados</dt><dd>Estático. Os fatos técnicos derivam da arquitetura real (teste de separação de schema, supressão na ingestão).</dd></div>
+      <div><dt>Componentes do DS</dt><dd>Reusa <span class="mono">.legal, .honesto, .revisao</span> (marcador de handoff novo), <span class="mono">.atualizado</span>.</dd></div>
+      <div><dt>Estados</dt><dd>Único. Marcado <span class="mono">[REVISÃO JURÍDICA]</span> em destaque — não publicar sem aval do jurídico.</dd></div>
+      <div class="spec-larga"><dt>Invariantes &amp; criticidade</dt><dd><strong>P0 crítico.</strong> A frase-síntese ("não temos a chave de ninguém") é a tese do produto. Texto jurídico final ≠ responsabilidade do designer; o designer entrega a forma, jurídico valida a letra. Placeholders de contato/DPO precisam virar canais reais.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p0">P0</span> · <span class="flag-gate" style="background:#fee2e2;color:#991b1b;border-color:rgba(220,38,38,0.3)">revisão jurídica</span></dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sobre · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/sobre <span class="prio prio-p0">P0</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html" aria-current="page">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina legal" data-screen-label="/sobre">
+  <a class="voltar" href="index.html">← Início</a>
+  <h1>Sobre a DadoSabedoria</h1>
+  <p class="home-lead">
+    Inteligência sobre dados públicos brasileiros onde a <strong>confiança é o ativo</strong>:
+    privacidade por estrutura, proveniência em cada número e qualidade provada a cada commit.
+  </p>
+
+  <h2>O Valor Triplo</h2>
+  <p>
+    Os mesmos dados, lidos com honestidade, servem a três públicos sem trair nenhum: o
+    <strong>cidadão</strong> que quer entender seu município, o <strong>gestor</strong> que precisa
+    de evidência para decidir e o <strong>desenvolvedor</strong> que constrói sobre uma API com
+    proveniência. Não vendemos o dado de ninguém — organizamos o que já é público e o devolvemos legível.
+  </p>
+
+  <div class="pilares">
+    <div class="pilar">
+      <h3>Privacidade estrutural</h3>
+      <p>O grão é sempre território × período, nunca pessoa. Não há chave de indivíduo. Células pequenas demais são suprimidas <em>antes</em> de gravar — a tela mostra um cadeado, jamais o número por baixo.</p>
+    </div>
+    <div class="pilar">
+      <h3>Proveniência sempre</h3>
+      <p>Cada indicador carrega fonte, método e atraso. Confiança não como promessa, mas como fato verificável a cada consulta — auditável na tela de <a href="https://dadosabedoria.buildtovalue.cloud/fontes" target="_blank" rel="noopener">Fontes</a>.</p>
+    </div>
+    <div class="pilar">
+      <h3>Qualidade provada</h3>
+      <p>O que não passa em teste não chega ao ar. A separação de dados pessoais, a supressão e a metodologia são verificadas por testes que reprovam o build se a invariante vazar.</p>
+    </div>
+  </div>
+
+  <h2>Como funciona</h2>
+  <p>
+    Lemos fontes públicas abertas (IBGE, CAGED, DATASUS, SICONFI, INEP, PNCP, SNIS e outras),
+    calculamos indicadores no grão municipal, aplicamos supressão de privacidade e publicamos
+    cada número com sua origem. Sobre essa base ficam os 24 produtos — cada um uma
+    <a href="produtos.html">pergunta com resposta</a> — e a IA ancorada, que só afirma o que o acervo sustenta.
+  </p>
+
+  <div class="honesto">
+    <strong>O que não somos.</strong> Não somos um ranking de "melhores" e "piores" municípios, nem
+    um veredito sobre gestões. Um número alto ou baixo é um convite à pergunta — execução não é
+    serviço, fluxo é volátil, ausência de dado não é ausência de fato. O lugar do julgamento é de quem lê.
+  </div>
+
+  <p class="metodologia">
+    Para o detalhe técnico de cada cálculo, supressão e fonte, veja a <a href="metodologia.html">Metodologia</a>.
+    Para como tratamos dados pessoais, a <a href="privacidade.html">Privacidade</a>.
+  </p>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+    <a href="desenvolvedores.html">API &amp; Desenvolvedores</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p0">P0</span><h2>Sobre — <span class="mono">/sobre</span></h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Dar identidade e missão ao projeto: o Valor Triplo e os 3 pilares. Primeiro destino institucional do footer.</dd></div>
+      <div><dt>Dados</dt><dd>Estático (server component, prosa). Sem fetch. Texto reflete a doutrina já redigida em <span class="mono">/fontes</span> e <span class="mono">AcoesOndeFoi.tsx</span>.</dd></div>
+      <div><dt>Componentes do DS</dt><dd>Reusa <span class="mono">.home-lead, .voltar, .honesto, .metodologia</span>. <strong>Novo:</strong> <span class="mono">.legal</span> (medida 75ch) e <span class="mono">.pilares/.pilar</span> (idioma do card).</dd></div>
+      <div><dt>Estados</dt><dd>Único (estático). Sem carregando/erro/vazio.</dd></div>
+      <div class="spec-larga"><dt>Invariantes &amp; moldura honesta</dt><dd>O bloco "O que não somos" carrega a voz editorial (execução ≠ serviço). Links cruzados para Metodologia e Privacidade ancoram a confiança.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p0">P0</span> — confiança/descoberta.</dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

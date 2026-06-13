@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Produtos · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<!-- barra do handoff -->
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/produtos <span class="prio prio-p0">P0</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<!-- chrome do site -->
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html" aria-current="page">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina" data-screen-label="/produtos">
+  <section class="home-hero">
+    <h1>O acervo, por pergunta</h1>
+    <p class="home-lead">
+      Cada produto é uma <strong>pergunta</strong> sobre o seu município, respondida com a fonte ao lado.
+      24 produtos temáticos e 4 telas de síntese — o que é protegido aparece como protegido.
+    </p>
+    <a class="home-acervo" href="https://dadosabedoria.buildtovalue.cloud/fontes" target="_blank" rel="noopener">
+      <strong>8</strong> fontes públicas · <strong>30+</strong> indicadores · <strong>6</strong> domínios — com proveniência e supressão honesta em cada número →
+    </a>
+  </section>
+
+  <!-- Síntese & navegação -->
+  <div class="cat-dominio">
+    <h2>Síntese &amp; navegação <span class="cat-dominio-conta">4 telas</span></h2>
+    <p class="cat-dominio-desc">Os pontos de partida: o sinal único, o retrato completo, a comparação e a pergunta livre.</p>
+  </div>
+  <section class="home-produtos" aria-label="Síntese e navegação">
+    <a class="home-card ext-card" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>IVM — mapa semafórico</h3></div>
+      <p class="home-pergunta">Quão vulnerável é o meu município?</p>
+      <p class="home-descricao">Emprego, finanças e saúde num só sinal, do verde ao vermelho — o protegido aparece como protegido.</p>
+      <p class="home-fonte">síntese · IBGE · CAGED · SICONFI · DATASUS</p>
+      <span class="home-cta">Abrir o mapa →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/municipio/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Panorama do município</h3></div>
+      <p class="home-pergunta">O que sabemos sobre o meu município?</p>
+      <p class="home-descricao">Todos os indicadores do acervo num só lugar, com a fonte de cada número.</p>
+      <p class="home-fonte">síntese · todas as fontes</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Comparar municípios</h3></div>
+      <p class="home-pergunta">Como meu município se compara a outro?</p>
+      <p class="home-descricao">Dois municípios lado a lado, indicador por indicador. Contexto para perguntar, não um ranking.</p>
+      <p class="home-fonte">síntese · descritivo</p>
+      <span class="home-cta">Comparar →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Pergunte aos dados</h3></div>
+      <p class="home-pergunta">Posso perguntar em vez de procurar?</p>
+      <p class="home-descricao">A IA responde só com o que recupera do acervo, sempre com citação. Sem dado, abstém-se.</p>
+      <p class="home-fonte">IA ancorada · cita a fonte</p>
+      <span class="home-cta">Fazer uma pergunta →</span>
+    </a>
+  </section>
+
+  <!-- Trabalho & renda -->
+  <div class="cat-dominio">
+    <h2>Trabalho &amp; renda <span class="cat-dominio-conta">4 produtos</span></h2>
+    <p class="cat-dominio-desc">Emprego formal, salário e dinamismo econômico — Novo CAGED, ESTBAN.</p>
+  </div>
+  <section class="home-produtos" aria-label="Trabalho e renda">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/pulso/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Pulso Produtivo</h3></div>
+      <p class="home-pergunta">Como está o emprego formal no meu município?</p>
+      <p class="home-descricao">O saldo do Novo CAGED mês a mês, com a tendência honesta — o fluxo é volátil; merece a pergunta.</p>
+      <p class="home-fonte">trabalho · Novo CAGED</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/salario-radar/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Salário Radar</h3></div>
+      <p class="home-pergunta">Qual o salário médio das novas contratações?</p>
+      <p class="home-descricao">Média salarial das admissões do CAGED — quem entrou no mercado formal, não quem já estava lá.</p>
+      <p class="home-fonte">trabalho · Novo CAGED</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/giro-local/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Giro Local</h3></div>
+      <p class="home-pergunta">Qual o dinamismo econômico do meu município?</p>
+      <p class="home-descricao">Emprego formal (CAGED) + crédito bancário (ESTBAN) per capita num só retrato.</p>
+      <p class="home-fonte">trabalho · crédito · CAGED · ESTBAN</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/regiao-emprega/35" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Região Emprega</h3></div>
+      <p class="home-pergunta">Como está o emprego formal na minha UF?</p>
+      <p class="home-descricao">Retrato regional do CAGED: saldo total + quantos municípios criam, estabilizam ou reduzem vagas.</p>
+      <p class="home-fonte">trabalho · Novo CAGED</p>
+      <span class="home-cta">Ver exemplo (SP) →</span>
+    </a>
+  </section>
+
+  <!-- Saúde -->
+  <div class="cat-dominio">
+    <h2>Saúde <span class="cat-dominio-conta">4 produtos</span></h2>
+    <p class="cat-dominio-desc">Internações, arboviroses e saúde materno-infantil — SIH/SUS, SINAN, SISVAN. Células &lt; 5 são suprimidas (k-anon).</p>
+  </div>
+  <section class="home-produtos" aria-label="Saúde">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/sentinela-resp/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Sentinela Respiratória</h3></div>
+      <p class="home-pergunta">Como estão as internações respiratórias?</p>
+      <p class="home-descricao">AIH com diagnóstico no grupo J do CID-10 no SIH/SUS por mês. Cobre só o SUS; &lt; 5 vira "Protegido".</p>
+      <p class="home-fonte">saúde · DATASUS/SIH</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/cacador-arboviroses/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Caçador de Arboviroses</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Qual a incidência de dengue confirmada?</p>
+      <p class="home-descricao">Dengue confirmada por 100 mil hab. (SINAN). Subnotificação real; &lt; 5 casos suprimidos por privacidade.</p>
+      <p class="home-fonte">saúde · SINAN/DATASUS</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/sentinela-materna/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Sentinela Materna</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Qual o risco nutricional de gestantes?</p>
+      <p class="home-descricao">% de gestantes com baixo peso (SISVAN). Não identifica gestantes — agregado por município.</p>
+      <p class="home-fonte">saúde · SISVAN/MS</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/pressao-sus/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Pressão SUS</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Como está a pressão sobre a rede hospitalar?</p>
+      <p class="home-descricao">Leitos SUS por mil habitantes e volume de internações — a oferta hospitalar em relação à população.</p>
+      <p class="home-fonte">saúde · CNES · SIH/SUS</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+  </section>
+
+  <!-- Educação -->
+  <div class="cat-dominio">
+    <h2>Educação <span class="cat-dominio-conta">4 produtos</span></h2>
+    <p class="cat-dominio-desc">Matrículas, evasão, infraestrutura escolar e merenda — INEP/Censo Escolar, FNDE/PNAE.</p>
+  </div>
+  <section class="home-produtos" aria-label="Educação">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/bussola-edu-trabalho/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Bússola Educação-Trabalho</h3></div>
+      <p class="home-pergunta">Como se cruzam base educacional e emprego?</p>
+      <p class="home-descricao">Matrículas no fundamental + saldo de emprego + salário das admissões. Contexto, não causalidade.</p>
+      <p class="home-fonte">educação · trabalho · INEP · CAGED</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/radar-evasao/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Radar de Evasão Escolar</h3></div>
+      <p class="home-pergunta">Quantas crianças estão fora do fundamental?</p>
+      <p class="home-descricao">Matrículas do EF ÷ estimativa de população em idade escolar. &gt; 100% indica polo de atração, não erro.</p>
+      <p class="home-fonte">educação · INEP/Censo Escolar</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/escola-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>EscolaViva</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Em que condições estão as escolas?</p>
+      <p class="home-descricao">Infraestrutura das escolas — água, energia, esgoto e internet (Censo Escolar). Direito à dignidade do prédio.</p>
+      <p class="home-fonte">educação · INEP/Censo Escolar</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/prato-frio/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Prato Frio</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">A merenda escolar chega a quem precisa?</p>
+      <p class="home-descricao">Recursos do PNAE por aluno (FNDE). Recurso transferido ≠ refeição servida — o número que merece a pergunta.</p>
+      <p class="home-fonte">educação · alimentação · FNDE/PNAE</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+  </section>
+
+  <!-- Saneamento & ambiente -->
+  <div class="cat-dominio">
+    <h2>Saneamento &amp; ambiente <span class="cat-dominio-conta">5 produtos</span></h2>
+    <p class="cat-dominio-desc">Água, esgoto, rios e investimento ambiental — SNIS/MDR, SICONFI. Ausência de dado ≠ ausência de serviço.</p>
+  </div>
+  <section class="home-produtos" aria-label="Saneamento e ambiente">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/agua-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>AguaViva</h3></div>
+      <p class="home-pergunta">Como está o saneamento básico?</p>
+      <p class="home-descricao">Cobertura de água tratada e coleta de esgoto (SNIS). Classificados por ODS 6 (adequado/atenção/alerta).</p>
+      <p class="home-fonte">saneamento · SNIS/MDR</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/esgoto-invisivel/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>EsgotoInvisível</h3></div>
+      <p class="home-pergunta">Onde a água chega mas o esgoto some?</p>
+      <p class="home-descricao">Gap entre cobertura de água e coleta de esgoto. Quanto maior, mais domicílios com água mas sem rede.</p>
+      <p class="home-fonte">saneamento · SNIS/MDR</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/sane-fundo/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>SaneFundo</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quanto o município investe em saneamento?</p>
+      <p class="home-descricao">Despesa liquidada na Função 17 (Saneamento), per capita (SICONFI). Investir é o passo antes de cobrir.</p>
+      <p class="home-fonte">saneamento · finanças · SICONFI F.17</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/rio-em-risco/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Rio em Risco</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">A água dos rios do município está em risco?</p>
+      <p class="home-descricao">Qualidade da água em pontos de monitoramento (ANA/SNIRH). Onde não há ponto, é "sem cobertura", não "ok".</p>
+      <p class="home-fonte">ambiente · ANA/SNIRH</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/eco-vivo/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>EcoVivo</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quanto o município investe em meio ambiente?</p>
+      <p class="home-descricao">Despesa liquidada na Função 18 (Gestão Ambiental), per capita (SICONFI). Orçamento revela prioridade.</p>
+      <p class="home-fonte">ambiente · finanças · SICONFI F.18</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+  </section>
+
+  <!-- Alimentação & assistência -->
+  <div class="cat-dominio">
+    <h2>Alimentação &amp; assistência <span class="cat-dominio-conta">3 produtos</span></h2>
+    <p class="cat-dominio-desc">Segurança nutricional, assistência social e fomento agrícola — SISVAN, CadÚnico/MDS, SICONFI.</p>
+  </div>
+  <section class="home-produtos" aria-label="Alimentação e assistência">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/fome-oculta/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Fome Oculta</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Há insegurança nutricional infantil?</p>
+      <p class="home-descricao">Prevalência de baixo peso em crianças &lt; 5 anos (SISVAN). O que o prato não mostra, a balança revela.</p>
+      <p class="home-fonte">alimentação · SISVAN/MS</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/assis-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>AssisViva</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Qual a cobertura da assistência social?</p>
+      <p class="home-descricao">Famílias no CadÚnico e investimento na Função 08 (SICONFI/MDS). A rede de proteção em números.</p>
+      <p class="home-fonte">assistência · CadÚnico/MDS · SICONFI F.08</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/semeando-transparencia/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Semeando Transparência</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quanto se investe em agricultura?</p>
+      <p class="home-descricao">Despesa liquidada na Função 20 (Agricultura), por habitante (SICONFI). Política agrícola municipal visível.</p>
+      <p class="home-fonte">agricultura · finanças · SICONFI F.20</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+  </section>
+
+  <!-- Finanças & contratos -->
+  <div class="cat-dominio">
+    <h2>Finanças &amp; contratos <span class="cat-dominio-conta">2 produtos</span></h2>
+    <p class="cat-dominio-desc">Execução orçamentária e compras públicas — SICONFI/STN, PNCP. Empenhar não é liquidar, liquidar não é entregar.</p>
+  </div>
+  <section class="home-produtos" aria-label="Finanças e contratos">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/onde-foi/3304557" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>OndeFoi</h3></div>
+      <p class="home-pergunta">Do que foi empenhado, quanto saiu do papel?</p>
+      <p class="home-descricao">Liquidado × empenhado por função do orçamento (SICONFI). O número que merece a pergunta, nunca o veredito.</p>
+      <p class="home-fonte">finanças · SICONFI/STN</p>
+      <span class="home-cta">Explorar municípios →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/obra-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>ObraViva</h3></div>
+      <p class="home-pergunta">Quanto o município contrata via PNCP?</p>
+      <p class="home-descricao">Soma do valor global de contratos no PNCP no exercício, per capita. Ausência de dado ≠ ausência de contratação.</p>
+      <p class="home-fonte">compras · PNCP</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+  </section>
+
+  <!-- Infraestrutura & território -->
+  <div class="cat-dominio">
+    <h2>Infraestrutura &amp; território <span class="cat-dominio-conta">4 produtos</span></h2>
+    <p class="cat-dominio-desc">Moradia, energia, mobilidade e cultura — Censo IBGE, SICONFI por função.</p>
+  </div>
+  <section class="home-produtos" aria-label="Infraestrutura e território">
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/casa-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>CasaViva</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quanto se investe em habitação?</p>
+      <p class="home-descricao">Despesa liquidada na Função 16 (Habitação), per capita (SICONFI). O direito à moradia no orçamento.</p>
+      <p class="home-fonte">habitação · finanças · SICONFI F.16</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/luz-no-mapa/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>Luz no Mapa</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quantos domicílios têm acesso à energia?</p>
+      <p class="home-descricao">% de domicílios com energia elétrica (Censo IBGE). Onde a rede ainda não chega, e a quem.</p>
+      <p class="home-fonte">energia · IBGE/Censo</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/via-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>ViaViva</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quanto se investe em mobilidade e vias?</p>
+      <p class="home-descricao">Despesa liquidada na Função 26 (Transporte), per capita (SICONFI). O quanto a cidade investe em circular.</p>
+      <p class="home-fonte">mobilidade · finanças · SICONFI F.26</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+    <a class="home-card" href="https://dadosabedoria.buildtovalue.cloud/cultura-viva/3550308" target="_blank" rel="noopener">
+      <div class="home-card-topo"><h3>CulturaViva</h3><span class="home-selo">demonstração</span></div>
+      <p class="home-pergunta">Quanto se investe em cultura?</p>
+      <p class="home-descricao">Despesa liquidada na Função 13 (Cultura), per capita (SICONFI). Cultura como política pública, em números.</p>
+      <p class="home-fonte">cultura · finanças · SICONFI F.13</p>
+      <span class="home-cta">Ver exemplo (São Paulo) →</span>
+    </a>
+  </section>
+
+  <p class="home-nota">
+    Dados abertos (IBGE · Novo CAGED · BCB/ESTBAN · DATASUS · SICONFI/STN · INEP · PNCP · SNIS/MDR · FNDE · ANA).
+    Cada tela traz sua metodologia e a fonte. Produtos marcados <span class="home-selo">demonstração</span> têm a esteira pronta;
+    o dado real flui após a ingestão da fonte. <a href="metodologia.html" style="color:var(--cor-marca);font-weight:600;">Como tudo é calculado e protegido →</a>
+  </p>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+    <a href="desenvolvedores.html">API &amp; Desenvolvedores</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<!-- ===================== SPEC DE HANDOFF ===================== -->
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head">
+      <span class="prio prio-p0">P0</span>
+      <h2>Catálogo de produtos — <span class="mono">/produtos</span></h2>
+    </div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo / pergunta</dt><dd>"Quais produtos existem e qual responde minha pergunta?" Resolve os 13 produtos órfãos (não estão na home nem no menu) — a maior alavanca de descoberta do site.</dd></div>
+      <div><dt>Dados que alimentam</dt><dd>Estático no <span class="mono">lib/catalogo.ts</span> (novo — fonte única dos 24, extraída/expandida da home). Resumo opcional via <span class="mono">buscarFontes()</span> → <span class="spec-fonte">RespostaFontes</span> (<span class="mono">lib/types.ts</span>). Degrada em silêncio sem API.</dd></div>
+      <div><dt>Componentes do DS</dt><dd>Reusa <span class="mono">.home-produtos / .home-card / .home-selo / .home-acervo</span>. <strong>Novo:</strong> agrupamento por domínio (<span class="mono">.cat-dominio</span>) e o chip de fonte (<span class="mono">.home-fonte</span>).</dd></div>
+      <div><dt>Estados</dt><dd><strong>Pleno</strong> (mostrado). <strong>Demonstração:</strong> selo quando a fonte está configurada mas sem dado real. <strong>Vazio:</strong> resumo do acervo some, grade permanece. Sem estado de erro — é estático.</dd></div>
+      <div class="spec-larga"><dt>Acessibilidade &amp; invariantes</dt><dd>Cada card é um <span class="mono">&lt;a&gt;</span> com pergunta + descrição (alvo grande). Selo "demonstração" carrega texto, não só cor. <span class="mono">aria-label</span> por seção de domínio. Proveniência (chip de fonte) em todo card.</dd></div>
+      <div class="spec-larga"><dt>Moldura honesta</dt><dd>O domínio carrega a ressalva-mãe ("ausência de dado ≠ ausência de serviço", "empenhar não é liquidar"). <strong>Atenção:</strong> a copy dos 13 órfãos é <em>provisória</em> (inferida do slug + padrão SICONFI-por-função / SISVAN / SINAN) — confirmar pergunta e fonte exatas de cada um com o backend antes de publicar.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p0">P0</span> — descoberta. Pré-requisito de nav e home.</dd></div>
+      <div><dt>Ligações</dt><dd>Entra no header (substitui exemplos hardcoded) e no CTA da home ("Ver todos os 24 →").</dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

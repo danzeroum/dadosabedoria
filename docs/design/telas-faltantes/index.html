@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Handoff — telas faltantes · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+<style>
+  .capa { background: #0f172a; color: #e2e8f0; }
+  .capa-inner { max-width: var(--largura-max); margin: 0 auto; padding: 40px 20px 44px; }
+  .capa-eyebrow { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.12em; color: #5eead4; margin: 0 0 10px; }
+  .capa h1 { font-size: 2rem; margin: 0 0 14px; color: #fff; max-width: 22ch; line-height: 1.15; }
+  .capa p { margin: 0; color: #cbd5e1; font-size: 1.02rem; line-height: 1.6; max-width: 70ch; }
+  .capa-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 20px; font-size: 0.85rem; color: #94a3b8; }
+  .capa-meta b { color: #e2e8f0; font-weight: 600; }
+  .mapa { width: 100%; border-collapse: collapse; margin: 10px 0 8px; background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); overflow: hidden; }
+  .mapa th, .mapa td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--cor-borda); font-size: 0.9rem; vertical-align: top; }
+  .mapa thead th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cor-texto-suave); background: var(--cor-fundo); }
+  .mapa tbody tr:last-child td { border-bottom: none; }
+  .mapa td a { color: var(--cor-marca); font-weight: 600; text-decoration: none; }
+  .mapa td a:hover { text-decoration: underline; }
+  .mapa .col-tela { width: 30%; }
+  .mapa .objetivo { color: var(--cor-texto-suave); }
+  .grupo-tit { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 34px 0 4px; }
+  .grupo-tit h2 { margin: 0; }
+  .grupo-tit span { font-size: 0.86rem; color: var(--cor-texto-suave); }
+  .principios { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 12px 0 8px; }
+  .principio { border: 1px solid var(--cor-borda); border-left: 4px solid var(--cor-marca); border-radius: var(--raio); background: var(--cor-superficie); padding: 14px 16px; }
+  .principio h3 { margin: 0 0 6px; font-size: 0.95rem; color: var(--cor-marca); }
+  .principio p { margin: 0; font-size: 0.86rem; color: var(--cor-texto-suave); line-height: 1.5; }
+  .principio code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82em; background: var(--cor-fundo); padding: 1px 5px; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<section class="capa">
+  <div class="capa-inner">
+    <p class="capa-eyebrow">Handoff de design</p>
+    <h1>Telas faltantes da DadoSabedoria</h1>
+    <p>
+      O produto já tem <b style="color:#fff">33 páginas polidas</b> e ~30 endpoints. O que falta não são
+      os produtos — são as <b style="color:#fff">lacunas estruturais</b>: descoberta (catálogo), confiança
+      (institucional/legal), robustez (404/erro/loading) e o portal de quem consome a API. Cada tela aqui
+      é um mockup hi-fi no DS real <em>e</em> traz sua própria spec — o designer refina por cima de algo que já roda.
+    </p>
+    <div class="capa-meta">
+      <span><b>14 telas</b> · 3 grupos</span>
+      <span>Fidelidade: <b>hi-fi</b> (fiel ao site no ar)</span>
+      <span>DS: <b>system-ui + teal #0f766e</b> (implementado)</span>
+      <span>WCAG <b>AA</b> (ADR-0009)</span>
+    </div>
+  </div>
+</section>
+
+<div class="conteudo">
+
+  <h2 style="margin-top:28px;">Princípios de design herdados</h2>
+  <p class="metodologia">Toda tela nova respeita as invariantes já redigidas no DS (<code>web/app/globals.css</code>) e na doutrina de <code>/fontes</code>. O designer não reinventa — estende.</p>
+  <div class="principios">
+    <div class="principio">
+      <h3>Nunca só por cor</h3>
+      <p>Semáforo e níveis sempre carregam rótulo textual + ícone. Cor é reforço, nunca o único sinal. Tons escurecidos para passar AA (≥4.5:1).</p>
+    </div>
+    <div class="principio">
+      <h3>Supressão honesta</h3>
+      <p>Célula pequena (k-anon) mostra <strong>cadeado</strong>, jamais o número por baixo nem zero. <code>EstadoSupressao</code> distingue "suprimido" de "sem cobertura".</p>
+    </div>
+    <div class="principio">
+      <h3>Proveniência sempre</h3>
+      <p>Cada número traz fonte, método e atraso. <code>SeloConfianca</code> consolida origem e licença — confiança como fato verificável, não promessa.</p>
+    </div>
+    <div class="principio">
+      <h3>Moldura honesta</h3>
+      <p>"Execução ≠ serviço", "fluxo volátil merece a pergunta", "o lugar já está preparado". O número convida à pergunta, nunca dá o veredito.</p>
+    </div>
+  </div>
+
+  <div class="honesto" style="margin-top:22px;">
+    <strong>Decisão pendente — divergência de DS.</strong> Este handoff usa o DS <em>implementado</em>
+    (<code style="font-family:ui-monospace,monospace">system-ui</code> + teal <code style="font-family:ui-monospace,monospace">#0f766e</code>), fiel ao que está no ar.
+    O handoff original (<code style="font-family:ui-monospace,monospace">docs/design/</code>) previa <strong>IBM Plex Sans/Mono</strong>, roxo
+    <code style="font-family:ui-monospace,monospace">#6d28d9</code> para dado suprimido, tints por cor e header escuro sticky. Convergir afeta a identidade de
+    <em>todas</em> as telas — decisão do designer, registrada aqui de propósito.
+  </div>
+
+  <!-- ---------------------------------------------------------------- GRUPO A -->
+  <div class="grupo-tit">
+    <h2>Grupo A — sobre o backend que já existe</h2>
+    <span>descoberta + portal de API</span>
+  </div>
+  <table class="mapa">
+    <thead>
+      <tr><th class="col-tela">Tela</th><th>Objetivo</th><th>Prioridade</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="produtos.html">Catálogo de produtos</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/produtos</code></td>
+        <td class="objetivo">Resolve os 13 produtos órfãos: os 24 numa só porta, agrupados por domínio. Maior alavanca de descoberta.</td>
+        <td><span class="prio prio-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td><a href="desenvolvedores.html">Docs da API</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/desenvolvedores</code></td>
+        <td class="objetivo">Endpoints públicos + tier profundo (lote, cota), exemplos <code>curl</code>, licenças por fonte.</td>
+        <td><span class="prio prio-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td><a href="planos.html">Planos &amp; preços</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/desenvolvedores/planos</code></td>
+        <td class="objetivo">Open-core: público grátis + profundo pago. 1.000 req/h, lote ≤ 50.</td>
+        <td><span class="prio prio-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td><a href="cota.html">Painel de cota</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/desenvolvedores/cota</code></td>
+        <td class="objetivo">Consumo da chave via <code>GET /v1/quota</code>. Chave server-side, nunca no bundle.</td>
+        <td><span class="prio prio-p1">P1</span> <span class="flag-gate">requer chave</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ---------------------------------------------------------------- GRUPO B -->
+  <div class="grupo-tit">
+    <h2>Grupo B — institucional / legal / sistema</h2>
+    <span>sem backend novo · prosa + estados de sistema</span>
+  </div>
+  <table class="mapa">
+    <thead>
+      <tr><th class="col-tela">Tela</th><th>Objetivo</th><th>Prioridade</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="sobre.html">Sobre</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/sobre</code></td><td class="objetivo">Valor Triplo, missão, "como funciona" em 3 pilares.</td><td><span class="prio prio-p0">P0</span></td></tr>
+      <tr><td><a href="metodologia.html">Metodologia</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/metodologia</code></td><td class="objetivo">IVM, k-anonimato, proveniência, honestidade — âncora cruzada de cada produto.</td><td><span class="prio prio-p0">P0</span></td></tr>
+      <tr><td><a href="privacidade.html">Privacidade</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/privacidade</code></td><td class="objetivo">LGPD: schema <code>app</code> isolado, supressão antes de gravar, sem chave de pessoa.</td><td><span class="prio prio-p0">P0</span> <span class="flag-gate" style="background:#fee2e2;color:#991b1b;border-color:rgba(220,38,38,0.3)">revisão jurídica</span></td></tr>
+      <tr><td><a href="termos.html">Termos</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/termos</code></td><td class="objetivo">Termos de uso + licença de dados por fonte.</td><td><span class="prio prio-p1">P1</span></td></tr>
+      <tr><td><a href="acessibilidade.html">Acessibilidade</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/acessibilidade</code></td><td class="objetivo">Declaração WCAG AA (ADR-0009).</td><td><span class="prio prio-p1">P1</span></td></tr>
+      <tr><td><a href="404.html">404 dedicado</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">not-found.tsx</code></td><td class="objetivo"><code>notFound()</code> é chamado em ~15 páginas e hoje cai no default do Next.</td><td><span class="prio prio-p0">P0</span></td></tr>
+      <tr><td><a href="erro.html">Erro</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">error.tsx</code></td><td class="objetivo">Boundary com <code>reset()</code>, no tom do <code>.erro</code>.</td><td><span class="prio prio-p0">P0</span></td></tr>
+      <tr><td><a href="loading.html">Carregando</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">loading.tsx</code></td><td class="objetivo">Skeleton simples para o SSR <code>force-dynamic</code>.</td><td><span class="prio prio-p1">P1</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ---------------------------------------------------------------- GRUPO C -->
+  <div class="grupo-tit">
+    <h2>Grupo C — área do cidadão / auth</h2>
+    <span>gate OIDC (gov.br) · desenhar bloqueado, honesto por construção</span>
+  </div>
+  <table class="mapa">
+    <thead>
+      <tr><th class="col-tela">Tela</th><th>Objetivo</th><th>Prioridade</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="entrar.html">Entrar (gov.br)</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/entrar</code></td><td class="objetivo">Botão desabilitado + copy "ainda não liberado — o lugar já está preparado".</td><td><span class="prio prio-p1">P1</span> <span class="flag-gate">gate OIDC</span></td></tr>
+      <tr><td><a href="cidadao.html">Área do cidadão</a><br /><code style="font-size:0.78rem;color:var(--cor-texto-suave)">/cidadao</code></td><td class="objetivo">Perfil, "Avise-me", consentimento — tudo no estado "não autenticado".</td><td><span class="prio prio-p2">P2</span> <span class="flag-gate">gate OIDC</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="honesto" style="background:var(--cor-fundo);border-color:var(--cor-borda);color:var(--cor-texto-suave);">
+    <strong style="color:var(--cor-texto)">Fora do escopo de front agora.</strong>
+    <em>Mapa geográfico (coropleta):</em> já existe em <code style="font-family:ui-monospace,monospace">/ivm</code> e degrada para cartograma — falta a malha IBGE no backend, não a tela.
+    <em>Lista genérica por produto:</em> exigiria <code style="font-family:ui-monospace,monospace">GET /v1/&lt;produto&gt;</code> para 23 deles que não existe; <code style="font-family:ui-monospace,monospace">/produtos</code> + busca de município cobrem a navegação. Decisão de produto adiada.
+  </div>
+
+</div>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Telas do handoff">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+    <a href="desenvolvedores.html">API &amp; Desenvolvedores</a>
+  </nav>
+  <p class="rodape-nota">
+    Handoff de design para a DadoSabedoria · gerado a partir do DS implementado em <code style="font-family:ui-monospace,monospace">web/app/globals.css</code> e da doutrina de <code style="font-family:ui-monospace,monospace">/fontes</code>.
+    Cada tela é um mockup de baixa fricção para o designer refinar — não código de produção.
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Área do cidadão · DadoSabedoria</title>
+<link rel="stylesheet" href="ds.css" />
+</head>
+<body>
+
+<div class="hf-bar">
+  <a href="index.html" class="hf-back">← Handoff · telas faltantes</a>
+  <span class="hf-screen">/cidadao <span class="prio prio-p2">P2</span> <span class="flag-gate">gate OIDC</span></span>
+  <a href="#spec" class="hf-spec-link">Ver spec ↓</a>
+</div>
+
+<header class="topo">
+  <a class="topo-marca" href="index.html">DadoSabedoria</a>
+  <nav class="topo-nav" aria-label="Produtos">
+    <a href="produtos.html">Produtos</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/ivm" target="_blank" rel="noopener">IVM</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/comparar" target="_blank" rel="noopener">Comparar</a>
+    <a class="ext" href="https://dadosabedoria.buildtovalue.cloud/perguntar" target="_blank" rel="noopener">Perguntar</a>
+    <a href="sobre.html">Sobre</a>
+  </nav>
+</header>
+
+<main class="conteudo pagina legal" data-screen-label="/cidadao">
+  <a class="voltar" href="index.html">← Início</a>
+  <h1>Área do cidadão</h1>
+
+  <div class="portao" role="note">
+    <span class="portao-icone" aria-hidden="true">🔒</span>
+    <div>
+      <strong>Você não está autenticado.</strong> Esta área exige login gov.br, que <strong>ainda não foi liberado</strong>.
+      Abaixo está a prévia do que ela vai oferecer — desabilitada, mas já desenhada. <a href="entrar.html" style="color:#78350f;font-weight:700;">Ir para Entrar →</a>
+    </div>
+  </div>
+
+  <h2>Avise-me</h2>
+  <p>Receba um alerta quando um indicador do seu município mudar de faixa (ex.: o IVM virar amarelo, o saldo do CAGED ficar negativo). Evolução do disclosure que hoje vive no OndeFoi.</p>
+  <div class="toggle-fake" aria-disabled="true">
+    <span>Alertar quando o <strong>IVM</strong> de São Paulo mudar de faixa</span>
+    <span class="toggle-pino" role="img" aria-label="desligado (requer login)"></span>
+  </div>
+  <div class="toggle-fake" aria-disabled="true">
+    <span>Alertar sobre o <strong>saldo de emprego</strong> (Pulso Produtivo)</span>
+    <span class="toggle-pino" role="img" aria-label="desligado (requer login)"></span>
+  </div>
+
+  <h2>Meus dados &amp; consentimento</h2>
+  <p>Veja e revogue, a qualquer momento, o consentimento dado para alertas. Seu contato vive num schema isolado — detalhe na <a href="privacidade.html">Privacidade</a>.</p>
+  <div class="toggle-fake" aria-disabled="true">
+    <span>Consinto receber alertas por <strong>e-mail</strong></span>
+    <span class="toggle-pino" role="img" aria-label="desligado (requer login)"></span>
+  </div>
+  <p class="metodologia" style="margin-top:14px;">Quando o login ligar, aqui também aparecem "baixar meus dados" e "apagar minha conta" — direitos da LGPD por construção, não por pedido.</p>
+
+  <div class="honesto" style="background:var(--cor-fundo);border-color:var(--cor-borda);color:var(--cor-texto-suave);">
+    <strong style="color:var(--cor-texto)">Nada coletado ainda.</strong> Enquanto o gov.br não liga, esta tela não grava nada — os controles acima são prévia inerte. Honestidade: não pedimos o que ainda não podemos proteger pelo fluxo completo.
+  </div>
+</main>
+
+<footer class="rodape">
+  <nav class="rodape-nav" aria-label="Transparência">
+    <a href="produtos.html">Produtos</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="metodologia.html">Metodologia</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+    <a href="acessibilidade.html">Acessibilidade</a>
+  </nav>
+  <p class="rodape-nota">Dados públicos abertos. Privacidade estrutural e proveniência em cada número — metodologia e fonte em cada tela.</p>
+</footer>
+
+<section id="spec" class="spec">
+  <div class="spec-inner">
+    <p class="spec-eyebrow">Spec de handoff</p>
+    <div class="spec-head"><span class="prio prio-p2">P2</span><h2>Área do cidadão — <span class="mono">/cidadao</span> (+ /alertas, /consentimento)</h2></div>
+    <dl class="spec-grid">
+      <div><dt>Objetivo</dt><dd>Destino real do "Avise-me" e da gestão de consentimento. Hoje só um disclosure no OndeFoi — aqui ganha endereço.</dd></div>
+      <div><dt>Dados</dt><dd><span class="mono">sessaoAtual()</span> de <span class="mono">lib/auth.ts</span> (mock → <span class="mono">null</span> até OIDC). Envolvida por <strong>novo</strong> <span class="mono">PortaoAuth.tsx</span> (server) que, sem sessão, renderiza o aviso.</dd></div>
+      <div><dt>Componentes do DS</dt><dd><strong>Novo:</strong> <span class="mono">.portao, .toggle-fake</span>. Reusa <span class="mono">.legal, .honesto</span>. Subrotas <span class="mono">/cidadao/alertas</span> e <span class="mono">/cidadao/consentimento</span> seguem o mesmo molde.</dd></div>
+      <div><dt>Estados</dt><dd><strong>Não autenticado</strong> (mostrado — controles inertes) · <strong>autenticado</strong> (toggles vivos, dados do perfil). PortaoAuth alterna entre os dois.</dd></div>
+      <div class="spec-larga"><dt>Invariantes</dt><dd>SSR puro, sem Context/<span class="mono">"use client"</span> (cultura cliente-zero). "Nada coletado ainda" é literal: a prévia não grava. Direitos LGPD (baixar/apagar) entram quando o login ligar.</dd></div>
+      <div><dt>Prioridade</dt><dd><span class="prio prio-p2">P2</span> · <span class="flag-gate">gate OIDC</span></dd></div>
+    </dl>
+  </div>
+</section>
+
+</body>
+</html>

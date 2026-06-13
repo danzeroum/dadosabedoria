@@ -610,3 +610,20 @@ export interface FomeOcultaResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------ SentinelaMaterna (SAUDE-03)
+
+export type NivelMaterno = "crítico" | "elevado" | "moderado" | "baixo" | "sem_dado";
+
+export interface SentinelaMaternаResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  n_gestantes: number | null;
+  gestante_baixo_peso_pct: number | null;
+  nivel: NivelMaterno;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

@@ -52,6 +52,7 @@ from app.produtos.modelos import (
     RioEmRiscoOut,
     SalarioRadarOut,
     SemeandoTransparenciaOut,
+    SentinelaMaternаOut,
     SentinelaRespOut,
 )
 from app.produtos.obra_viva import NOTA_HONESTA as NOTA_OBRA_VIVA
@@ -69,6 +70,8 @@ from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
 from app.produtos.semeando_transparencia import NOTA_HONESTA as NOTA_SEMEANDO
 from app.produtos.semeando_transparencia import calcular as calcular_semeando
+from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
+from app.produtos.sentinela_materna import calcular as calcular_sentinela_materna
 from app.produtos.sentinela_resp import NOTA_HONESTA as NOTA_SENTINELA
 from app.produtos.sentinela_resp import MesInternacoes
 from app.produtos.sentinela_resp import calcular as calcular_sentinela
@@ -86,6 +89,7 @@ CODIGO_FEC = "energia.qualidade.fec"
 CODIGO_SECA = "saneamento.agua.seca_indice"
 CODIGO_PAM = "alimentacao.producao.valor_total"
 CODIGO_SISVAN = "alimentacao.nutricao.baixo_peso_pct"
+CODIGO_SISVAN_GESTANTE = "saude.materno.gestante_baixo_peso_pct"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -1095,5 +1099,68 @@ class FomeOcultaFacade:
             baixo_peso_pct=fo.baixo_peso_pct,
             nivel=fo.nivel,
             nota=NOTA_FOME_OCULTA,
+            meta=_meta(meta_row),
+        )
+
+
+class SentinelaMaternаFacade:
+    """Fachada do produto Sentinela Materna — SAUDE-03."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:sentinela-materna")
+    async def sentinela_materna(self, *, codigo_ibge: str) -> SentinelaMaternаOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_SISVAN_GESTANTE)
+        if meta_row is None:  # pragma: no cover - indicador sempre semeado
+            raise NaoEncontradoError(f"indicador '{CODIGO_SISVAN_GESTANTE}'")
+
+        _j = t_val.join(t_ind, t_ind.c.id == t_val.c.indicador_id).join(
+            t_terr, t_terr.c.id == t_val.c.territorio_id
+        )
+        _val_col = case((t_val.c.suprimido, None), else_=t_val.c.valor).label("valor")
+        _n_col = case((t_val.c.suprimido, None), else_=t_val.c.n_amostra).label("n_amostra")
+        _q = (
+            select(t_val.c.periodo, _val_col, _n_col, t_val.c.suprimido)
+            .select_from(_j)
+            .where(
+                t_ind.c.codigo == CODIGO_SISVAN_GESTANTE,
+                t_ind.c.publico.is_(True),
+                t_terr.c.codigo_ibge == codigo_ibge,
+            )
+            .order_by(t_val.c.periodo.desc())
+            .limit(1)
+        )
+        row = (await self._s.execute(_q)).mappings().first()
+        if row is None:
+            raise NaoEncontradoError(f"Sentinela Materna para município '{codigo_ibge}'")
+
+        pct = float(row["valor"]) if row["valor"] is not None else None
+        n_gest = int(row["n_amostra"]) if row["n_amostra"] is not None else None
+        ano = row["periodo"].year if row["periodo"] is not None else None
+
+        sm = calcular_sentinela_materna(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=ano,
+            n_gestantes=n_gest,
+            gestante_baixo_peso_pct=pct,
+        )
+        return SentinelaMaternаOut(
+            codigo_ibge=sm.codigo_ibge,
+            nome=sm.nome,
+            uf=sm.uf,
+            populacao=sm.populacao,
+            ano=sm.ano,
+            n_gestantes=sm.n_gestantes,
+            gestante_baixo_peso_pct=sm.gestante_baixo_peso_pct,
+            nivel=sm.nivel,
+            nota=NOTA_SENTINELA_MATERNA,
             meta=_meta(meta_row),
         )

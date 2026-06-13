@@ -52,8 +52,10 @@ from app.ingestao.adaptadores.siconfi import CODIGO_INDICADOR as CODIGO_SICONFI
 from app.ingestao.adaptadores.siconfi import CONTRATO as CONTRATO_SICONFI
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi
 from app.ingestao.adaptadores.sisvan import CODIGO_INDICADOR as CODIGO_SISVAN
+from app.ingestao.adaptadores.sisvan import CODIGO_INDICADOR_GESTANTE as CODIGO_SISVAN_GESTANTE
 from app.ingestao.adaptadores.sisvan import CONTRATO as CONTRATO_SISVAN
-from app.ingestao.adaptadores.sisvan import AdaptadorSisvan
+from app.ingestao.adaptadores.sisvan import CONTRATO_GESTANTE as CONTRATO_SISVAN_GESTANTE
+from app.ingestao.adaptadores.sisvan import AdaptadorSisvan, AdaptadorSisvanGestante
 from app.ingestao.bronze import ArmazenamentoBronze, gravar_bronze
 from app.ingestao.ouro import CelulaOuro, ContextoLinhagem, GravadorOuro, ResumoCarga
 from app.ingestao.supressao import MetaIndicadorSupressao
@@ -960,6 +962,65 @@ async def executar_sisvan(
         janela,
         fonte_codigo="sisvan",
         transformacoes=f"sisvan {janela.ano}: bronze->prata->ouro (baixo_peso_pct)",
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_sisvan_gestante(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorSisvanGestante,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira SISVAN gestante (anual) — % de gestantes com baixo peso por município.
+
+    Grava um indicador: saude.materno.gestante_baixo_peso_pct (%).
+    Origem SENSÍVEL (dados de saúde materna). k-anonimato: n_minimo=5.
+    Vivo-pronto: forma a confirmar na 1ª busca real (#0, host s3.sa-east-1.amazonaws.com).
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"sisvan_gestante/{janela.ano}.csv", bruto)
+    df = adaptador.parse(bruto)
+    CONTRATO_SISVAN_GESTANTE.validar(df)
+    agregado = adaptador.agregar(adaptador.transformar_prata(df))
+
+    ind_gestante = await _carregar_indicador(conn, CODIGO_SISVAN_GESTANTE)
+    mapa7 = await _mapa_municipios(conn)
+
+    celulas: list[CelulaOuro] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind_gestante.id,
+                territorio_id=territorio_id,
+                periodo=date(janela.ano, 1, 1),
+                atualizacao="anual",
+                valor=Decimal(str(round(float(row["gestante_baixo_peso_pct"]), 4))),
+                n_amostra=int(row["n_total"]),
+                confiabilidade=3,
+                fonte_id=ind_gestante.fonte_id,
+            )
+        )
+
+    return await _gravar_celulas(
+        conn,
+        ind_gestante,
+        celulas,
+        janela,
+        fonte_codigo="sisvan_gestante",
+        transformacoes=(
+            f"sisvan_gestante {janela.ano}: bronze->prata->ouro (gestante_baixo_peso_pct)"
+        ),
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

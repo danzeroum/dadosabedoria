@@ -1,5 +1,6 @@
 import type {
   AguaVivaResponse,
+  CacadorArboviroesResponse,
   CoberturaDatasus,
   CoberturaInep,
   CoberturaPncp,
@@ -407,4 +408,14 @@ export async function buscarSentinelaMaterna(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`SentinelaMaterna ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<SentinelaMaternаResponse>;
+}
+
+export async function buscarCacadorArboviroses(
+  codigo: string,
+): Promise<CacadorArboviroesResponse | null> {
+  const url = `${BASE}/v1/cacador-arboviroses/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`CacadorArboviroses ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<CacadorArboviroesResponse>;
 }

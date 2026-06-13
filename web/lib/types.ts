@@ -627,3 +627,20 @@ export interface SentinelaMaternаResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------- CaçadorArboviroses (SAUDE-02)
+
+export type NivelArboviroses = "crítico" | "elevado" | "moderado" | "baixo" | "sem_dado";
+
+export interface CacadorArboviroesResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  casos_confirmados: number | null;
+  incidencia_100k: number | null;
+  nivel: NivelArboviroses;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

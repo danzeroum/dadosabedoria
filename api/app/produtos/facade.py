@@ -22,6 +22,8 @@ from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
 from app.produtos.agua_viva import calcular as calcular_agua_viva
 from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
 from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
+from app.produtos.cacador_arboviroses import NOTA_HONESTA as NOTA_CACADOR
+from app.produtos.cacador_arboviroses import calcular as calcular_cacador
 from app.produtos.esgoto_invisivel import NOTA_HONESTA as NOTA_ESGOTO_INVISIVEL
 from app.produtos.esgoto_invisivel import calcular as calcular_esgoto_invisivel
 from app.produtos.fome_oculta import NOTA_HONESTA as NOTA_FOME_OCULTA
@@ -37,6 +39,7 @@ from app.produtos.luz_no_mapa import calcular as calcular_luz_no_mapa
 from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
+    CacadorArboviroesOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -90,6 +93,7 @@ CODIGO_SECA = "saneamento.agua.seca_indice"
 CODIGO_PAM = "alimentacao.producao.valor_total"
 CODIGO_SISVAN = "alimentacao.nutricao.baixo_peso_pct"
 CODIGO_SISVAN_GESTANTE = "saude.materno.gestante_baixo_peso_pct"
+CODIGO_SINAN = "saude.arboviroses.dengue_casos"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -1162,5 +1166,66 @@ class SentinelaMaternаFacade:
             gestante_baixo_peso_pct=sm.gestante_baixo_peso_pct,
             nivel=sm.nivel,
             nota=NOTA_SENTINELA_MATERNA,
+            meta=_meta(meta_row),
+        )
+
+
+class CacadorArbovirosesFacade:
+    """Fachada do produto Caçador de Arboviroses — SAUDE-02."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:cacador-arboviroses")
+    async def cacador_arboviroses(self, *, codigo_ibge: str) -> CacadorArboviroesOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_SINAN)
+        if meta_row is None:  # pragma: no cover - indicador sempre semeado
+            raise NaoEncontradoError(f"indicador '{CODIGO_SINAN}'")
+
+        _j = t_val.join(t_ind, t_ind.c.id == t_val.c.indicador_id).join(
+            t_terr, t_terr.c.id == t_val.c.territorio_id
+        )
+        _val_col = case((t_val.c.suprimido, None), else_=t_val.c.valor).label("valor")
+        _n_col = case((t_val.c.suprimido, None), else_=t_val.c.n_amostra).label("n_amostra")
+        _q = (
+            select(t_val.c.periodo, _val_col, _n_col, t_val.c.suprimido)
+            .select_from(_j)
+            .where(
+                t_ind.c.codigo == CODIGO_SINAN,
+                t_ind.c.publico.is_(True),
+                t_terr.c.codigo_ibge == codigo_ibge,
+            )
+            .order_by(t_val.c.periodo.desc())
+            .limit(1)
+        )
+        row = (await self._s.execute(_q)).mappings().first()
+        if row is None:
+            raise NaoEncontradoError(f"Caçador de Arboviroses para município '{codigo_ibge}'")
+
+        casos = int(row["n_amostra"]) if row["n_amostra"] is not None else None
+        ano = row["periodo"].year if row["periodo"] is not None else None
+
+        ca = calcular_cacador(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=ano,
+            casos_confirmados=casos,
+        )
+        return CacadorArboviroesOut(
+            codigo_ibge=ca.codigo_ibge,
+            nome=ca.nome,
+            uf=ca.uf,
+            populacao=ca.populacao,
+            ano=ca.ano,
+            casos_confirmados=ca.casos_confirmados,
+            incidencia_100k=ca.incidencia_100k,
+            nivel=ca.nivel,
+            nota=NOTA_CACADOR,
             meta=_meta(meta_row),
         )

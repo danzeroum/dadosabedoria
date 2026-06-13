@@ -51,6 +51,9 @@ from app.ingestao.adaptadores.saneamento import AdaptadorSnis
 from app.ingestao.adaptadores.siconfi import CODIGO_INDICADOR as CODIGO_SICONFI
 from app.ingestao.adaptadores.siconfi import CONTRATO as CONTRATO_SICONFI
 from app.ingestao.adaptadores.siconfi import AdaptadorSiconfi
+from app.ingestao.adaptadores.sinan import CODIGO_INDICADOR as CODIGO_SINAN
+from app.ingestao.adaptadores.sinan import CONTRATO as CONTRATO_SINAN
+from app.ingestao.adaptadores.sinan import AdaptadorSinan
 from app.ingestao.adaptadores.sisvan import CODIGO_INDICADOR as CODIGO_SISVAN
 from app.ingestao.adaptadores.sisvan import CODIGO_INDICADOR_GESTANTE as CODIGO_SISVAN_GESTANTE
 from app.ingestao.adaptadores.sisvan import CONTRATO as CONTRATO_SISVAN
@@ -1021,6 +1024,94 @@ async def executar_sisvan_gestante(
         transformacoes=(
             f"sisvan_gestante {janela.ano}: bronze->prata->ouro (gestante_baixo_peso_pct)"
         ),
+        url=url,
+        hash_origem=hash_origem,
+        responsavel=responsavel,
+        ignorados=ignorados,
+    )
+
+
+async def executar_sinan(
+    janela: Janela,
+    conn: AsyncConnection,
+    adaptador: AdaptadorSinan,
+    store: ArmazenamentoBronze,
+    *,
+    responsavel: str = "ingestao",
+) -> ResumoCarga:
+    """Esteira SINAN/Dengue (anual) — casos confirmados de dengue por município/ano.
+
+    Grava um indicador: saude.arboviroses.dengue_casos (contagem, origem SENSÍVEL).
+    n_amostra = contagem de casos; k-anon n_minimo=5 suprime municípios abaixo do piso.
+    Usa mapa6 (ID_MUNICIP é IBGE 6 dígitos, como SIH/DATASUS).
+    Vivo-pronto: forma a confirmar na 1ª busca real (#0, host ftp.datasus.gov.br).
+    """
+    bruto, url = adaptador.baixar_bruto(janela)
+    hash_origem = gravar_bronze(store, f"sinan/{janela.ano}.csv", bruto)
+    df = adaptador.parse(bruto)
+    _log.info("sinan_parse: %d linhas, cols=%s", df.height, df.columns)
+    CONTRATO_SINAN.validar(df)
+
+    prata = adaptador.transformar_prata(df)
+    _log.info(
+        "sinan_prata: %d linhas após filtro CLASSI_FIN∈{1,2,3}, amostra=%s",
+        prata.height,
+        prata.head(3).to_dicts() if prata.height > 0 else "(vazio)",
+    )
+
+    agregado = adaptador.agregar(prata)
+    _log.info("sinan_agregar: %d pares município×ano", agregado.height)
+
+    ind = await _carregar_indicador(conn, CODIGO_SINAN)
+    mapa6 = {k[:6]: v for k, v in (await _mapa_municipios(conn)).items()}
+
+    celulas: list[CelulaOuro] = []
+    ignorados = 0
+    for row in agregado.iter_rows(named=True):
+        territorio_id = mapa6.get(str(row["cod_mun6"]))
+        if territorio_id is None:
+            ignorados += 1
+            continue
+        contagem = int(row["casos"])
+        celulas.append(
+            CelulaOuro(
+                indicador_id=ind.id,
+                territorio_id=territorio_id,
+                periodo=date(int(row["ano"]), 1, 1),
+                atualizacao="anual",
+                valor=Decimal(contagem),
+                n_amostra=contagem,
+                confiabilidade=3,
+                fonte_id=ind.fonte_id,
+            )
+        )
+
+    _log.info(
+        "sinan_mapa6: %d células ok, %d ignorados (sem mapa6 de %d pares)",
+        len(celulas),
+        ignorados,
+        agregado.height,
+    )
+
+    if not celulas and agregado.height > 0:
+        raise RuntimeError(
+            f"sinan {janela.ano}: {agregado.height} pares agregados mas 0 células geradas "
+            f"({ignorados} sem mapa6) — provável divergência de código IBGE ou bug no pipeline."
+        )
+    if not celulas:
+        raise RuntimeError(
+            f"sinan {janela.ano}: 0 células geradas (parse={df.height} linhas, "
+            f"prata={prata.height} linhas, agregado={agregado.height} pares) — "
+            f"provável bug no pipeline; abortando sem gravar linhagem."
+        )
+
+    return await _gravar_celulas(
+        conn,
+        ind,
+        celulas,
+        janela,
+        fonte_codigo="sinan",
+        transformacoes=f"sinan {janela.ano}: bronze->prata->ouro (dengue_casos confirmados)",
         url=url,
         hash_origem=hash_origem,
         responsavel=responsavel,

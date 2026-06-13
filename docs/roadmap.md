@@ -396,7 +396,12 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   + tela `/sentinela-resp/{ibge}`; contagem de AIH grupo J do CID-10 por mês com k-anonimato
   (supressão < 5); níveis elevado/moderado/baixo/suprimido; tendência mês vs. anterior; série
   histórica com barras; dupla face §17 (sem identificação de pacientes).
-- [ ] 🔵 SAUDE-02 Caçador de Arboviroses; SAUDE-03 Materno-Infantil; SAUDE-11 Burnout.
+- [x] 🔵 **SAUDE-02 Caçador de Arboviroses** (SINAN/MS) — endpoint `GET /v1/cacador-arboviroses/{ibge}`
+  + tela `/cacador-arboviroses/{ibge}`; casos confirmados de dengue (CLASSI_FIN 1-3) por 100k hab
+  por município/ano; k-anonimato n_minimo=5; limiares epidemiológicos MS/PAHO (crítico ≥300, elevado
+  ≥100, moderado ≥20); nota honesta sobre subnotificação (3-10x) e lag (6-12 meses); Dagster asset
+  `valores_sinan` + schedule `schedule_sinan_anual` (1/jul); 2026-06-13.
+- [ ] 🔵 SAUDE-03 Materno-Infantil; SAUDE-11 Burnout.
   *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*
 
 ### 2C. Saneamento, água, energia, alimentação
@@ -410,7 +415,7 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
 - [x] 🔵 **SANE-04 LuzNoMapa** (ANEEL DEC/FEC) — endpoint `GET /v1/luz-no-mapa/{ibge}` + tela `/luz-no-mapa/{ibge}`; DEC (horas de interrupção/consumidor/ano) e FEC (interrupções/consumidor/ano); níveis confiavel/regular/fragil/sem_dado; FetcherFake para CI; pipeline bronze→prata→ouro (média por município, consolida distribuidoras); Dagster `job_valores_aneel` + `schedule_aneel_anual`; 18 testes unitários + 4 integração + 3 API; PR #138, 2026-06-12.
 - [x] 🔵 **ALIM-01 PratoFrio** (IBGE PAM) — endpoint `GET /v1/prato-frio/{ibge}` + tela `/prato-frio/{codigo}`; valor da produção agrícola municipal per capita (lavouras temporárias+permanentes, var 762, Mil BRL→BRL); níveis alta/moderada/baixa/sem_dado; FetcherFake para CI; pipeline bronze→prata→ouro; Dagster `job_valores_pam` + `schedule_pam_anual` (15/nov); 25 testes; PR #141, 2026-06-12.
 - [x] 🔵 **ALIM-05 SemeandoTransparência** (SICONFI Função 20) — endpoint `GET /v1/semeando-transparencia/{ibge}` + tela `/semeando-transparencia/{codigo}`; despesa liquidada na função 20 (Agricultura) por habitante; níveis alto/moderado/baixo/sem_dado (limiares R$100 e R$10/hab/ano); lê `execucao_funcao` diretamente (padrão OndeFoi, sem pipeline novo); 20 testes; PR #143, 2026-06-12.
-- [ ] 🔵 ALIM-02 Fome Oculta.
+- [x] 🔵 **ALIM-02 Fome Oculta** (SISVAN/MS) — endpoint `GET /v1/fome-oculta/{ibge}` + tela `/fome-oculta/{ibge}`; % crianças < 5 anos com magreza/magreza acentuada (CO_ESTADO_NUTRI_CRIANCA ∈ {1,2}) acompanhadas pelo SISVAN; níveis crítico/elevado/moderado/baixo/sem_dado (limiares 10%/5%/2%); FetcherFake para CI (S3 MS bloqueado no contêiner); pipeline bronze→prata→ouro com k-anonimato (n≥5); Dagster `job_valores_sisvan` + `schedule_sisvan_anual` (1/jun); nota honesta (cobertura parcial CadÚnico — não é censo); 21 testes; PR #145, 2026-06-13.
 
 ### 2D. Open-core profundo + cidadão + IA (capacidades transversais)
 - [x] 🟢 **Camada profunda paga:** `POST /v1/consultas-lote` (lote sobre o acervo público — paga-se

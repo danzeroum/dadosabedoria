@@ -214,15 +214,29 @@ FONTES: list[dict[str, Any]] = [
         "lag_tipico_dias": 365,
         "base_legal": "obrigacao_legal",
     },
+    {
+        "codigo": "sinan",
+        "nome": "SINAN — Sistema de Informação de Agravos de Notificação",
+        "orgao": "Ministério da Saúde",
+        "url_doc": "https://datasus.saude.gov.br/transferencia-de-arquivos/",
+        "licenca": "LAI/Dados Abertos (anonimizado)",
+        "permite_uso_comercial": True,
+        "permite_redistribuicao": True,
+        "atualizacao": "anual",
+        "lag_tipico_dias": 365,
+        "base_legal": "obrigacao_legal",
+    },
 ]
 
 # (codigo_ibge, nome, nivel, uf, populacao, codigo_ibge_do_pai)
 TERRITORIOS = [
     ("1", "Brasil", "pais", None, 203080756, None),
     ("3", "Região Sudeste", "regiao", None, None, "1"),
+    ("33", "Rio de Janeiro", "uf", "RJ", None, "3"),
     ("35", "São Paulo", "uf", "SP", None, "3"),
-    ("3550308", "São Paulo", "municipio", "SP", 11451245, "35"),
+    ("3304557", "Rio de Janeiro", "municipio", "RJ", 6211223, "33"),
     ("3509502", "Campinas", "municipio", "SP", 1213792, "35"),
+    ("3550308", "São Paulo", "municipio", "SP", 11451245, "35"),
 ]
 
 INDICADORES: list[dict[str, Any]] = [
@@ -570,6 +584,34 @@ INDICADORES: list[dict[str, Any]] = [
             "Forma a confirmar na 1ª busca real (s3.sa-east-1.amazonaws.com/ckan.saude.gov.br)."
         ),
     },
+    {
+        "codigo": "saude.arboviroses.dengue_casos",
+        "nome": "Casos confirmados de dengue",
+        "descricao": (
+            "Casos confirmados de dengue (CLASSI_FIN ∈ {1,2,3}) por município/ano. "
+            "Inclui: dengue clássico (1), com sinais de alarme (2) e grave (3). "
+            "Fonte: SINAN (Sistema de Informação de Agravos de Notificação/MS)."
+        ),
+        "dominio": "saude",
+        "subdominio": "arboviroses",
+        "unidade": "casos",
+        "polaridade": "menor_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 5,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": True,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "sinan",
+        "codigo_externo": "SINAN_DENGBR_CLASSI_FIN",
+        "metodologia": (
+            "Contagem de registros com CLASSI_FIN ∈ {1,2,3} no arquivo DENGBR{YY}.dbc "
+            "do SINAN/DATASUS, por município de residência (ID_MUNICIP, IBGE 6 dígitos) e "
+            "ano de notificação (NU_ANO). K-anonimato: n_minimo=5 (saúde sensível). "
+            "Forma a confirmar na 1ª busca real (ftp.datasus.gov.br)."
+        ),
+    },
 ]
 
 
@@ -866,6 +908,26 @@ async def _semear_fatos(
                 gestante_bp,
                 "seed SAUDE-03: prata->ouro (SISVAN gestante_baixo_peso_pct)",
                 "seed",
+            ),
+        )
+
+    # SAÚDE/ARBOVIROSES (SINAN, anual): casos confirmados de dengue por município/ano.
+    dengue = ind_ids["saude.arboviroses.dengue_casos"]
+    f_sinan = fonte_ids["sinan"]
+    if not await _tem_dados_reais(conn, dengue):
+        # SP: 8000 casos → incidência ~70/100k (elevado); fixture: grau-demo.
+        # Campinas: None (suprimido, n_amostra=3 < 5).
+        # Rio não está no seed de territórios, então só SP.
+        dengue_cels = [
+            CelulaOuro(dengue, sp, date(2023, 1, 1), "anual", Decimal(8000), 8000, 3, f_sinan),
+            # Campinas com n_amostra=3 → abaixo de n_minimo=5 → suprimido pelo k-anon
+            CelulaOuro(dengue, cps, date(2023, 1, 1), "anual", Decimal(3), 3, 3, f_sinan),
+        ]
+        await grav.escrever_ouro(
+            dengue_cels,
+            meta,
+            ContextoLinhagem(
+                f_sinan, dengue, "seed SAUDE-02: prata->ouro (SINAN dengue_casos)", "seed"
             ),
         )
 

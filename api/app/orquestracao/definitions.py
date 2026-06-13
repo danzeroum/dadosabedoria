@@ -33,6 +33,7 @@ from app.ingestao.adaptadores.siconfi import (
     FetcherSiconfiFuncoesHTTP,
     FetcherSiconfiHTTP,
 )
+from app.ingestao.adaptadores.sinan import AdaptadorSinan, FetcherSinanFTP
 from app.ingestao.adaptadores.sisvan import (
     AdaptadorSisvan,
     AdaptadorSisvanGestante,
@@ -52,6 +53,7 @@ from app.ingestao.pipeline import (
     executar_pncp,
     executar_siconfi,
     executar_siconfi_funcoes,
+    executar_sinan,
     executar_sisvan,
     executar_sisvan_gestante,
     executar_snis,
@@ -208,6 +210,15 @@ async def _rodar_sisvan_gestante(janela: Janela) -> None:  # pragma: no cover - 
     adaptador = AdaptadorSisvanGestante(FetcherSisvanGestanteHTTP())
     async with connect(settings.database_url) as conn:
         await executar_sisvan_gestante(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
+async def _rodar_sinan(janela: Janela) -> None:  # pragma: no cover - rede/FTP
+    settings = get_settings()
+    adaptador = AdaptadorSinan(FetcherSinanFTP())
+    async with connect(settings.database_url) as conn:
+        await executar_sinan(
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
 
@@ -404,6 +415,22 @@ def valores_sisvan_gestante(
     return dg.MaterializeResult(metadata={"ano": context.partition_key})
 
 
+@dg.asset(
+    partitions_def=_ANUAL,
+    group_name="saude",
+    description=(
+        "Casos confirmados de dengue por município/ano — SINAN/MS "
+        "(CLASSI_FIN 1-3; k-anonimato n_minimo=5). Base do Caçador de Arboviroses (SAUDE-02)."
+    ),
+    metadata={"fonte": "SINAN/Ministério da Saúde", "lag_tipico": "6-12 meses"},
+)
+def valores_sinan(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # pragma: no cover
+    comp = _comp_de_anual(context.partition_key)
+    context.log.info(f"SINAN Dengue: ano {context.partition_key}")
+    asyncio.run(_rodar_sinan(Janela.de_competencia(comp)))
+    return dg.MaterializeResult(metadata={"ano": context.partition_key})
+
+
 # ------------------------------------------------------------------ Asset jobs
 
 job_valores_caged = dg.define_asset_job("job_valores_caged", selection=["valores_caged"])
@@ -421,6 +448,7 @@ job_valores_sisvan = dg.define_asset_job("job_valores_sisvan", selection=["valor
 job_valores_sisvan_gestante = dg.define_asset_job(
     "job_valores_sisvan_gestante", selection=["valores_sisvan_gestante"]
 )
+job_valores_sinan = dg.define_asset_job("job_valores_sinan", selection=["valores_sinan"])
 
 
 # ------------------------------------------------------------------ Schedules
@@ -518,6 +546,14 @@ def schedule_sisvan_gestante_anual(context: dg.ScheduleEvaluationContext) -> dg.
     return dg.RunRequest(partition_key=str(ano))
 
 
+@dg.schedule(
+    job=job_valores_sinan, cron_schedule="0 8 1 7 *"
+)  # 1/jul — dados SINAN/Dengue do exercício anterior (lag ~6-12 meses)
+def schedule_sinan_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(partition_key=str(ano))
+
+
 # ------------------------------------------------------------------ Definições
 
 defs = dg.Definitions(
@@ -535,6 +571,7 @@ defs = dg.Definitions(
         valores_pam,
         valores_sisvan,
         valores_sisvan_gestante,
+        valores_sinan,
     ],
     jobs=[
         job_valores_caged,
@@ -550,6 +587,7 @@ defs = dg.Definitions(
         job_valores_pam,
         job_valores_sisvan,
         job_valores_sisvan_gestante,
+        job_valores_sinan,
     ],
     schedules=[
         schedule_caged_mensal,
@@ -565,5 +603,6 @@ defs = dg.Definitions(
         schedule_pam_anual,
         schedule_sisvan_anual,
         schedule_sisvan_gestante_anual,
+        schedule_sinan_anual,
     ],
 )

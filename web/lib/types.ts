@@ -595,3 +595,18 @@ export interface SemeandoTransparenciaResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+export type NivelFomeOculta = "crítico" | "elevado" | "moderado" | "baixo" | "sem_dado";
+
+export interface FomeOcultaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  n_acompanhadas: number | null;
+  baixo_peso_pct: number | null;
+  nivel: NivelFomeOculta;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

@@ -7,13 +7,15 @@ OndeFoi usa o seu próprio ``RepositorioOndeFoi``. **LuzNoMapa** lê DEC/FEC da 
 
 from __future__ import annotations
 
-from sqlalchemy import RowMapping, func, select
+from sqlalchemy import RowMapping, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
 from app.core.tables import execucao_funcao as t_ef
+from app.core.tables import indicador as t_ind
 from app.core.tables import territorio as t_terr
+from app.core.tables import valor as t_val
 from app.indicadores.modelos import MetaProveniencia
 from app.indicadores.repositorio import RepositorioIndicadores
 from app.produtos.agua_viva import NOTA_HONESTA as NOTA_AGUA_VIVA
@@ -22,6 +24,8 @@ from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
 from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
 from app.produtos.esgoto_invisivel import NOTA_HONESTA as NOTA_ESGOTO_INVISIVEL
 from app.produtos.esgoto_invisivel import calcular as calcular_esgoto_invisivel
+from app.produtos.fome_oculta import NOTA_HONESTA as NOTA_FOME_OCULTA
+from app.produtos.fome_oculta import calcular as calcular_fome_oculta
 from app.produtos.giro_local import (
     NOTA_HONESTA as NOTA_GIRO,
 )
@@ -34,6 +38,7 @@ from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
     EsgotoInvisivelOut,
+    FomeOcultaOut,
     GiroLocalOut,
     LuzNoMapaOut,
     MesInternacoesOut,
@@ -80,6 +85,7 @@ CODIGO_DEC = "energia.qualidade.dec"
 CODIGO_FEC = "energia.qualidade.fec"
 CODIGO_SECA = "saneamento.agua.seca_indice"
 CODIGO_PAM = "alimentacao.producao.valor_total"
+CODIGO_SISVAN = "alimentacao.nutricao.baixo_peso_pct"
 _POR_PAGINA = 1000  # série mensal de um município cabe folgada numa página.
 
 
@@ -1027,4 +1033,67 @@ class SemeandoTransparenciaFacade:
             nivel=st.nivel,
             nota=NOTA_SEMEANDO,
             meta=None,
+        )
+
+
+class FomeOcultaFacade:
+    """Fachada do produto Fome Oculta — ALIM-02."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+        self._repo = RepositorioIndicadores()
+
+    @cache_leitura("v1:fome-oculta")
+    async def fome_oculta(self, *, codigo_ibge: str) -> FomeOcultaOut:
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+        meta_row = await self._repo.meta_indicador(self._s, CODIGO_SISVAN)
+        if meta_row is None:  # pragma: no cover - indicador sempre semeado
+            raise NaoEncontradoError(f"indicador '{CODIGO_SISVAN}'")
+
+        _j = t_val.join(t_ind, t_ind.c.id == t_val.c.indicador_id).join(
+            t_terr, t_terr.c.id == t_val.c.territorio_id
+        )
+        _val_col = case((t_val.c.suprimido, None), else_=t_val.c.valor).label("valor")
+        _n_col = case((t_val.c.suprimido, None), else_=t_val.c.n_amostra).label("n_amostra")
+        _q = (
+            select(t_val.c.periodo, _val_col, _n_col, t_val.c.suprimido)
+            .select_from(_j)
+            .where(
+                t_ind.c.codigo == CODIGO_SISVAN,
+                t_ind.c.publico.is_(True),
+                t_terr.c.codigo_ibge == codigo_ibge,
+            )
+            .order_by(t_val.c.periodo.desc())
+            .limit(1)
+        )
+        row = (await self._s.execute(_q)).mappings().first()
+        if row is None:
+            raise NaoEncontradoError(f"Fome Oculta para município '{codigo_ibge}'")
+
+        pct = float(row["valor"]) if row["valor"] is not None else None
+        n_acomp = int(row["n_amostra"]) if row["n_amostra"] is not None else None
+        ano = row["periodo"].year if row["periodo"] is not None else None
+
+        fo = calcular_fome_oculta(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=ano,
+            n_acompanhadas=n_acomp,
+            baixo_peso_pct=pct,
+        )
+        return FomeOcultaOut(
+            codigo_ibge=fo.codigo_ibge,
+            nome=fo.nome,
+            uf=fo.uf,
+            populacao=fo.populacao,
+            ano=fo.ano,
+            n_acompanhadas=fo.n_acompanhadas,
+            baixo_peso_pct=fo.baixo_peso_pct,
+            nivel=fo.nivel,
+            nota=NOTA_FOME_OCULTA,
+            meta=_meta(meta_row),
         )

@@ -482,6 +482,69 @@ components:
       - meta_agua
       title: EsgotoInvisivelOut
       type: object
+    FomeOcultaOut:
+      description: Insegurança nutricional de crianças < 5 anos — ALIM-02 Fome Oculta.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        baixo_peso_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Baixo Peso Pct
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        n_acompanhadas:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: N Acompanhadas
+        nivel:
+          enum:
+          - crítico
+          - elevado
+          - moderado
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - n_acompanhadas
+      - baixo_peso_pct
+      - nivel
+      - nota
+      - meta
+      title: FomeOcultaOut
+      type: object
     FonteAcervoOut:
       description: 'Uma fonte por trás dos números: órgão, licença, cadência, lag
         e base legal (LGPD).
@@ -2588,6 +2651,40 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Esgoto Invisivel
+      tags:
+      - produtos
+  /v1/fome-oculta/{codigo_ibge}:
+    get:
+      description: 'Insegurança nutricional de crianças < 5 anos — SISVAN/MS (ALIM-02).
+
+
+        % de crianças < 5 com magreza ou magreza acentuada acompanhadas pelo SISVAN.
+
+        Níveis: crítico (≥ 10%), elevado (≥ 5%), moderado (≥ 2%), baixo (< 2%).
+
+        404 quando não há dado SISVAN para o município.'
+      operationId: fome_oculta_v1_fome_oculta__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FomeOcultaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Fome Oculta
       tags:
       - produtos
   /v1/fontes:

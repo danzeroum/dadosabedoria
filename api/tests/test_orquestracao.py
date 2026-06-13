@@ -47,6 +47,7 @@ def test_assets_carregam() -> None:
         valores_pam,
         valores_pncp,
         valores_siconfi,
+        valores_sisvan,
         valores_snis,
     )
 
@@ -61,8 +62,9 @@ def test_assets_carregam() -> None:
     assert list(valores_aneel.key.path) == ["valores_aneel"]
     assert list(valores_ana.key.path) == ["valores_ana"]
     assert list(valores_pam.key.path) == ["valores_pam"]
-    # 11 assets no acervo
-    assert len(list(defs.assets)) == 11
+    assert list(valores_sisvan.key.path) == ["valores_sisvan"]
+    # 12 assets no acervo
+    assert len(list(defs.assets)) == 12
 
 
 def test_jobs_carregam() -> None:
@@ -77,6 +79,7 @@ def test_jobs_carregam() -> None:
         job_valores_pam,
         job_valores_pncp,
         job_valores_siconfi,
+        job_valores_sisvan,
         job_valores_snis,
     )
 
@@ -91,6 +94,7 @@ def test_jobs_carregam() -> None:
     assert job_valores_aneel.name == "job_valores_aneel"
     assert job_valores_ana.name == "job_valores_ana"
     assert job_valores_pam.name == "job_valores_pam"
+    assert job_valores_sisvan.name == "job_valores_sisvan"
 
 
 def test_schedules_carregam() -> None:
@@ -105,6 +109,7 @@ def test_schedules_carregam() -> None:
         schedule_pncp_anual,
         schedule_siconfi_anual,
         schedule_siconfi_funcoes_anual,
+        schedule_sisvan_anual,
         schedule_snis_anual,
     )
 
@@ -119,6 +124,7 @@ def test_schedules_carregam() -> None:
     assert schedule_aneel_anual.name == "schedule_aneel_anual"
     assert schedule_ana_anual.name == "schedule_ana_anual"
     assert schedule_pam_anual.name == "schedule_pam_anual"
+    assert schedule_sisvan_anual.name == "schedule_sisvan_anual"
 
 
 # ------------------------------------------------------------------ Partições nos schedules

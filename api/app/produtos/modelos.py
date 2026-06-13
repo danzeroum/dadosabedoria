@@ -1,7 +1,7 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
-CaçadorArboviroses (SAUDE-02)."""
+CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03)."""
 
 from __future__ import annotations
 

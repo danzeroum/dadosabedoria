@@ -42,9 +42,9 @@ export default function DesenvolvedoresPage() {
           <code className="bloco-codigo">{`# leitura pública — sem chave
 curl ${API}/fontes
 
-# tier profundo — chave no header
+# tier profundo — exporte a chave no ambiente (export DSB_TOKEN=...), nunca inline nem versionada
 curl ${API}/quota \\
-  -H "Authorization: Bearer SUA_CHAVE"`}</code>
+  -H "Authorization: Bearer $DSB_TOKEN"`}</code>
         </div>
       </div>
 
@@ -112,7 +112,7 @@ curl ${API}/quota \\
             <Link href="/desenvolvedores/cota">Painel de cota</Link>.
           </p>
           <code className="bloco-codigo">{`curl ${API}/quota \\
-  -H "Authorization: Bearer SUA_CHAVE"
+  -H "Authorization: Bearer $DSB_TOKEN"
 
 # 200 →
 { "limite": 1000, "usado": 342, "restante": 658, "reset": 1718000400 }`}</code>
@@ -130,7 +130,7 @@ curl ${API}/quota \\
             uma vez. Cada item da resposta mantém sua própria proveniência e estado de supressão.
           </p>
           <code className="bloco-codigo">{`curl -X POST ${API}/consultas-lote \\
-  -H "Authorization: Bearer SUA_CHAVE" \\
+  -H "Authorization: Bearer $DSB_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{ "consultas": [
         { "indicador": "trabalho.emprego.saldo_caged", "territorio": "3550308" },

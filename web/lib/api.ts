@@ -546,3 +546,25 @@ export async function consultarQuota(chave: string): Promise<RespostaQuota | nul
   }
   return resp.json();
 }
+
+// Analytics Inferencial (Perfil Orçamentário) — restauradas aqui: o merge da main nesta branch
+// derrubou estas definições (main e esta branch appendaram funções no mesmo fim de arquivo).
+export async function buscarPerfilOrcamentario(
+  codigo: string,
+): Promise<PerfilOrcamentarioResponse | null> {
+  const url = `${BASE}/v1/inferencia/municipio/${codigo}/orcamento`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`PerfilOrcamentario ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<PerfilOrcamentarioResponse>;
+}
+
+export async function buscarDistribuicaoFuncao(
+  funcaoCod: string,
+): Promise<DistribuicaoFuncaoResponse | null> {
+  const url = `${BASE}/v1/inferencia/distribuicao-funcao/${funcaoCod}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`DistribuicaoFuncao ${funcaoCod}: HTTP ${res.status}`);
+  return res.json() as Promise<DistribuicaoFuncaoResponse>;
+}

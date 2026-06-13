@@ -1,18 +1,16 @@
 # NB: sem `from __future__ import annotations` — o Dagster precisa resolver os tipos de Config
 # (annotations reais, não strings) ao construir as definições de asset e op.
-"""Dagster Degrau 2 — software-defined assets com linhagem declarada e partições por período.
+"""Dagster Degrau 2–4 — software-defined assets, freshness checks e backfills gerenciados.
 
 Cada fonte é um **ativo particionado** (mensal: CAGED/ESTBAN/DATASUS; anual: SICONFI/INEP/PNCP).
-O Dagster UI exibe:
-  - Grafo de linhagem: produto → fonte (ex.: IVM depende de CAGED + ESTBAN + DATASUS).
-  - Partições faltantes: o que ainda não foi carregado para cada competência.
-  - Histórico de materializações por período.
+Degrau 2: grafo de linhagem + partições por período.
+Degrau 4: FreshnessPolicy por ativo (SLA de frescor), BackfillPolicy declarativa, sensor automático.
 
-Degrau 3 (sensors por chegada de arquivo + backfills automáticos) entra por dor §2.1 — aguarda
-acesso FTP na VPS para DATASUS e CAGED.
+Degrau 3 (sensors por chegada de arquivo) entra por dor §2.1 — aguarda acesso FTP na VPS.
 """
 
 import asyncio
+from datetime import timedelta
 
 import dagster as dg
 
@@ -228,6 +226,11 @@ async def _rodar_sinan(janela: Janela) -> None:  # pragma: no cover - rede/FTP
 
 @dg.asset(
     partitions_def=_MENSAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.cron(
+        deadline_cron="0 10 5 * *",  # SLA: por 10h do dia 5 (schedule corre às 6h)
+        lower_bound_delta=timedelta(hours=4),
+    ),
     group_name="trabalho",
     description="Saldo mensal de emprego formal do Novo CAGED (CAGEDMOV) por município.",
     metadata={"fonte": "Ministério do Trabalho/MTE", "lag_tipico": "~40 dias"},
@@ -241,6 +244,11 @@ def valores_caged(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  #
 
 @dg.asset(
     partitions_def=_MENSAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.cron(
+        deadline_cron="0 11 10 * *",  # SLA: por 11h do dia 10 (schedule corre às 7h)
+        lower_bound_delta=timedelta(hours=4),
+    ),
     group_name="trabalho",
     description="Saldo mensal de crédito bancário do ESTBAN (BCB/COSIF) por município.",
     metadata={"fonte": "Banco Central do Brasil", "lag_tipico": "~60 dias"},
@@ -254,6 +262,10 @@ def valores_estban(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="financas",
     description="Transferências correntes do SICONFI/STN (Anexo I-C) por município.",
     metadata={"fonte": "Tesouro Nacional/STN", "lag_tipico": "~5 meses (DCA)"},
@@ -267,6 +279,10 @@ def valores_siconfi(context: dg.AssetExecutionContext) -> dg.MaterializeResult: 
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="financas",
     description="Despesa por função do SICONFI/STN (Anexo I-E) — base do OndeFoi.",
     metadata={"fonte": "Tesouro Nacional/STN", "lag_tipico": "~5 meses (DCA)"},
@@ -280,6 +296,10 @@ def execucao_siconfi(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="educacao",
     description="Matrículas do ensino fundamental (Censo Escolar/INEP) por município.",
     metadata={"fonte": "INEP/MEC", "lag_tipico": "~12 meses"},
@@ -293,6 +313,10 @@ def valores_inep(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # 
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="compras",
     description="Valor global de contratos do PNCP por município — base do ObraViva.",
     metadata={"fonte": "PNCP/ME", "lag_tipico": "dias a semanas"},
@@ -306,6 +330,11 @@ def valores_pncp(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # 
 
 @dg.asset(
     partitions_def=_MENSAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.cron(
+        deadline_cron="0 11 12 * *",  # SLA: por 11h do dia 12 (schedule corre às 7h)
+        lower_bound_delta=timedelta(hours=4),
+    ),
     group_name="saude",
     description=(
         "Internações respiratórias do SIH/DATASUS (grupo J, CID-10) com k-anonimato. "
@@ -322,6 +351,10 @@ def valores_datasus(context: dg.AssetExecutionContext) -> dg.MaterializeResult: 
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=580), warn_window=timedelta(days=550)
+    ),
     group_name="saneamento",
     description=(
         "Atendimento de água e coleta de esgoto por município — SNIS/MDR (IN023_AE, IN015_AE)."
@@ -337,6 +370,10 @@ def valores_snis(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # 
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="energia",
     description=(
         "DEC e FEC por município — ANEEL (indicadores de qualidade do serviço de distribuição)."
@@ -352,6 +389,10 @@ def valores_aneel(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  #
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="saneamento",
     description=(
         "Índice de seca por município — ANA Monitor de Secas (metodologia USDM adaptada)."
@@ -367,6 +408,10 @@ def valores_ana(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # p
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="alimentacao",
     description=(
         "Valor da produção agrícola municipal por habitante — IBGE PAM "
@@ -383,6 +428,10 @@ def valores_pam(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # p
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="alimentacao",
     description=(
         "% de crianças < 5 anos com magreza ou magreza acentuada por município — "
@@ -399,6 +448,10 @@ def valores_sisvan(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="saude",
     description=(
         "% de gestantes com baixo peso por município — SISVAN/MS (estado nutricional materno). "
@@ -417,6 +470,10 @@ def valores_sisvan_gestante(
 
 @dg.asset(
     partitions_def=_ANUAL,
+    backfill_policy=dg.BackfillPolicy.multi_run(max_partitions_per_run=1),
+    freshness_policy=dg.FreshnessPolicy.time_window(
+        fail_window=timedelta(days=400), warn_window=timedelta(days=380)
+    ),
     group_name="saude",
     description=(
         "Casos confirmados de dengue por município/ano — SINAN/MS "

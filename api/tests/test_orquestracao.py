@@ -1,4 +1,7 @@
-"""Valida o Degrau 2 do Dagster (assets com partições carregam; schedules geram a partição correta).
+"""Valida o Degrau 2–4 do Dagster.
+
+Degrau 2: assets com partições carregam; schedules geram a partição correta.
+Degrau 4: BackfillPolicy declarada em todos os assets; freshness checks presentes; sensor ativo.
 
 Requer o extra `orquestracao` (Dagster). Pulado onde o runtime não está instalado.
 """
@@ -233,3 +236,91 @@ def test_grupos_por_dominio() -> None:
     assert valores_aneel.group_names_by_key[valores_aneel.key] == "energia"
     assert valores_ana.group_names_by_key[valores_ana.key] == "saneamento"
     assert valores_pam.group_names_by_key[valores_pam.key] == "alimentacao"
+
+
+# ------------------------------------------------------------------ Degrau 4: BackfillPolicy
+
+
+def test_backfill_policy_mensal() -> None:
+    from app.orquestracao.definitions import valores_caged, valores_datasus, valores_estban
+
+    for ativo in (valores_caged, valores_estban, valores_datasus):
+        assert ativo.backfill_policy is not None, f"{ativo.key} sem BackfillPolicy"
+        assert ativo.backfill_policy.max_partitions_per_run == 1
+
+
+def test_backfill_policy_anual() -> None:
+    from app.orquestracao.definitions import (
+        execucao_siconfi,
+        valores_ana,
+        valores_aneel,
+        valores_inep,
+        valores_pam,
+        valores_pncp,
+        valores_siconfi,
+        valores_sinan,
+        valores_sisvan,
+        valores_sisvan_gestante,
+        valores_snis,
+    )
+
+    anuais = (
+        valores_siconfi,
+        execucao_siconfi,
+        valores_inep,
+        valores_pncp,
+        valores_snis,
+        valores_aneel,
+        valores_ana,
+        valores_pam,
+        valores_sisvan,
+        valores_sisvan_gestante,
+        valores_sinan,
+    )
+    for ativo in anuais:
+        assert ativo.backfill_policy is not None, f"{ativo.key} sem BackfillPolicy"
+        assert ativo.backfill_policy.max_partitions_per_run == 1
+
+
+# ------------------------------------------------------------------ Degrau 4: Freshness checks
+
+
+def test_freshness_policy_mensais() -> None:
+    from app.orquestracao.definitions import valores_caged, valores_datasus, valores_estban
+
+    for ativo in (valores_caged, valores_estban, valores_datasus):
+        spec = ativo.get_asset_spec()
+        assert spec.freshness_policy is not None, f"{ativo.key} sem FreshnessPolicy"
+
+
+def test_freshness_policy_anuais() -> None:
+    from app.orquestracao.definitions import (
+        execucao_siconfi,
+        valores_ana,
+        valores_aneel,
+        valores_inep,
+        valores_pam,
+        valores_pncp,
+        valores_siconfi,
+        valores_sinan,
+        valores_sisvan,
+        valores_sisvan_gestante,
+        valores_snis,
+    )
+
+    anuais = (
+        valores_siconfi,
+        execucao_siconfi,
+        valores_inep,
+        valores_pncp,
+        valores_snis,
+        valores_aneel,
+        valores_ana,
+        valores_pam,
+        valores_sisvan,
+        valores_sisvan_gestante,
+        valores_sinan,
+    )
+    for ativo in anuais:
+        spec = ativo.get_asset_spec()
+        assert spec.freshness_policy is not None, f"{ativo.key} sem FreshnessPolicy"

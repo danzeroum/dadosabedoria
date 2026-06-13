@@ -21,6 +21,7 @@ from app.core.erros import instalar_handlers
 from app.core.observabilidade import configurar_logs, configurar_otel, get_logger
 from app.core.registro import registro
 from app.core.seguranca import configurar_cors
+from app.frescor.rotas import router as router_frescor
 from app.ia.rotas import router as router_ia
 from app.indicadores.rotas import router as router_indicadores
 from app.inferencia.rotas import router as router_inferencia
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(router_profundo)  # tier profundo (consultas-lote, chave de API)
     app.include_router(router_produtos)  # produtos nomeados (OndeFoi/TRANSP-06)
     app.include_router(router_inferencia)  # analytics inferencial (distribuição + perfil)
+    app.include_router(router_frescor)  # SLA de frescor por fonte (Degrau 4)
 
     # Encaixe de plugins de domínio (nenhum nesta fatia; rotas futuras entram aqui).
     router_dominios = APIRouter(prefix="/v1")

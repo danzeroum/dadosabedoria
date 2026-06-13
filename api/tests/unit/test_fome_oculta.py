@@ -34,7 +34,7 @@ def test_classificar_moderado_exato() -> None:
 
 
 def test_classificar_moderado_abaixo_elevado() -> None:
-    assert classificar_nivel(4.99) == "elevado"
+    assert classificar_nivel(4.99) == "moderado"
 
 
 def test_classificar_baixo() -> None:

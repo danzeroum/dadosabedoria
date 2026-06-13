@@ -5,6 +5,8 @@ Semeia a tabela valor diretamente para controlar o dado de baixo_peso_pct.
 
 from __future__ import annotations
 
+import os
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import text
@@ -25,9 +27,15 @@ _DELETE = text(
 )
 
 
-async def _limpar_e_semear() -> None:
-    async with connect(get_settings().database_url) as conn:
+async def _limpar() -> None:
+    admin_url = os.environ.get("ADMIN_DATABASE_URL", get_settings().database_url)
+    async with connect(admin_url) as conn:
         await conn.execute(_DELETE)
+
+
+async def _limpar_e_semear() -> None:
+    await _limpar()
+    async with connect(get_settings().database_url) as conn:
         adaptador = AdaptadorSisvan(FetcherFake(AMOSTRA))
         await executar_sisvan(
             Janela(2023, 1), conn, adaptador, ArmazenamentoMemoria(), responsavel="test"
@@ -62,8 +70,7 @@ async def test_fome_oculta_200_sp(client: AsyncClient, db_pronto: None) -> None:
 
 @pytest.mark.asyncio()
 async def test_fome_oculta_404_sem_dado(client: AsyncClient, db_pronto: None) -> None:
-    async with connect(get_settings().database_url) as conn:
-        await conn.execute(_DELETE)
+    await _limpar()
     resp = await client.get("/v1/fome-oculta/3550308")
     assert resp.status_code == 404
 

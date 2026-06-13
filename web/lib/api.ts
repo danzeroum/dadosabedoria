@@ -2,6 +2,7 @@ import type {
   AguaVivaResponse,
   CacadorArboviroesResponse,
   CasaVivaResponse,
+  EcoVivaResponse,
   PressaoSusResponse,
   CoberturaDatasus,
   CoberturaInep,
@@ -36,6 +37,7 @@ import type {
   SalarioRadarProduto,
   SentinelaMaternаResponse,
   SentinelaRespProduto,
+  ViaVivaResponse,
 } from "./types";
 
 // Fetch server-side (sem CORS). Em compose, API_URL = http://api:8000 (rede interna).
@@ -440,4 +442,24 @@ export async function buscarCasaViva(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`CasaViva ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<CasaVivaResponse>;
+}
+
+export async function buscarViaViva(
+  codigo: string,
+): Promise<ViaVivaResponse | null> {
+  const url = `${BASE}/v1/via-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`ViaViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<ViaVivaResponse>;
+}
+
+export async function buscarEcoVivo(
+  codigo: string,
+): Promise<EcoVivaResponse | null> {
+  const url = `${BASE}/v1/eco-vivo/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`EcoVivo ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<EcoVivaResponse>;
 }

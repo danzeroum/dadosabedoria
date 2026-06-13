@@ -3,7 +3,8 @@ Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalh
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
 SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
-CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11), CasaViva (HAB-02)."""
+CaçadorArboviroses (SAUDE-02), PressaoSus (SAUDE-11), CasaViva (HAB-02),
+ViaViva (MOB-01), EcoVivo (AMB-01)."""
 
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ from app.produtos.facade import (
     BussolaEduTrabFacade,
     CacadorArbovirosesFacade,
     CasaVivaFacade,
+    EcoVivaFacade,
     EsgotoInvisivelFacade,
     FomeOcultaFacade,
     GiroLocalFacade,
@@ -31,12 +33,14 @@ from app.produtos.facade import (
     SemeandoTransparenciaFacade,
     SentinelaMaternаFacade,
     SentinelaRespFacade,
+    ViaVivaFacade,
 )
 from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
     CacadorArboviroesOut,
     CasaVivaOut,
+    EcoVivaOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -54,6 +58,7 @@ from app.produtos.modelos import (
     SemeandoTransparenciaOut,
     SentinelaMaternаOut,
     SentinelaRespOut,
+    ViaVivaOut,
 )
 from app.produtos.repositorio_onde_foi import RepositorioOndeFoi
 
@@ -327,3 +332,29 @@ async def casa_viva(codigo_ibge: str, session: AsyncSession = Depends(get_sessio
     404 quando não há dado SICONFI para o município.
     """
     return await CasaVivaFacade(session).casa_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/via-viva/{codigo_ibge}", response_model=ViaVivaOut)
+async def via_viva(codigo_ibge: str, session: AsyncSession = Depends(get_session)) -> ViaVivaOut:
+    """Investimento municipal em transporte — SICONFI Função 26 (MOB-01).
+
+    Despesa liquidada na função 26 (Transporte) por habitante. Proxy do compromisso
+    orçamentário com infraestrutura de transporte e mobilidade urbana. Não inclui obras
+    estaduais/federais (rodovias, metrôs) fora do orçamento municipal.
+    Níveis: elevado (≥ R$300/hab/ano), moderado (≥ R$80), baixo (< R$80).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await ViaVivaFacade(session).via_viva(codigo_ibge=codigo_ibge)
+
+
+@router.get("/eco-vivo/{codigo_ibge}", response_model=EcoVivaOut)
+async def eco_vivo(codigo_ibge: str, session: AsyncSession = Depends(get_session)) -> EcoVivaOut:
+    """Investimento municipal em gestão ambiental — SICONFI Função 18 (AMB-01).
+
+    Despesa liquidada na função 18 (Gestão Ambiental) por habitante. Proxy do compromisso
+    orçamentário com proteção ambiental local. Não inclui recursos federais/estaduais
+    (IBAMA, ICMBio) fora do orçamento municipal.
+    Níveis: expressivo (≥ R$30/hab/ano), moderado (≥ R$5), incipiente (< R$5).
+    404 quando não há dado SICONFI para o município.
+    """
+    return await EcoVivaFacade(session).eco_vivo(codigo_ibge=codigo_ibge)

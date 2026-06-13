@@ -678,3 +678,37 @@ export interface CasaVivaResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ------------------------------------------------- ViaViva (MOB-01)
+
+export type NivelTransporte = "elevado" | "moderado" | "baixo" | "sem_dado";
+
+export interface ViaVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelTransporte;
+  nota: string;
+  meta: MetaProveniencia | null;
+}
+
+// ------------------------------------------------- EcoVivo (AMB-01)
+
+export type NivelAmbiental = "expressivo" | "moderado" | "incipiente" | "sem_dado";
+
+export interface EcoVivaResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  nivel: NivelAmbiental;
+  nota: string;
+  meta: MetaProveniencia | null;
+}

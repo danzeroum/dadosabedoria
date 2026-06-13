@@ -465,8 +465,9 @@ operação multi-cliente B2G.
 - [x] 🔵 **HAB-02 CasaViva** (SICONFI Função 16) — endpoint `GET /v1/casa-viva/{ibge}` + tela `/casa-viva/{codigo}`; despesa liquidada na função 16 (Habitação) por habitante; níveis expressivo≥R$50/hab, moderado≥R$10, incipiente<R$10; lê `execucao_funcao` (padrão SemeandoTransparência/PressaoSus, sem pipeline novo); nota honesta (MCMV/FGTS federal não incluso; COHABs podem subregistrar; dupla face §17); 12 testes unitários + 4 integração; 2026-06-13.
 - [ ] 🔵 Habitação pendente: HAB-01 Alerta de Despejo (DataJud — 🔴 gate credencial), HAB-03 Escudo Antigentrificação (dados mercado imobiliário — fonte a definir), HAB-04 Risco Moradia-Clima (🔴 gate Conselho PbD), HAB-05 (a definir).
 - [ ] 🔵 Justiça/Direitos/Crédito: JUST-01, DIR-01 (via Defensoria, zero PII), CRED-01 (só índice agregado).
-- [ ] 🔵 Mobilidade (MOB-01), Meio Ambiente (AMB-01/02), Alimentação (ALIM-03/04), Transparência
-  (TRANSP-04/07), e os produtos score-4 de Saúde/Educação/Saneamento.
+- [x] 🔵 **MOB-01 ViaViva** (SICONFI Função 26) — endpoint `GET /v1/via-viva/{ibge}` + tela `/via-viva/{codigo}`; despesa liquidada na função 26 (Transporte) por habitante; níveis elevado≥R$300/hab, moderado≥R$80, baixo<R$80; lê `execucao_funcao` (padrão SICONFI); 12 testes unitários + 4 integração; 2026-06-13.
+- [x] 🔵 **AMB-01 EcoVivo** (SICONFI Função 18) — endpoint `GET /v1/eco-vivo/{ibge}` + tela `/eco-vivo/{codigo}`; despesa liquidada na função 18 (Gestão Ambiental) por habitante; níveis expressivo≥R$30/hab, moderado≥R$5, incipiente<R$5; lê `execucao_funcao` (padrão SICONFI); 12 testes unitários + 4 integração; 2026-06-13.
+- [ ] 🔵 AMB-02 (Monitor de Alertas Ambientais — fonte a definir), Alimentação (ALIM-03/04 — fonte a definir), Transparência (TRANSP-04/07 — gate), e os produtos score-4 de Saúde/Educação/Saneamento.
 - [ ] 🔵 **TRANSP-02 Farol de Conluio** — requer **capacidade de grafo** (sócios cruzados via Receita/CNPJ).
 - [ ] 🔵 Analytics inferencial (correção de comparações múltiplas/FDR, regressão com diagnósticos) e
   produtos preditivos ("o conhecimento mora no lag").

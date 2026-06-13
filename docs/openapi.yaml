@@ -541,6 +541,69 @@ components:
       - consultas
       title: ConsultaLoteIn
       type: object
+    EcoVivaOut:
+      description: Investimento municipal em gestão ambiental per capita — AMB-01
+        EcoVivo.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: EcoVivaOut
+      type: object
     EsgotoInvisivelOut:
       description: Gap de saneamento por município — SANE-03 EsgotoInvisível.
       properties:
@@ -2600,6 +2663,68 @@ components:
       - valor
       title: ValorOut
       type: object
+    ViaVivaOut:
+      description: Investimento municipal em transporte per capita — MOB-01 ViaViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - elevado
+          - moderado
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: ViaVivaOut
+      type: object
 info:
   description: Leitura de indicadores de dados públicos brasileiros, com proveniência.
   title: DadoSabedoria — API pública
@@ -2948,6 +3073,46 @@ paths:
       summary: Consultas Lote
       tags:
       - profundo
+  /v1/eco-vivo/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em gestão ambiental — SICONFI Função 18
+        (AMB-01).
+
+
+        Despesa liquidada na função 18 (Gestão Ambiental) por habitante. Proxy do
+        compromisso
+
+        orçamentário com proteção ambiental local. Não inclui recursos federais/estaduais
+
+        (IBAMA, ICMBio) fora do orçamento municipal.
+
+        Níveis: expressivo (≥ R$30/hab/ano), moderado (≥ R$5), incipiente (< R$5).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: eco_vivo_v1_eco_vivo__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Eco Vivo
+      tags:
+      - produtos
   /v1/esgoto-invisivel/{codigo_ibge}:
     get:
       description: 'Gap entre cobertura de água e esgoto por município (EsgotoInvisível
@@ -4043,3 +4208,42 @@ paths:
       summary: Listar Valores
       tags:
       - indicadores
+  /v1/via-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em transporte — SICONFI Função 26 (MOB-01).
+
+
+        Despesa liquidada na função 26 (Transporte) por habitante. Proxy do compromisso
+
+        orçamentário com infraestrutura de transporte e mobilidade urbana. Não inclui
+        obras
+
+        estaduais/federais (rodovias, metrôs) fora do orçamento municipal.
+
+        Níveis: elevado (≥ R$300/hab/ano), moderado (≥ R$80), baixo (< R$80).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: via_viva_v1_via_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViaVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Via Viva
+      tags:
+      - produtos

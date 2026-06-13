@@ -1,7 +1,8 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
-CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11)."""
+CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03), PressaoSus (SAUDE-11),
+CasaViva (HAB-02)."""
 
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from app.indicadores.modelos import MetaProveniencia
 from app.produtos.agua_viva import NivelAcesso
 from app.produtos.bussola_edu_trabalho import NivelEducacao
 from app.produtos.cacador_arboviroses import NivelArboviroses
+from app.produtos.casa_viva import NivelHabitacao
 from app.produtos.esgoto_invisivel import NivelGap
 from app.produtos.fome_oculta import NivelFomeOculta
 from app.produtos.giro_local import NivelCredito, NivelEmprego
@@ -494,6 +496,26 @@ class PressaoSusOut(BaseModel):
     valor_liquidado: float | None  # BRL — função 10 liquidado total
     valor_por_hab: float | None  # BRL/hab/ano
     nivel: NivelPressaoSus
+
+    nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- CasaViva (HAB-02)
+
+
+class CasaVivaOut(BaseModel):
+    """Investimento municipal em habitação per capita — HAB-02 CasaViva."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    valor_liquidado: float | None  # BRL — função 16 liquidado total
+    valor_por_hab: float | None  # BRL/hab/ano
+    nivel: NivelHabitacao
 
     nota: str
     meta: MetaProveniencia | None

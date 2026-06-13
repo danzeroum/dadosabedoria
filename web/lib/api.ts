@@ -1,6 +1,7 @@
 import type {
   AguaVivaResponse,
   CacadorArboviroesResponse,
+  CasaVivaResponse,
   PressaoSusResponse,
   CoberturaDatasus,
   CoberturaInep,
@@ -429,4 +430,14 @@ export async function buscarPressaoSus(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`PressaoSus ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<PressaoSusResponse>;
+}
+
+export async function buscarCasaViva(
+  codigo: string,
+): Promise<CasaVivaResponse | null> {
+  const url = `${BASE}/v1/casa-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`CasaViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<CasaVivaResponse>;
 }

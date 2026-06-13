@@ -24,6 +24,8 @@ from app.produtos.bussola_edu_trabalho import NOTA_HONESTA as NOTA_BUSSOLA
 from app.produtos.bussola_edu_trabalho import calcular as calcular_bussola
 from app.produtos.cacador_arboviroses import NOTA_HONESTA as NOTA_CACADOR
 from app.produtos.cacador_arboviroses import calcular as calcular_cacador
+from app.produtos.casa_viva import NOTA_HONESTA as NOTA_CASA_VIVA
+from app.produtos.casa_viva import calcular as calcular_casa_viva
 from app.produtos.esgoto_invisivel import NOTA_HONESTA as NOTA_ESGOTO_INVISIVEL
 from app.produtos.esgoto_invisivel import calcular as calcular_esgoto_invisivel
 from app.produtos.fome_oculta import NOTA_HONESTA as NOTA_FOME_OCULTA
@@ -40,6 +42,7 @@ from app.produtos.modelos import (
     AguaVivaOut,
     BussolaEduTrabOut,
     CacadorArboviroesOut,
+    CasaVivaOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -1304,5 +1307,78 @@ class PressaoSusFacade:
             valor_por_hab=ps.valor_por_hab,
             nivel=ps.nivel,
             nota=NOTA_PRESSAO_SUS,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- CasaViva (HAB-02)
+
+
+class CasaVivaFacade:
+    """Fachada do investimento público municipal em habitação — HAB-02."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:casa-viva")
+    async def casa_viva(self, *, codigo_ibge: str) -> CasaVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"CasaViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "16",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        cv = calcular_casa_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return CasaVivaOut(
+            codigo_ibge=cv.codigo_ibge,
+            nome=cv.nome,
+            uf=cv.uf,
+            populacao=cv.populacao,
+            ano=cv.ano,
+            valor_liquidado=cv.valor_liquidado,
+            valor_por_hab=cv.valor_por_hab,
+            nivel=cv.nivel,
+            nota=NOTA_CASA_VIVA,
             meta=None,
         )

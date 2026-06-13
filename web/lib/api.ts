@@ -3,7 +3,9 @@ import type {
   CacadorArboviroesResponse,
   CasaVivaResponse,
   EcoVivaResponse,
+  EscolaVivaResponse,
   PressaoSusResponse,
+  SaneFundoResponse,
   CoberturaDatasus,
   CoberturaInep,
   CoberturaPncp,
@@ -462,4 +464,24 @@ export async function buscarEcoVivo(
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`EcoVivo ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<EcoVivaResponse>;
+}
+
+export async function buscarEscolaViva(
+  codigo: string,
+): Promise<EscolaVivaResponse | null> {
+  const url = `${BASE}/v1/escola-viva/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`EscolaViva ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<EscolaVivaResponse>;
+}
+
+export async function buscarSaneFundo(
+  codigo: string,
+): Promise<SaneFundoResponse | null> {
+  const url = `${BASE}/v1/sane-fundo/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`SaneFundo ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<SaneFundoResponse>;
 }

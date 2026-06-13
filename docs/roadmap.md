@@ -467,7 +467,9 @@ operação multi-cliente B2G.
 - [ ] 🔵 Justiça/Direitos/Crédito: JUST-01, DIR-01 (via Defensoria, zero PII), CRED-01 (só índice agregado).
 - [x] 🔵 **MOB-01 ViaViva** (SICONFI Função 26) — endpoint `GET /v1/via-viva/{ibge}` + tela `/via-viva/{codigo}`; despesa liquidada na função 26 (Transporte) por habitante; níveis elevado≥R$300/hab, moderado≥R$80, baixo<R$80; lê `execucao_funcao` (padrão SICONFI); 12 testes unitários + 4 integração; 2026-06-13.
 - [x] 🔵 **AMB-01 EcoVivo** (SICONFI Função 18) — endpoint `GET /v1/eco-vivo/{ibge}` + tela `/eco-vivo/{codigo}`; despesa liquidada na função 18 (Gestão Ambiental) por habitante; níveis expressivo≥R$30/hab, moderado≥R$5, incipiente<R$5; lê `execucao_funcao` (padrão SICONFI); 12 testes unitários + 4 integração; 2026-06-13.
-- [ ] 🔵 AMB-02 (Monitor de Alertas Ambientais — fonte a definir), Alimentação (ALIM-03/04 — fonte a definir), Transparência (TRANSP-04/07 — gate), e os produtos score-4 de Saúde/Educação/Saneamento.
+- [x] 🔵 **EDU-03 EscolaViva** (SICONFI Função 12) — endpoint `GET /v1/escola-viva/{ibge}` + tela `/escola-viva/{codigo}`; despesa liquidada na função 12 (Educação) por habitante; níveis expressivo≥R$600/hab, moderado≥R$200, incipiente<R$200; lê `execucao_funcao` (padrão SICONFI); nota honesta (FNDE/FUNDEB não incluso; CF/88 25%; dupla face §17); 12 testes unitários + 4 integração; 2026-06-13.
+- [x] 🔵 **SANE-05 SaneFundo** (SICONFI Função 17) — endpoint `GET /v1/sane-fundo/{ibge}` + tela `/sane-fundo/{codigo}`; despesa liquidada na função 17 (Saneamento) por habitante; níveis expressivo≥R$60/hab, moderado≥R$15, incipiente<R$15; nota honesta (concessionárias estaduais não incluídas — usar com AguaViva; dupla face §17); 12 testes unitários + 4 integração; 2026-06-13.
+- [ ] 🔵 AMB-02 (Monitor de Alertas Ambientais — fonte a definir), Alimentação (ALIM-03/04 — fonte a definir), Transparência (TRANSP-04/07 — gate).
 - [ ] 🔵 **TRANSP-02 Farol de Conluio** — requer **capacidade de grafo** (sócios cruzados via Receita/CNPJ).
 - [ ] 🔵 Analytics inferencial (correção de comparações múltiplas/FDR, regressão com diagnósticos) e
   produtos preditivos ("o conhecimento mora no lag").

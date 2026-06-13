@@ -28,6 +28,8 @@ from app.produtos.casa_viva import NOTA_HONESTA as NOTA_CASA_VIVA
 from app.produtos.casa_viva import calcular as calcular_casa_viva
 from app.produtos.eco_vivo import NOTA_HONESTA as NOTA_ECO_VIVO
 from app.produtos.eco_vivo import calcular as calcular_eco_vivo
+from app.produtos.escola_viva import NOTA_HONESTA as NOTA_ESCOLA_VIVA
+from app.produtos.escola_viva import calcular as calcular_escola_viva
 from app.produtos.esgoto_invisivel import NOTA_HONESTA as NOTA_ESGOTO_INVISIVEL
 from app.produtos.esgoto_invisivel import calcular as calcular_esgoto_invisivel
 from app.produtos.fome_oculta import NOTA_HONESTA as NOTA_FOME_OCULTA
@@ -46,6 +48,7 @@ from app.produtos.modelos import (
     CacadorArboviroesOut,
     CasaVivaOut,
     EcoVivaOut,
+    EscolaVivaOut,
     EsgotoInvisivelOut,
     FomeOcultaOut,
     GiroLocalOut,
@@ -61,6 +64,7 @@ from app.produtos.modelos import (
     RegiaoEmpregaOut,
     RioEmRiscoOut,
     SalarioRadarOut,
+    SaneFundoOut,
     SemeandoTransparenciaOut,
     SentinelaMaternаOut,
     SentinelaRespOut,
@@ -81,6 +85,8 @@ from app.produtos.rio_em_risco import NOTA_HONESTA as NOTA_RIO_EM_RISCO
 from app.produtos.rio_em_risco import calcular as calcular_rio_em_risco
 from app.produtos.salario_radar import NOTA_HONESTA as NOTA_SALARIO
 from app.produtos.salario_radar import calcular as calcular_salario
+from app.produtos.sane_fundo import NOTA_HONESTA as NOTA_SANE_FUNDO
+from app.produtos.sane_fundo import calcular as calcular_sane_fundo
 from app.produtos.semeando_transparencia import NOTA_HONESTA as NOTA_SEMEANDO
 from app.produtos.semeando_transparencia import calcular as calcular_semeando
 from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
@@ -1532,5 +1538,151 @@ class EcoVivaFacade:
             valor_por_hab=ev.valor_por_hab,
             nivel=ev.nivel,
             nota=NOTA_ECO_VIVO,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- EscolaViva (EDU-03)
+
+
+class EscolaVivaFacade:
+    """Fachada do investimento público municipal em educação — EDU-03."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:escola-viva")
+    async def escola_viva(self, *, codigo_ibge: str) -> EscolaVivaOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"EscolaViva para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "12",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        esv = calcular_escola_viva(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return EscolaVivaOut(
+            codigo_ibge=esv.codigo_ibge,
+            nome=esv.nome,
+            uf=esv.uf,
+            populacao=esv.populacao,
+            ano=esv.ano,
+            valor_liquidado=esv.valor_liquidado,
+            valor_por_hab=esv.valor_por_hab,
+            nivel=esv.nivel,
+            nota=NOTA_ESCOLA_VIVA,
+            meta=None,
+        )
+
+
+# ------------------------------------------------- SaneFundo (SANE-05)
+
+
+class SaneFundoFacade:
+    """Fachada do investimento público municipal em saneamento — SANE-05."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._s = session
+
+    @cache_leitura("v1:sane-fundo")
+    async def sane_fundo(self, *, codigo_ibge: str) -> SaneFundoOut:
+        terr = (
+            (
+                await self._s.execute(
+                    select(t_terr).where(
+                        t_terr.c.codigo_ibge == codigo_ibge,
+                        t_terr.c.nivel == "municipio",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+
+        periodo = (
+            await self._s.execute(
+                select(func.max(t_ef.c.periodo)).where(t_ef.c.territorio_id == terr["id"])
+            )
+        ).scalar_one_or_none()
+        if periodo is None:
+            raise NaoEncontradoError(f"SaneFundo para município '{codigo_ibge}'")
+
+        row = (
+            (
+                await self._s.execute(
+                    select(func.sum(t_ef.c.liquidado).label("liquidado")).where(
+                        t_ef.c.territorio_id == terr["id"],
+                        t_ef.c.periodo == periodo,
+                        t_ef.c.funcao_cod == "17",
+                    )
+                )
+            )
+            .mappings()
+            .first()
+        )
+        liquidado_raw = row["liquidado"] if row else None
+        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+
+        sf = calcular_sane_fundo(
+            terr["codigo_ibge"],
+            terr["nome"],
+            terr["uf"],
+            terr["populacao"],
+            ano=periodo.year,
+            valor_liquidado=valor_liquidado,
+        )
+
+        return SaneFundoOut(
+            codigo_ibge=sf.codigo_ibge,
+            nome=sf.nome,
+            uf=sf.uf,
+            populacao=sf.populacao,
+            ano=sf.ano,
+            valor_liquidado=sf.valor_liquidado,
+            valor_por_hab=sf.valor_por_hab,
+            nivel=sf.nivel,
+            nota=NOTA_SANE_FUNDO,
             meta=None,
         )

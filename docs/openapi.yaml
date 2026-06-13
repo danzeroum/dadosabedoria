@@ -604,6 +604,68 @@ components:
       - meta
       title: EcoVivaOut
       type: object
+    EscolaVivaOut:
+      description: Investimento municipal em educação per capita — EDU-03 EscolaViva.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: EscolaVivaOut
+      type: object
     EsgotoInvisivelOut:
       description: Gap de saneamento por município — SANE-03 EsgotoInvisível.
       properties:
@@ -2326,6 +2388,68 @@ components:
       - meta
       title: SalarioRadarOut
       type: object
+    SaneFundoOut:
+      description: Investimento municipal em saneamento per capita — SANE-05 SaneFundo.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        nivel:
+          enum:
+          - expressivo
+          - moderado
+          - incipiente
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - valor_liquidado
+      - valor_por_hab
+      - nivel
+      - nota
+      - meta
+      title: SaneFundoOut
+      type: object
     SemeandoTransparenciaOut:
       description: Investimento público municipal em agricultura — ALIM-05 SemeandoTransparência.
       properties:
@@ -3111,6 +3235,46 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Eco Vivo
+      tags:
+      - produtos
+  /v1/escola-viva/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em educação — SICONFI Função 12 (EDU-03).
+
+
+        Despesa liquidada na função 12 (Educação) por habitante. Proxy do esforço
+        orçamentário
+
+        com o ensino público municipal. Não inclui repasses diretos do FNDE/FUNDEB
+        fora do
+
+        liquidado municipal. CF/88 exige mínimo de 25% da receita em educação.
+
+        Níveis: expressivo (≥ R$600/hab/ano), moderado (≥ R$200), incipiente (< R$200).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: escola_viva_v1_escola_viva__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscolaVivaOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Escola Viva
       tags:
       - produtos
   /v1/esgoto-invisivel/{codigo_ibge}:
@@ -3913,6 +4077,48 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Salario Radar
+      tags:
+      - produtos
+  /v1/sane-fundo/{codigo_ibge}:
+    get:
+      description: 'Investimento municipal em saneamento — SICONFI Função 17 (SANE-05).
+
+
+        Despesa liquidada na função 17 (Saneamento) por habitante. Proxy do esforço
+        orçamentário
+
+        direto com saneamento básico. Em municípios com concessão estadual (SABESP,
+        COPASA),
+
+        o gasto municipal pode ser próximo de zero mesmo com boa cobertura.
+
+        Use em conjunto com AguaViva (SANE-01) para contexto real de cobertura.
+
+        Níveis: expressivo (≥ R$60/hab/ano), moderado (≥ R$15), incipiente (< R$15).
+
+        404 quando não há dado SICONFI para o município.'
+      operationId: sane_fundo_v1_sane_fundo__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaneFundoOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Sane Fundo
       tags:
       - produtos
   /v1/semeando-transparencia/{codigo_ibge}:

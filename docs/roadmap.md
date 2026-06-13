@@ -401,8 +401,7 @@ monetização (camada profunda) e a camada de cidadão. **Sequenciar por desbloq
   por município/ano; k-anonimato n_minimo=5; limiares epidemiológicos MS/PAHO (crítico ≥300, elevado
   ≥100, moderado ≥20); nota honesta sobre subnotificação (3-10x) e lag (6-12 meses); Dagster asset
   `valores_sinan` + schedule `schedule_sinan_anual` (1/jul); 2026-06-13.
-- [ ] 🔵 SAUDE-03 Materno-Infantil; SAUDE-11 Burnout.
-  *(`saude.resp.internacoes_j` já está no seed como exemplo de origem sensível.)*
+- [x] 🔵 **SAUDE-03 Sentinela Materna** (SISVAN gestante) — endpoint `GET /v1/sentinela-materna/{ibge}` + tela `/sentinela-materna/{ibge}`; % gestantes com baixo peso (CO_ESTADO_NUTRI_GESTANTE=1) acompanhadas pelo SISVAN; k-anonimato n_minimo=5; limiares crítico≥30%/elevado≥20%/moderado≥10%; nota honesta (cobertura CadÚnico, lag 6-12m, sem PII); Dagster asset `valores_sisvan_gestante` + schedule `schedule_sisvan_gestante_anual` (1/jun); 2026-06-13.
 
 ### 2C. Saneamento, água, energia, alimentação
 **Fontes:** ANA/HidroWeb, SNIS, ANEEL (DEC/FEC), IBGE PAM, CEPEA/CONAB, SICAR/MapBiomas.

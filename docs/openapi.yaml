@@ -728,6 +728,85 @@ components:
       - meta
       title: CulturaVivaOut
       type: object
+    DistribuicaoFuncaoOut:
+      description: Distribuição nacional de investimento per capita em uma função
+        SICONFI.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        desvio_padrao:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Desvio Padrao
+        funcao_cod:
+          title: Funcao Cod
+          type: string
+        funcao_nome:
+          title: Funcao Nome
+          type: string
+        maximo:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Maximo
+        media_brl_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Media Brl Hab
+        mediana_brl_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Mediana Brl Hab
+        minimo:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Minimo
+        n_municipios:
+          title: N Municipios
+          type: integer
+        p10:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: P10
+        p25:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: P25
+        p75:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: P75
+        p90:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: P90
+      required:
+      - funcao_cod
+      - funcao_nome
+      - ano
+      - n_municipios
+      - media_brl_hab
+      - mediana_brl_hab
+      - desvio_padrao
+      - p10
+      - p25
+      - p75
+      - p90
+      - minimo
+      - maximo
+      title: DistribuicaoFuncaoOut
+      type: object
     EcoVivaOut:
       description: Investimento municipal em gestão ambiental per capita — AMB-01
         EcoVivo.
@@ -1145,6 +1224,38 @@ components:
       - exe_estado
       - pct
       title: FuncaoOut
+      type: object
+    FuncaoPerfilItem:
+      description: Gasto de uma função orçamentária com percentil nacional.
+      properties:
+        funcao_cod:
+          title: Funcao Cod
+          type: string
+        funcao_nome:
+          title: Funcao Nome
+          type: string
+        percentil:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Percentil
+        valor_liquidado:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Liquidado
+        valor_por_hab:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Valor Por Hab
+      required:
+      - funcao_cod
+      - funcao_nome
+      - valor_liquidado
+      - valor_por_hab
+      - percentil
+      title: FuncaoPerfilItem
       type: object
     GiroLocalOut:
       description: 'Dinamismo econômico local per capita: emprego formal (CAGED) +
@@ -1900,6 +2011,49 @@ components:
       - nivel
       - indicadores
       title: PanoramaOut
+      type: object
+    PerfilOrcamentarioOut:
+      description: Perfil orçamentário completo de um município (todas as funções
+        SICONFI).
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        funcoes:
+          items:
+            $ref: '#/components/schemas/FuncaoPerfilItem'
+          title: Funcoes
+          type: array
+        nome:
+          title: Nome
+          type: string
+        nota:
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - funcoes
+      - nota
+      title: PerfilOrcamentarioOut
       type: object
     PerguntaIA:
       properties:
@@ -3875,6 +4029,59 @@ paths:
       summary: Obter Indicador
       tags:
       - indicadores
+  /v1/inferencia/distribuicao-funcao/{funcao_cod}:
+    get:
+      operationId: distribuicao_funcao_v1_inferencia_distribuicao_funcao__funcao_cod__get
+      parameters:
+      - in: path
+        name: funcao_cod
+        required: true
+        schema:
+          title: Funcao Cod
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistribuicaoFuncaoOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Distribuição nacional de investimento per capita em uma função SICONFI
+      tags:
+      - inferencia
+  /v1/inferencia/municipio/{ibge}/orcamento:
+    get:
+      operationId: perfil_orcamentario_v1_inferencia_municipio__ibge__orcamento_get
+      parameters:
+      - in: path
+        name: ibge
+        required: true
+        schema:
+          title: Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilOrcamentarioOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: 'Perfil orçamentário municipal: todas as funções SICONFI com percentil
+        nacional'
+      tags:
+      - inferencia
   /v1/ivm:
     get:
       description: IVM de todos os municípios num período — base do mapa semafórico.

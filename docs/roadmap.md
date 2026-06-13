@@ -475,8 +475,8 @@ operação multi-cliente B2G.
 - [x] 🔵 **URB-01 CidadeViva** (SICONFI Função 15) — endpoint `GET /v1/cidade-viva/{ibge}` + tela `/cidade-viva/{codigo}`; despesa liquidada na função 15 (Urbanismo) por habitante; níveis expressivo≥R$200/hab, moderado≥R$80, incipiente<R$80; nota honesta (obras estaduais/federais não inclusos; municípios em expansão tendem a investir mais; dupla face §17); 12 testes unitários + 4 integração; 2026-06-13.
 - [ ] 🔵 AMB-02 (Monitor de Alertas Ambientais — fonte a definir), Alimentação (ALIM-03/04 — fonte a definir), Transparência (TRANSP-04/07 — gate).
 - [ ] 🔵 **TRANSP-02 Farol de Conluio** — requer **capacidade de grafo** (sócios cruzados via Receita/CNPJ).
-- [ ] 🔵 Analytics inferencial (correção de comparações múltiplas/FDR, regressão com diagnósticos) e
-  produtos preditivos ("o conhecimento mora no lag").
+- [x] 🔵 **Analytics inferencial — Fatia 1 (Perfil Orçamentário):** módulo `app.inferencia` com funções puras (percentil_rank, z_score, Benjamini-Hochberg FDR, CDF normal); endpoints `GET /v1/inferencia/distribuicao-funcao/{funcao_cod}` (distribuição nacional per capita: n, média, mediana, desvio, percentis) e `GET /v1/inferencia/municipio/{ibge}/orcamento` (todas as funções SICONFI com percentil nacional via PERCENT_RANK() SQL); tela `/perfil-orcamentario/{ibge}` com barra visual de percentil; 26 testes (20 unit + 6 integração); 2026-06-13.
+  _Fatia 2 (regressão com diagnósticos + produtos preditivos) — "o conhecimento mora no lag" — aguarda dado nacional CAGED e série histórica SICONFI._
 - [ ] 🔵 **Extração de serviços** ao bater o gatilho §1.1: candidatos = alertas, API profunda, IA,
   grafo. Sempre pela fronteira do plugin.
 - [ ] 🔵 Migração de compute gerenciado→K8s só se >3 réplicas; broker durável (Kafka) se >5.000

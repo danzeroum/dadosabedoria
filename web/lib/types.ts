@@ -852,3 +852,39 @@ export interface CulturaVivaResponse {
   nota: string;
   meta: MetaProveniencia | null;
 }
+
+// ---------------------------------------- Analytics Inferencial (perfil orçamentário)
+
+export interface FuncaoPerfilItem {
+  funcao_cod: string;
+  funcao_nome: string;
+  valor_liquidado: number | null;
+  valor_por_hab: number | null;
+  percentil: number | null;  // 0–100; null quando município não tem dado na função
+}
+
+export interface PerfilOrcamentarioResponse {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  populacao: number | null;
+  ano: number | null;
+  funcoes: FuncaoPerfilItem[];
+  nota: string;
+}
+
+export interface DistribuicaoFuncaoResponse {
+  funcao_cod: string;
+  funcao_nome: string;
+  ano: number | null;
+  n_municipios: number;
+  media_brl_hab: number | null;
+  mediana_brl_hab: number | null;
+  desvio_padrao: number | null;
+  p10: number | null;
+  p25: number | null;
+  p75: number | null;
+  p90: number | null;
+  minimo: number | null;
+  maximo: number | null;
+}

@@ -2,7 +2,8 @@
 Salário Radar (TRAB-02), Região Emprega (TRAB-04), Bússola Educação-Trabalho (EDU-01),
 Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05), AguaViva (SANE-01),
 EsgotoInvisível (SANE-03), LuzNoMapa (SANE-04), RioEmRisco (SANE-02), PratoFrio (ALIM-01),
-SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), CaçadorArboviroses (SAUDE-02)."""
+SemeandoTransparência (ALIM-05), FomeOculta (ALIM-02), SentinelaMaterna (SAUDE-03),
+CaçadorArboviroses (SAUDE-02)."""
 
 from __future__ import annotations
 
@@ -26,6 +27,7 @@ from app.produtos.facade import (
     RioEmRiscoFacade,
     SalarioRadarFacade,
     SemeandoTransparenciaFacade,
+    SentinelaMaternаFacade,
     SentinelaRespFacade,
 )
 from app.produtos.modelos import (
@@ -46,6 +48,7 @@ from app.produtos.modelos import (
     RioEmRiscoOut,
     SalarioRadarOut,
     SemeandoTransparenciaOut,
+    SentinelaMaternаOut,
     SentinelaRespOut,
 )
 from app.produtos.repositorio_onde_foi import RepositorioOndeFoi
@@ -265,6 +268,20 @@ async def fome_oculta(
     404 quando não há dado SISVAN para o município.
     """
     return await FomeOcultaFacade(session).fome_oculta(codigo_ibge=codigo_ibge)
+
+
+@router.get("/sentinela-materna/{codigo_ibge}", response_model=SentinelaMaternаOut)
+async def sentinela_materna(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> SentinelaMaternаOut:
+    """Risco nutricional de gestantes acompanhadas pelo SISVAN/MS (SAUDE-03).
+
+    % de gestantes com baixo peso (IMC pré-gestacional) acompanhadas pelo SISVAN.
+    Níveis: crítico (≥ 30%), elevado (≥ 20%), moderado (≥ 10%), baixo (< 10%).
+    Dado de origem sensível: células abaixo de 5 gestantes são suprimidas (k-anonimato).
+    404 quando não há dado SISVAN gestante para o município.
+    """
+    return await SentinelaMaternаFacade(session).sentinela_materna(codigo_ibge=codigo_ibge)
 
 
 @router.get("/cacador-arboviroses/{codigo_ibge}", response_model=CacadorArboviroesOut)

@@ -32,6 +32,7 @@ import type {
   RespostaIVMSerie,
   RespostaValores,
   SalarioRadarProduto,
+  SentinelaMaternаResponse,
   SentinelaRespProduto,
 } from "./types";
 
@@ -397,6 +398,16 @@ export async function buscarFomeOculta(codigo: string): Promise<FomeOcultaRespon
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`FomeOculta ${codigo}: HTTP ${res.status}`);
   return res.json() as Promise<FomeOcultaResponse>;
+}
+
+export async function buscarSentinelaMaterna(
+  codigo: string,
+): Promise<SentinelaMaternаResponse | null> {
+  const url = `${BASE}/v1/sentinela-materna/${codigo}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`SentinelaMaterna ${codigo}: HTTP ${res.status}`);
+  return res.json() as Promise<SentinelaMaternаResponse>;
 }
 
 export async function buscarCacadorArboviroses(

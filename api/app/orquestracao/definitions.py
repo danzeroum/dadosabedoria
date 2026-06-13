@@ -34,7 +34,12 @@ from app.ingestao.adaptadores.siconfi import (
     FetcherSiconfiHTTP,
 )
 from app.ingestao.adaptadores.sinan import AdaptadorSinan, FetcherSinanFTP
-from app.ingestao.adaptadores.sisvan import AdaptadorSisvan, FetcherSisvanHTTP
+from app.ingestao.adaptadores.sisvan import (
+    AdaptadorSisvan,
+    AdaptadorSisvanGestante,
+    FetcherSisvanGestanteHTTP,
+    FetcherSisvanHTTP,
+)
 from app.ingestao.agenda import competencia_alvo
 from app.ingestao.bronze import construir_store_padrao
 from app.ingestao.pipeline import (
@@ -50,6 +55,7 @@ from app.ingestao.pipeline import (
     executar_siconfi_funcoes,
     executar_sinan,
     executar_sisvan,
+    executar_sisvan_gestante,
     executar_snis,
 )
 
@@ -195,6 +201,15 @@ async def _rodar_sisvan(janela: Janela) -> None:  # pragma: no cover - rede
     adaptador = AdaptadorSisvan(FetcherSisvanHTTP())
     async with connect(settings.database_url) as conn:
         await executar_sisvan(
+            janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
+        )
+
+
+async def _rodar_sisvan_gestante(janela: Janela) -> None:  # pragma: no cover - rede
+    settings = get_settings()
+    adaptador = AdaptadorSisvanGestante(FetcherSisvanGestanteHTTP())
+    async with connect(settings.database_url) as conn:
+        await executar_sisvan_gestante(
             janela, conn, adaptador, construir_store_padrao(), responsavel="dagster"
         )
 
@@ -386,6 +401,24 @@ def valores_sisvan(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  
     partitions_def=_ANUAL,
     group_name="saude",
     description=(
+        "% de gestantes com baixo peso por município — SISVAN/MS (estado nutricional materno). "
+        "Sentinela Materna (SAUDE-03). Origem sensível: k-anonimato n≥5."
+    ),
+    metadata={"fonte": "SISVAN/Ministério da Saúde", "lag_tipico": "~12 meses"},
+)
+def valores_sisvan_gestante(
+    context: dg.AssetExecutionContext,
+) -> dg.MaterializeResult:  # pragma: no cover
+    comp = _comp_de_anual(context.partition_key)
+    context.log.info(f"SISVAN gestante: ano {context.partition_key}")
+    asyncio.run(_rodar_sisvan_gestante(Janela.de_competencia(comp)))
+    return dg.MaterializeResult(metadata={"ano": context.partition_key})
+
+
+@dg.asset(
+    partitions_def=_ANUAL,
+    group_name="saude",
+    description=(
         "Casos confirmados de dengue por município/ano — SINAN/MS "
         "(CLASSI_FIN 1-3; k-anonimato n_minimo=5). Base do Caçador de Arboviroses (SAUDE-02)."
     ),
@@ -412,6 +445,9 @@ job_valores_aneel = dg.define_asset_job("job_valores_aneel", selection=["valores
 job_valores_ana = dg.define_asset_job("job_valores_ana", selection=["valores_ana"])
 job_valores_pam = dg.define_asset_job("job_valores_pam", selection=["valores_pam"])
 job_valores_sisvan = dg.define_asset_job("job_valores_sisvan", selection=["valores_sisvan"])
+job_valores_sisvan_gestante = dg.define_asset_job(
+    "job_valores_sisvan_gestante", selection=["valores_sisvan_gestante"]
+)
 job_valores_sinan = dg.define_asset_job("job_valores_sinan", selection=["valores_sinan"])
 
 
@@ -503,6 +539,14 @@ def schedule_sisvan_anual(context: dg.ScheduleEvaluationContext) -> dg.RunReques
 
 
 @dg.schedule(
+    job=job_valores_sisvan_gestante, cron_schedule="0 9 1 6 *"
+)  # 1/jun, 9h — dados SISVAN gestante do exercício anterior
+def schedule_sisvan_gestante_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
+    ano = context.scheduled_execution_time.year - 1
+    return dg.RunRequest(partition_key=str(ano))
+
+
+@dg.schedule(
     job=job_valores_sinan, cron_schedule="0 8 1 7 *"
 )  # 1/jul — dados SINAN/Dengue do exercício anterior (lag ~6-12 meses)
 def schedule_sinan_anual(context: dg.ScheduleEvaluationContext) -> dg.RunRequest:
@@ -526,6 +570,7 @@ defs = dg.Definitions(
         valores_ana,
         valores_pam,
         valores_sisvan,
+        valores_sisvan_gestante,
         valores_sinan,
     ],
     jobs=[
@@ -541,6 +586,7 @@ defs = dg.Definitions(
         job_valores_ana,
         job_valores_pam,
         job_valores_sisvan,
+        job_valores_sisvan_gestante,
         job_valores_sinan,
     ],
     schedules=[
@@ -556,6 +602,7 @@ defs = dg.Definitions(
         schedule_ana_anual,
         schedule_pam_anual,
         schedule_sisvan_anual,
+        schedule_sisvan_gestante_anual,
         schedule_sinan_anual,
     ],
 )

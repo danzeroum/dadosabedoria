@@ -557,6 +557,34 @@ INDICADORES: list[dict[str, Any]] = [
         ),
     },
     {
+        "codigo": "saude.materno.gestante_baixo_peso_pct",
+        "nome": "Gestantes com baixo peso (%)",
+        "descricao": (
+            "% de gestantes com baixo peso (CO_ESTADO_NUTRI_GESTANTE = 1) entre as "
+            "acompanhadas pelo SISVAN/MS no município. Indicador de risco nutricional materno "
+            "(SAUDE-03 Sentinela Materna). Origem sensível: supressão k-anon n≥5."
+        ),
+        "dominio": "saude",
+        "subdominio": "materno",
+        "unidade": "%",
+        "polaridade": "menor_melhor",
+        "atualizacao": "anual",
+        "nivel_minimo_agregacao": "municipio",
+        "n_minimo": 5,
+        "classificacao": "nao_pessoal",
+        "origem_sensivel": True,
+        "publico": True,
+        "base_legal": "obrigacao_legal",
+        "fonte": "sisvan",
+        "codigo_externo": "SISVAN_gestante_baixo_peso_pct",
+        "metodologia": (
+            "% de gestantes com baixo peso (cód. 1) no estado nutricional do SISVAN "
+            "(CO_ESTADO_NUTRI_GESTANTE), por município/ano. Cobre apenas gestantes "
+            "acompanhadas pelo SISVAN/CadÚnico — não é censo. "
+            "Forma a confirmar na 1ª busca real (s3.sa-east-1.amazonaws.com/ckan.saude.gov.br)."
+        ),
+    },
+    {
         "codigo": "saude.arboviroses.dengue_casos",
         "nome": "Casos confirmados de dengue",
         "descricao": (
@@ -856,6 +884,30 @@ async def _semear_fatos(
             meta,
             ContextoLinhagem(
                 f_sisvan, baixo_peso, "seed ALIM-02: prata->ouro (SISVAN baixo_peso_pct)", "seed"
+            ),
+        )
+
+    # SAÚDE MATERNA (SISVAN gestante, anual): % de gestantes com baixo peso por município/ano.
+    gestante_bp = ind_ids["saude.materno.gestante_baixo_peso_pct"]
+    if not await _tem_dados_reais(conn, gestante_bp):
+        gbp_cels = [
+            # SP: 3.0% → baixo (fixture: grau-demo, 1 baixo peso em 30)
+            CelulaOuro(gestante_bp, sp, date(2023, 1, 1), "anual", Decimal("3.0"), 30, 3, f_sisvan),
+            # Rio: 25.0% → crítico (fixture: grau-demo, 10 baixo peso em 40)
+            # Rio não está no seed de territórios (só SP e Campinas estão) — usamos Campinas
+            # Campinas: 15.0% → elevado (fixture: grau-demo, 3 baixo peso em 20)
+            CelulaOuro(
+                gestante_bp, cps, date(2023, 1, 1), "anual", Decimal("15.0"), 20, 3, f_sisvan
+            ),
+        ]
+        await grav.escrever_ouro(
+            gbp_cels,
+            meta,
+            ContextoLinhagem(
+                f_sisvan,
+                gestante_bp,
+                "seed SAUDE-03: prata->ouro (SISVAN gestante_baixo_peso_pct)",
+                "seed",
             ),
         )
 

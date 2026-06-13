@@ -49,6 +49,7 @@ def test_assets_carregam() -> None:
         valores_siconfi,
         valores_sinan,
         valores_sisvan,
+        valores_sisvan_gestante,
         valores_snis,
     )
 
@@ -64,9 +65,10 @@ def test_assets_carregam() -> None:
     assert list(valores_ana.key.path) == ["valores_ana"]
     assert list(valores_pam.key.path) == ["valores_pam"]
     assert list(valores_sisvan.key.path) == ["valores_sisvan"]
+    assert list(valores_sisvan_gestante.key.path) == ["valores_sisvan_gestante"]
     assert list(valores_sinan.key.path) == ["valores_sinan"]
-    # 13 assets no acervo
-    assert len(list(defs.assets)) == 13
+    # 14 assets no acervo
+    assert len(list(defs.assets)) == 14
 
 
 def test_jobs_carregam() -> None:
@@ -83,6 +85,7 @@ def test_jobs_carregam() -> None:
         job_valores_siconfi,
         job_valores_sinan,
         job_valores_sisvan,
+        job_valores_sisvan_gestante,
         job_valores_snis,
     )
 
@@ -98,6 +101,7 @@ def test_jobs_carregam() -> None:
     assert job_valores_ana.name == "job_valores_ana"
     assert job_valores_pam.name == "job_valores_pam"
     assert job_valores_sisvan.name == "job_valores_sisvan"
+    assert job_valores_sisvan_gestante.name == "job_valores_sisvan_gestante"
     assert job_valores_sinan.name == "job_valores_sinan"
 
 
@@ -115,6 +119,7 @@ def test_schedules_carregam() -> None:
         schedule_siconfi_funcoes_anual,
         schedule_sinan_anual,
         schedule_sisvan_anual,
+        schedule_sisvan_gestante_anual,
         schedule_snis_anual,
     )
 
@@ -130,6 +135,7 @@ def test_schedules_carregam() -> None:
     assert schedule_ana_anual.name == "schedule_ana_anual"
     assert schedule_pam_anual.name == "schedule_pam_anual"
     assert schedule_sisvan_anual.name == "schedule_sisvan_anual"
+    assert schedule_sisvan_gestante_anual.name == "schedule_sisvan_gestante_anual"
     assert schedule_sinan_anual.name == "schedule_sinan_anual"
 
 

@@ -2200,6 +2200,74 @@ components:
       - meta
       title: SemeandoTransparenciaOut
       type: object
+    SentinelaMatern_Out:
+      description: Risco nutricional de gestantes — SAUDE-03 Sentinela Materna.
+      properties:
+        ano:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ano
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        gestante_baixo_peso_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Gestante Baixo Peso Pct
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/MetaProveniencia'
+          - type: 'null'
+        n_gestantes:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: N Gestantes
+        nivel:
+          enum:
+          - crítico
+          - elevado
+          - moderado
+          - baixo
+          - sem_dado
+          title: Nivel
+          type: string
+        nome:
+          title: Nome
+          type: string
+        nota:
+          default: 'O SISVAN monitora gestantes inscritas no CadÚnico/Bolsa Família
+            — não é censo da população. Municípios com cobertura baixa podem apresentar
+            distorção. Lag típico: 6-12 meses. Baixo peso materno aumenta o risco
+            de prematuridade, baixo peso ao nascer e déficit cognitivo. Dados suprimidos
+            (< 5 gestantes) preservam privacidade estatística. Este indicador não
+            identifica gestantes. Dado agregado por município.'
+          title: Nota
+          type: string
+        populacao:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Populacao
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - uf
+      - populacao
+      - ano
+      - n_gestantes
+      - gestante_baixo_peso_pct
+      - nivel
+      - meta
+      title: SentinelaMaternаOut
+      type: object
     SentinelaRespOut:
       description: Internações respiratórias SUS por município/mês com supressão honesta
         (SAUDE-01).
@@ -3512,6 +3580,42 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
           description: Validation Error
       summary: Semeando Transparencia
+      tags:
+      - produtos
+  /v1/sentinela-materna/{codigo_ibge}:
+    get:
+      description: 'Risco nutricional de gestantes acompanhadas pelo SISVAN/MS (SAUDE-03).
+
+
+        % de gestantes com baixo peso (IMC pré-gestacional) acompanhadas pelo SISVAN.
+
+        Níveis: crítico (≥ 30%), elevado (≥ 20%), moderado (≥ 10%), baixo (< 10%).
+
+        Dado de origem sensível: células abaixo de 5 gestantes são suprimidas (k-anonimato).
+
+        404 quando não há dado SISVAN gestante para o município.'
+      operationId: sentinela_materna_v1_sentinela_materna__codigo_ibge__get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentinelaMatern_Out'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Sentinela Materna
       tags:
       - produtos
   /v1/sentinela-resp/{codigo_ibge}:

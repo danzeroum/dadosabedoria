@@ -1,7 +1,7 @@
 """Modelos Pydantic dos produtos nomeados: OndeFoi, Pulso Produtivo, Giro Local, Salário Radar,
 Bússola Educação-Trabalho (EDU-01), Sentinela Respiratória (SAUDE-01), ObraViva (TRANSP-05),
 AguaViva (SANE-01), EsgotoInvisivel (SANE-03), LuzNoMapa (SANE-04), PratoFrio (ALIM-01),
-CaçadorArboviroses (SAUDE-02)."""
+CaçadorArboviroses (SAUDE-02), SentinelaMaterna (SAUDE-03)."""
 
 from __future__ import annotations
 
@@ -24,6 +24,8 @@ from app.produtos.regiao_emprega import NivelRegiao
 from app.produtos.rio_em_risco import NivelSeca
 from app.produtos.salario_radar import NivelSalario
 from app.produtos.semeando_transparencia import NivelInvestimento
+from app.produtos.sentinela_materna import NOTA_HONESTA as NOTA_SENTINELA_MATERNA
+from app.produtos.sentinela_materna import NivelMaterno
 from app.produtos.sentinela_resp import NivelSentinela, TendenciaSentinela
 
 
@@ -433,6 +435,26 @@ class SemeandoTransparenciaOut(BaseModel):
     nivel: NivelInvestimento
 
     nota: str
+    meta: MetaProveniencia | None
+
+
+# ------------------------------------------------- SentinelaMaterna (SAUDE-03)
+
+
+class SentinelaMaternаOut(BaseModel):
+    """Risco nutricional de gestantes — SAUDE-03 Sentinela Materna."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None
+    populacao: int | None
+
+    ano: int | None
+    n_gestantes: int | None  # total de gestantes acompanhadas (n_amostra)
+    gestante_baixo_peso_pct: float | None  # % com baixo peso
+    nivel: NivelMaterno
+
+    nota: str = NOTA_SENTINELA_MATERNA
     meta: MetaProveniencia | None
 
 

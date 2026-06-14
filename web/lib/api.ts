@@ -41,6 +41,7 @@ import type {
   RespostaIA,
   RespostaIVM,
   RespostaIVMSerie,
+  RespostaQuota,
   RespostaValores,
   SalarioRadarProduto,
   SentinelaMaternаResponse,
@@ -532,6 +533,22 @@ export async function buscarCidadeViva(
   return res.json() as Promise<CidadeVivaResponse>;
 }
 
+// Tier profundo: uso da cota de uma chave de API (GET /v1/quota, lê sem debitar). A chave é
+// SEGREDO — esta função roda só no servidor (Server Action / RSC), nunca embarca no bundle do
+// cliente. Sem chave válida (401/403/404/erro) → null, e a tela mostra o estado honesto.
+export async function consultarQuota(chave: string): Promise<RespostaQuota | null> {
+  const resp = await fetch(new URL("/v1/quota", BASE), {
+    headers: { Authorization: `Bearer ${chave}` },
+    cache: "no-store",
+  });
+  if (!resp.ok) {
+    return null;
+  }
+  return resp.json();
+}
+
+// Analytics Inferencial (Perfil Orçamentário) — restauradas aqui: o merge da main nesta branch
+// derrubou estas definições (main e esta branch appendaram funções no mesmo fim de arquivo).
 export async function buscarPerfilOrcamentario(
   codigo: string,
 ): Promise<PerfilOrcamentarioResponse | null> {

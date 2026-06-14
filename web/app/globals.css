@@ -2009,3 +2009,551 @@ section h2 {
 .demo-aviso strong {
   color: #78350f;
 }
+
+/* ============================================================================
+   TELAS FALTANTES — seções novas (catálogo, institucional, sistema,
+   desenvolvedores, cidadão). Portadas do handoff docs/design/telas-faltantes/ds.css.
+   Reusam tokens e utilitários já existentes acima; nenhum hex novo de semáforo.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- Catálogo de produtos (/produtos) */
+/* Reusa .home-produtos/.home-card; acrescenta o agrupamento por domínio e o chip de fonte. */
+.home-card-topo h3 {
+  font-size: 1.05rem;
+  margin: 0;
+  color: var(--cor-marca);
+}
+.home-fonte {
+  font-size: 0.72rem;
+  color: var(--cor-texto-suave);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin: 0 0 12px;
+}
+.cat-dominio {
+  margin: 34px 0 14px;
+}
+.cat-dominio:first-of-type {
+  margin-top: 18px;
+}
+.cat-dominio h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--cor-texto);
+}
+.cat-dominio-conta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+}
+.cat-dominio-desc {
+  margin: 4px 0 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.88rem;
+  max-width: 70ch;
+}
+
+/* ---------------------------------------------------------------- Institucional (sobre/metodologia/privacidade/termos/acessibilidade) */
+.legal {
+  max-width: 75ch;
+}
+.legal p,
+.legal li {
+  line-height: 1.65;
+}
+.legal h2 {
+  font-size: 1.2rem;
+  margin-top: 34px;
+}
+.legal h3 {
+  font-size: 1rem;
+  margin: 22px 0 6px;
+}
+.legal ul {
+  padding-left: 20px;
+}
+.legal li {
+  margin: 6px 0;
+}
+.legal .atualizado {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin: 0 0 24px;
+}
+/* Três pilares (Sobre) — idioma do card. (.honesto já existe acima e é reusado.) */
+.pilares {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 18px 0 8px;
+}
+.pilar {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-marca);
+  border-radius: var(--raio);
+  padding: 18px;
+}
+.pilar h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  color: var(--cor-marca);
+}
+.pilar p {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+/* Marcador de revisão jurídica (privacidade/termos): forma pronta, letra a validar. */
+.revisao {
+  border: 1px dashed #b45309;
+  border-radius: var(--raio);
+  background: #fffbeb;
+  color: #92400e;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  margin: 14px 0;
+  max-width: 75ch;
+}
+
+/* ---------------------------------------------------------------- Sistema (not-found / error / loading) */
+.sistema-centro {
+  min-height: 52vh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 40px 16px;
+}
+.sistema-codigo {
+  font-size: 3.4rem;
+  font-weight: 700;
+  color: var(--cor-marca);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.sistema-centro h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.sistema-centro p {
+  margin: 0 auto;
+  color: var(--cor-texto-suave);
+  max-width: 52ch;
+  line-height: 1.55;
+}
+.sistema-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.botao {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: var(--raio);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid var(--cor-marca);
+}
+.botao-primario {
+  background: var(--cor-marca);
+  color: #fff;
+}
+.botao-primario:hover {
+  filter: brightness(1.08);
+}
+.botao-secundario {
+  background: var(--cor-superficie);
+  color: var(--cor-marca);
+}
+.botao-secundario:hover {
+  background: var(--exec-alta-tint);
+}
+.skeleton {
+  display: grid;
+  gap: 14px;
+  max-width: var(--largura-max);
+}
+.sk-bloco {
+  background: linear-gradient(100deg, #eef2f7 30%, #f6f9fc 50%, #eef2f7 70%);
+  background-size: 200% 100%;
+  border-radius: var(--raio);
+  animation: sk-brilho 1.3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk-bloco {
+    animation: none;
+  }
+}
+@keyframes sk-brilho {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.sk-titulo {
+  height: 34px;
+  width: 46%;
+}
+.sk-linha {
+  height: 16px;
+}
+.sk-linha.curta {
+  width: 64%;
+}
+.sk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+.sk-card {
+  height: 150px;
+}
+
+/* ---------------------------------------------------------------- API & Desenvolvedores */
+.dev-intro {
+  max-width: 72ch;
+}
+.endpoint {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  margin: 12px 0;
+  overflow: hidden;
+}
+.endpoint-cab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+}
+.metodo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+}
+.metodo-get {
+  color: var(--cor-marca);
+  background: var(--exec-alta-tint);
+  border-color: #9ad0c9;
+}
+.metodo-post {
+  color: var(--exec-parcial);
+  background: var(--exec-parcial-tint);
+  border-color: rgba(180, 83, 9, 0.3);
+}
+.endpoint-rota {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+.endpoint-tag {
+  margin-left: auto;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-texto-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.endpoint-corpo {
+  padding: 12px 14px;
+}
+.endpoint-corpo p {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: var(--cor-texto-suave);
+}
+.bloco-codigo {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: var(--raio);
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.bloco-codigo .cmt {
+  color: #7c8aa0;
+}
+.bloco-codigo .tok {
+  color: #5eead4;
+}
+.planos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 18px 0 8px;
+  align-items: start;
+}
+.plano {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 22px;
+  box-shadow: var(--sombra);
+}
+.plano-destaque {
+  border-color: var(--cor-marca);
+  border-width: 2px;
+}
+.plano-nome {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--cor-marca);
+}
+.plano-preco {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 6px 0;
+  font-variant-numeric: tabular-nums;
+}
+.plano-preco small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--cor-texto-suave);
+}
+.plano-desc {
+  color: var(--cor-texto-suave);
+  font-size: 0.88rem;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.plano-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: grid;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+.plano-lista li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.plano-lista li::before {
+  content: "✓";
+  color: var(--cor-marca);
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.plano-lista li.nao {
+  color: var(--cor-texto-suave);
+}
+.plano-lista li.nao::before {
+  content: "—";
+  color: var(--cor-texto-suave);
+}
+.cota-painel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 26px;
+  align-items: center;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 24px;
+  margin: 18px 0;
+  max-width: 640px;
+}
+@media (max-width: 540px) {
+  .cota-painel {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+.barra-quota {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  flex: 0 0 auto;
+}
+.barra-quota-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+.barra-quota-num b {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.barra-quota-num span {
+  font-size: 0.68rem;
+  color: var(--cor-texto-suave);
+  display: block;
+  margin-top: 2px;
+}
+.cota-meta {
+  display: grid;
+  gap: 12px;
+}
+.cota-meta dt {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-texto-suave);
+}
+.cota-meta dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.cota-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 14px 0;
+}
+.cota-form label {
+  font-size: 0.82rem;
+  color: var(--cor-texto-suave);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+.cota-form input {
+  padding: 8px 11px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  font: inherit;
+  min-width: 280px;
+}
+
+/* ---------------------------------------------------------------- Área do cidadão / gate OIDC */
+/* Reusa o idioma do .demo-aviso (role=note): o lugar já está preparado. */
+.portao {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  margin: 18px 0;
+  border: 1px solid #b45309;
+  border-left: 4px solid #b45309;
+  border-radius: var(--raio);
+  background: #fffbeb;
+  color: #92400e;
+  max-width: 75ch;
+  line-height: 1.55;
+}
+.portao strong {
+  color: #78350f;
+}
+.portao-icone {
+  font-size: 1.2rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.gov-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--raio);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto-suave);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+.gov-botao .gov-marca {
+  color: var(--cor-marca);
+}
+.gov-nota {
+  font-size: 0.82rem;
+  color: var(--cor-texto-suave);
+  margin: 8px 0 0;
+}
+.toggle-fake {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  margin: 8px 0;
+  opacity: 0.7;
+}
+.toggle-fake span {
+  font-size: 0.92rem;
+}
+.toggle-pino {
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--cor-borda);
+  position: relative;
+  flex: 0 0 auto;
+}
+.toggle-pino::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------------------------------- Migalhas & chip de estado */
+.migalha {
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+  margin: 0 0 14px;
+}
+.migalha a {
+  color: var(--cor-marca);
+  text-decoration: none;
+  font-weight: 600;
+}
+.migalha a:hover {
+  text-decoration: underline;
+}
+.estado-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.estado-suprimido {
+  border-color: #f59e0b;
+}

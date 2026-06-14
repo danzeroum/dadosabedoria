@@ -90,6 +90,44 @@ export interface RespostaValores {
   paginacao: Paginacao;
 }
 
+// ----------------------------------------------------------------- Tier profundo (open-core pago)
+// Espelha api/app/profundo/modelos.py. A camada paga reusa os mesmos dados públicos do /v1.
+
+// GET /v1/quota — uso da chave sem debitar.
+export interface RespostaQuota {
+  limite: number;
+  usado: number;
+  restante: number;
+  reset: number; // epoch (s) da virada da janela
+}
+
+// POST /v1/consultas-lote — várias consultas de valores num só request (até 50 por lote).
+export interface ConsultaItem {
+  indicador: string;
+  territorio?: string | null;
+  de?: string | null;
+  ate?: string | null;
+  por_pagina?: number;
+}
+
+export interface ConsultaLoteIn {
+  consultas: ConsultaItem[];
+}
+
+export interface ResultadoLote {
+  indicador: string;
+  territorio?: string | null;
+  dados?: ValorSerie[] | null;
+  meta?: MetaProveniencia | null;
+  paginacao?: Paginacao | null;
+  erro?: string | null;
+}
+
+export interface RespostaLote {
+  resultados: ResultadoLote[];
+  total: number;
+}
+
 // Ficha técnica de um indicador (/v1/indicadores/{codigo}) — metodologia + proveniência completas.
 export interface IndicadorDetalhe {
   codigo: string;

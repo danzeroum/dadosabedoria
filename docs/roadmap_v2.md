@@ -42,7 +42,10 @@
 - [x] 3.1 🟢 "Dados Relacionados" (domínio+território) — recomendação não-linear (PR #159): helper
   `lib/relacionados.ts` (reusa o catálogo) + `<ProdutosRelacionados>` + teste; troca os links fixos de
   pulso/onde-foi pelo componente catálogo-driven. _Rollout aos demais produtos: follow-up._
-- [ ] 3.2 🟢 "Você Sabia?" — módulo backend de células contraintuitivas, ancorado/honesto.
+- [x] 3.2 🟢 "Você Sabia?" — módulo backend ancorado/honesto (PR #160): `curiosidades.py` (regras puras,
+  Invariante 3 — só valor recuperado, cita fonte, zero causalidade; sem dado → vazio) + endpoint
+  `GET /v1/territorios/{ibge}/curiosidades` + `<VoceSabia>` no panorama. Regra-âncora: gap água–esgoto
+  (mesma fonte SNIS). Seed: Campinas água 88%/esgoto 35% → o demo mostra o card. 9 testes; OpenAPI +78.
 - [ ] 3.3 🟢 Narrativa proativa da IA no abrir do município (estende NarradorTemplate).
 - [x] 3.4 🟢 Onboarding do 1º acesso (PR #159): `<Onboarding>` na home — busca de município
   (código IBGE→panorama; nome→busca IVM), `localStorage` anônimo, dispensável. (Reduzi de "3 passos"
@@ -62,4 +65,6 @@
 ## Log de PRs
 - **PR #158** (`claude/wizardly-cray-aj9fpw`): Bloco 0 (docs) + Bloco 0.5 (destrava CI). **MERGEADO** ✓.
 - **PR #159** (`claude/auditoria-v2-frontend`): Bloco 1.1+1.3 + 3.1 + 3.4 (mapa nacional, tier tablet,
-  Dados Relacionados, onboarding). Verificado local: web lint/typecheck/test(45)/build ✓.
+  Dados Relacionados, onboarding). **MERGEADO** ✓.
+- **PR #160** (`claude/auditoria-v2-curiosidades`): Bloco 3.2 "Você Sabia?" (backend ancorado + endpoint
+  + card + seed demo). Verificado local: 820 testes ✓, cobertura 89%/100%, OpenAPI, web ✓.

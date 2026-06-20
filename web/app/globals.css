@@ -2691,3 +2691,34 @@ section h2 {
     flex: 1 1 100%;
   }
 }
+
+/* "Você Sabia?" — fatos ancorados do município (Bloco 3.2). */
+.voce-sabia {
+  margin: 24px 0;
+  padding: 16px 20px;
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-marca);
+  border-radius: 10px;
+  background: var(--cor-fundo-suave, #f8fafc);
+}
+.voce-sabia h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+.voce-sabia ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.voce-sabia-fato {
+  margin: 0;
+  font-weight: 600;
+}
+.voce-sabia-fonte {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--cor-texto-suave);
+}

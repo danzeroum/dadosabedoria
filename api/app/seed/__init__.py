@@ -849,6 +849,24 @@ async def _semear_fatos(
             ContextoLinhagem(f_ana, seca, "seed Onda 2C: prata->ouro (ANA seca_indice)", "seed"),
         )
 
+    # SANEAMENTO/COBERTURA (SNIS, anual): água tratada bem acima da coleta de esgoto em Campinas —
+    # alimenta o "Você Sabia?" (gap honesto, mesma fonte). SP fica sem dado SNIS de propósito.
+    agua = ind_ids["saneamento.agua.atendimento_pct"]
+    esgoto = ind_ids["saneamento.esgoto.coleta_pct"]
+    f_snis = fonte_ids["snis"]
+    if not await _tem_dados_reais(conn, agua):
+        await grav.escrever_ouro(
+            [CelulaOuro(agua, cps, date(2022, 1, 1), "anual", Decimal("88.0"), None, 4, f_snis)],
+            meta,
+            ContextoLinhagem(f_snis, agua, "seed Onda 2C: prata->ouro (SNIS água)", "seed"),
+        )
+    if not await _tem_dados_reais(conn, esgoto):
+        await grav.escrever_ouro(
+            [CelulaOuro(esgoto, cps, date(2022, 1, 1), "anual", Decimal("35.0"), None, 4, f_snis)],
+            meta,
+            ContextoLinhagem(f_snis, esgoto, "seed Onda 2C: prata->ouro (SNIS esgoto)", "seed"),
+        )
+
     # ALIMENTAÇÃO (IBGE PAM, anual): valor da produção agrícola por município/ano.
     producao = ind_ids["alimentacao.producao.valor_total"]
     f_pam = fonte_ids["ibge_pam"]

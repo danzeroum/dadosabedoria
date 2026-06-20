@@ -5,6 +5,7 @@ import type {
   CasaVivaResponse,
   CidadeVivaResponse,
   CulturaVivaResponse,
+  CuriosidadesResposta,
   DistribuicaoFuncaoResponse,
   EcoVivaResponse,
   EscolaVivaResponse,
@@ -199,6 +200,21 @@ export async function buscarPanorama(codigoIbge: string): Promise<Panorama | nul
   }
   if (!resp.ok) {
     throw new Error(`Falha ao buscar o panorama (${resp.status})`);
+  }
+  return resp.json();
+}
+
+export async function buscarCuriosidades(
+  codigoIbge: string,
+): Promise<CuriosidadesResposta | null> {
+  const resp = await fetch(new URL(`/v1/territorios/${codigoIbge}/curiosidades`, BASE), {
+    next: { revalidate: REVALIDATE },
+  });
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar curiosidades (${resp.status})`);
   }
   return resp.json();
 }

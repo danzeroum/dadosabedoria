@@ -276,6 +276,21 @@ export interface Panorama {
   indicadores: IndicadorValor[];
 }
 
+// ------------------------------------------------- "Você Sabia?" (curiosidades ancoradas)
+
+export interface Curiosidade {
+  texto: string;
+  fonte: string;
+  produto: string | null;
+}
+
+export interface CuriosidadesResposta {
+  codigo_ibge: string;
+  nome: string;
+  uf: string | null;
+  curiosidades: Curiosidade[];
+}
+
 // ----------------------------------------------------------------- IA ancorada (/v1/ia/perguntar)
 
 export interface Citacao {

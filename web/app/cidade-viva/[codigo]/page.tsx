@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarCidadeViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelUrbanismo } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function CidadeVivaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="cidade-viva" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

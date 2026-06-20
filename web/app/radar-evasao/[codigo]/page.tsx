@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarRadarEvasao } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAvisoInep } from "../../../components/DemoAvisoInep";
 import type { NivelEvasao } from "../../../lib/types";
 
@@ -146,6 +147,8 @@ export default async function RadarEvasaoPage({ params }: { params: { codigo: st
         <br />
         <Link href={`/ivm/${r.codigo_ibge}`}>Ver o Índice de Vulnerabilidade Municipal →</Link>
       </p>
+
+      <ProdutosRelacionados slug="radar-evasao" codigoIbge={r.codigo_ibge} />
     </main>
   );
 }

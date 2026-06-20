@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarFomeOculta } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelFomeOculta } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -184,6 +185,8 @@ export default async function FomeOcultaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="fome-oculta" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

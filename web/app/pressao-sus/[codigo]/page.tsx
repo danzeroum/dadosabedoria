@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarPressaoSus } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelPressaoSus } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -191,6 +192,8 @@ export default async function PressaoSusPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="pressao-sus" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

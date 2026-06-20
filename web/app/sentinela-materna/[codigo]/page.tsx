@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSentinelaMaterna } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelMaterno } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -188,6 +189,8 @@ export default async function SentinelaMaternaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="sentinela-materna" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

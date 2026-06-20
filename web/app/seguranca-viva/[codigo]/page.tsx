@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSegurancaViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelSeguranca } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function SegurancaVivaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="seguranca-viva" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

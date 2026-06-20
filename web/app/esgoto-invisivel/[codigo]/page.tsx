@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarEsgotoInvisivel } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAvisoSnis } from "../../../components/DemoAvisoSnis";
 import type { NivelGap } from "../../../lib/types";
 
@@ -199,6 +200,8 @@ export default async function EsgotoInvisivelPage({
           Ver o panorama completo do município →
         </Link>
       </p>
+
+      <ProdutosRelacionados slug="esgoto-invisivel" codigoIbge={ei.codigo_ibge} />
     </main>
   );
 }

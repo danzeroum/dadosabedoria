@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarLuzNoMapa } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelEnergia } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -148,6 +149,8 @@ export default async function LuzNoMapaPage({ params }: { params: { codigo: stri
       <p style={{ marginTop: "16px" }}>
         <Link href={`/municipio/${lnm.codigo_ibge}`}>Ver o panorama completo do município →</Link>
       </p>
+
+      <ProdutosRelacionados slug="luz-no-mapa" codigoIbge={lnm.codigo_ibge} />
     </main>
   );
 }

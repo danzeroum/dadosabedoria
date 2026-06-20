@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarObraViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAvisoPncp } from "../../../components/DemoAvisoPncp";
 import type { NivelContratos } from "../../../lib/types";
 
@@ -127,6 +128,8 @@ export default async function ObraVivaPage({ params }: { params: { codigo: strin
         <br />
         <Link href={`/ivm/${o.codigo_ibge}`}>Ver o Índice de Vulnerabilidade Municipal →</Link>
       </p>
+
+      <ProdutosRelacionados slug="obra-viva" codigoIbge={o.codigo_ibge} />
     </main>
   );
 }

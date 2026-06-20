@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarGiroLocal } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelCredito, NivelEmprego } from "../../../lib/types";
 
@@ -179,6 +180,8 @@ export default async function GiroLocalPage({ params }: { params: { codigo: stri
       <p style={{ marginTop: "16px" }}>
         <Link href={`/pulso/${g.codigo_ibge}`}>Ver série histórica do emprego →</Link>
       </p>
+
+      <ProdutosRelacionados slug="giro-local" codigoIbge={g.codigo_ibge} />
     </main>
   );
 }

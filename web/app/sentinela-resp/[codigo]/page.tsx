@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSentinelaResp } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAvisoDatasus } from "../../../components/DemoAvisoDatasus";
 import type {
   MesInternacoesProduto,
@@ -241,6 +242,8 @@ export default async function SentinelaRespPage({ params }: { params: { codigo: 
         <br />
         <Link href={`/pulso/${s.codigo_ibge}`}>Ver o Pulso Produtivo (emprego formal) →</Link>
       </p>
+
+      <ProdutosRelacionados slug="sentinela-resp" codigoIbge={s.codigo_ibge} />
     </main>
   );
 }

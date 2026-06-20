@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarEcoVivo } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelAmbiental } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function EcoVivoPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="eco-vivo" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

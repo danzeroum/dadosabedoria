@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarPratoFrio } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelProducao } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -144,6 +145,8 @@ export default async function PratoFrioPage({ params }: { params: { codigo: stri
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="prato-frio" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

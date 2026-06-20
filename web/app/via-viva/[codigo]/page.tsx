@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarViaViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelTransporte } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function ViaVivaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="via-viva" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

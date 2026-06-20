@@ -9,7 +9,13 @@ import type { FeatureCollectionIVM } from "../../lib/types";
 
 export const dynamic = "force-dynamic";
 
-const UFS = ["SP", "RJ", "MG"];
+// As 27 UFs do Brasil (constitucionais, estáveis). A coropleta de cada UF depende da malha
+// geométrica do IBGE estar carregada no backend (ingestão nacional); onde não houver, a tela
+// degrada honestamente ("Sem mapa para {uf}"). Antes era um array fixo de SP/RJ/MG.
+const UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+  "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+];
 
 export default async function IVMPage({
   searchParams,

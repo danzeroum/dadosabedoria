@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DemoAviso } from "../../../components/DemoAviso";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { PulsoSelo } from "../../../components/PulsoSelo";
 import { SerieSaldo } from "../../../components/SerieSaldo";
 import { buscarPulso } from "../../../lib/api";
@@ -85,17 +86,7 @@ export default async function PulsoPage({ params }: { params: { codigo: string }
         {p.meta.licenca}
       </p>
 
-      <p style={{ marginTop: "16px" }}>
-        <Link href={`/regiao-emprega/${p.codigo_ibge}`}>
-          Ver a Região Emprega{p.uf ? ` (${p.uf})` : ""} — o problema é local ou regional? →
-        </Link>
-        <br />
-        <Link href={`/salario-radar/${p.codigo_ibge}`}>
-          Ver o Salário Radar (patamar salarial das novas contratações) →
-        </Link>
-        <br />
-        <Link href={`/giro-local/${p.codigo_ibge}`}>Ver o Giro Local (emprego + crédito per capita) →</Link>
-      </p>
+      <ProdutosRelacionados slug="pulso" codigoIbge={p.codigo_ibge} />
     </main>
   );
 }

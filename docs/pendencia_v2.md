@@ -13,6 +13,16 @@
   BAIXO-01). Conflita com a Invariante 6 (economia) e a escolha deliberada de zero-dep de UI.
   _Default do dev:_ **manter zero-dep**; enriquecer SVG/CSS nativos. Só adoto lib se o dono pedir.
 
+## Decisões técnicas (🟡)
+- [ ] **D3 — Modernizar o framework p/ zerar os ignores de CVE de starlette.** Hoje o teto
+  `fastapi<0.137` (necessário: a 0.137 introduziu `_IncludedRouter`, que o
+  `prometheus-fastapi-instrumentator` ≤8.0.0 não trata e quebra toda requisição) prende `starlette` em
+  0.46.x, cujas CVEs (CVE-2025-54121, CVE-2025-62727, CVE-2026-48818/48817/54283/54282) só têm fix em
+  0.47+/1.x. Estão **ignoradas no pip-audit** (risco baixo: API só-leitura atrás de rate-limit), mas o
+  certo é **modernizar**: subir FastAPI/Starlette e (a) trocar/atualizar o instrumentator por um que
+  trate `_IncludedRouter`, ou (b) prover um instrumentador de métricas próprio. _Default do dev:_ manter
+  o pin + ignores documentados até alguém priorizar a modernização (não bloqueia a entrega de valor).
+
 ## Gates externos (🔴 — só o dono/infra destrava)
 - [ ] **G1 — Sondagem de conectores (Bloco 2.1):** SNIS/ANEEL/ANA/PAM/SISVAN têm URL/colunas marcadas
   "a confirmar na 1ª busca real". Precisam de **rede aberta** (VPS/allowlist) para a 1ª busca real →

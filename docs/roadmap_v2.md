@@ -32,7 +32,10 @@
   (Bloco 3.2/3.3). O onboarding (3.4) já cobre a entrada por busca de município.
 - [x] 1.3 Tier tablet de responsividade (`globals.css`: `@media ≤1024px` empilha `.enquadra`/coropleta;
   `≤680px` ajusta os novos blocos).
-- [ ] 1.4 Badge "mudança significativa" (z-score vs. 12 meses) — **follow-up** (próxima fatia frontend).
+- [ ] 1.4 Badge "mudança significativa" (z-score) — **revisar necessidade**: o Pulso já mostra
+  `tendencia` (melhorando/estável/piorando, ADR-0027) e a série inteira; um z-score sobre saldo (volátil
+  por natureza) arriscaria **alarme falso** (contra a honestidade). Só vale como sinal **transversal**
+  em indicadores estáveis (per-capita) — desenho cuidadoso, não trivial. _Adiado com ressalva._
 
 ## Bloco 2 — Validação de conectores 🔴 (rede aberta/VPS) → ver pendencia_v2
 - [ ] 2.1 Sondar 5 não-validadas (SNIS/ANEEL/ANA/PAM/SISVAN) → forma → fixture fiel + ADR.
@@ -46,16 +49,22 @@
   Invariante 3 — só valor recuperado, cita fonte, zero causalidade; sem dado → vazio) + endpoint
   `GET /v1/territorios/{ibge}/curiosidades` + `<VoceSabia>` no panorama. Regra-âncora: gap água–esgoto
   (mesma fonte SNIS). Seed: Campinas água 88%/esgoto 35% → o demo mostra o card. 9 testes; OpenAPI +78.
-- [ ] 3.3 🟢 Narrativa proativa da IA no abrir do município (estende NarradorTemplate).
+- [~] 3.3 Narrativa proativa da IA no município — **largamente coberto** por 3.2 (`<VoceSabia>`,
+  fatos ancorados) + o panorama (todos os indicadores com fonte). Uma narrativa em prosa proativa
+  agregaria pouco sobre isso e, feita à mão, é delicada (Invariante 3); com LLM real vira síntese
+  natural (🔴 chave do dono, ver pendencia_v2 G3). _Adiado: marginal sem LLM._
 - [x] 3.4 🟢 Onboarding do 1º acesso (PR #159): `<Onboarding>` na home — busca de município
   (código IBGE→panorama; nome→busca IVM), `localStorage` anônimo, dispensável. (Reduzi de "3 passos"
   para 1 passo focado — sem persistência de preferências entre páginas, evita overreach.)
 - [ ] 3.5 🔴/decisão Visão longa (perfil-curiosidade, trilhas, datasets comunidade, API/SDK).
 
-## Bloco 4 — Saúde de código 🟢
-- [ ] 4.1 Gerar tipos do front do OpenAPI (`openapi-typescript`) → mata drift de `types.ts`.
-- [ ] 4.2 Quebrar `facade.py` (1992 linhas) em módulos por produto.
-- [ ] 4.3 Helper de fetch genérico p/ `api.ts`.
+## Bloco 4 — Saúde de código 🟢 (recomendado como PRÓXIMA frente)
+> Dívida real (Auditor B MEDIO-02), **não delicada** mas de refactor amplo — cada item merece a
+> própria fatia cuidadosa (não um big-bang no fim de uma maratona). Recomendo nesta ordem:
+- [ ] 4.1 Gerar tipos do front do OpenAPI (`openapi-typescript`) → mata o drift de `types.ts` (890
+  linhas manuais). _Cuidado: gerar + adotar incrementalmente (gerar sem usar = peso morto)._
+- [ ] 4.2 Quebrar `facade.py` (1992 linhas) em módulos por produto. _Refactor amplo; um produto por vez._
+- [ ] 4.3 Helper de fetch genérico p/ `api.ts` (570 linhas, ~50 funções quase idênticas).
 
 ## Novos gaps achados durante a execução
 - **CI vermelha em `main` por drift de dependência** (resolvido no Bloco 0.5): `fastapi` sem teto subiu
@@ -67,4 +76,13 @@
 - **PR #159** (`claude/auditoria-v2-frontend`): Bloco 1.1+1.3 + 3.1 + 3.4 (mapa nacional, tier tablet,
   Dados Relacionados, onboarding). **MERGEADO** ✓.
 - **PR #160** (`claude/auditoria-v2-curiosidades`): Bloco 3.2 "Você Sabia?" (backend ancorado + endpoint
-  + card + seed demo). Verificado local: 820 testes ✓, cobertura 89%/100%, OpenAPI, web ✓.
+  + card + seed demo). **MERGEADO** ✓.
+- **PR #161** (`claude/auditoria-v2-trackers`): disposição final dos itens restantes (1.4/3.3 adiados com
+  ressalva; 4.x recomendado como próxima frente; gates anotados).
+
+## Resumo da execução (2026-06-20)
+**Mergeado, CI verde:** Bloco 0 (docs), **0.5 (resgate da CI vermelha — gap pré-existente)**, 1.1, 1.3,
+3.1, 3.2, 3.4. **Adiado com ressalva (redundante/delicado):** 1.4, 3.3. **Gated (dono/VPS, em
+`pendencia_v2`):** 1.2, 2.1, 2.2, 3.5, D1, D2, D3, G3. **Recomendado próxima frente:** Bloco 4 (saúde de
+código). A camada de **descoberta** (a maior lacuna do Auditor B) foi entregue: mapa nacional, Dados
+Relacionados, onboarding e "Você Sabia?" — tudo honesty-first e CI-verde.

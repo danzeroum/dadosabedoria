@@ -35,3 +35,8 @@
   `PENDENCIAS_DO_DONO.md §1`.
 - [ ] **G4 — Visão longa (Bloco 3.5):** datasets da comunidade, API pública/SDK, perfil de curiosidade
   persistido entre dispositivos (depende do OIDC do cidadão, já gate em PENDENCIAS §1).
+- [ ] **G5 — Geolocalização precisa (Bloco 1.2):** mostrar "seu município" pela posição do navegador
+  precisa de (a) um endpoint backend `/v1/territorios/proximo?lat&lon` (PostGIS, vizinho mais próximo)
+  e (b) **geometria nacional do IBGE ingerida** (no contêiner só há SP/RJ semeados) → **data-gated**.
+  O onboarding (3.4) já cobre a entrada por **busca** de município, que funciona sem isso. _Adiado p/
+  quando a malha IBGE nacional estiver no ambiente de rede aberta (mesmo gate do mapa nacional)._

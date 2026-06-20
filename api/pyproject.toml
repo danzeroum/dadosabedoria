@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "DadoSabedoria — backend (monólito modular): leitura de indicadores, ingestão e isolamento de PII."
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.115,<1.0",
+    # <0.137: a 0.137 introduziu `_IncludedRouter` em `app.routes`, que quebra o
+    # prometheus-fastapi-instrumentator (`_get_route_name` faz `route.path` sem guardar rotas
+    # sem `.path`) — 133 testes de integração falham por request. Bug ainda presente no
+    # instrumentator 8.0.0; revisitar o teto quando o upstream tratar `_IncludedRouter`.
+    "fastapi>=0.115,<0.137",
     "uvicorn[standard]>=0.30,<1.0",
     "pydantic>=2.7,<3.0",
     "pydantic-settings>=2.3,<3.0",
@@ -23,12 +27,12 @@ dependencies = [
     # --- ingestão (medallion) ---
     "polars>=1.0,<2.0",
     "minio>=7.2,<8.0",
-    "py7zr>=0.21,<1.0",
+    "py7zr>=1.1.3,<2.0",  # 1.1.3 corrige CVE-2026-23879/55206/55195 (API SevenZipFile/readall estável)
     # Decoder DBC do DATASUS/SIH: Rust wheel nativo (sem pyarrow/setuptools), Python 3.12 ok.
     "datasus-dbc>=0.1,<1.0",
     "dbfread>=2.0,<3.0",
     # --- consentimento (PII isolada): cifragem de campo + JWT do cidadão ---
-    "cryptography>=46.0.7,<47",  # 46.0.7 corrige PYSEC-2026-35/36 e CVE-2026-26007
+    "cryptography>=48.0.1,<49",  # 48.0.1 corrige GHSA-537c-gmf6-5ccf (+ PYSEC-2026-35/36, CVE-2026-26007)
     "PyJWT>=2.8,<3.0",
     # --- IA: cliente HTTP do narrador ancorado (provedor OpenAI-compatível: DeepSeek/Ollama) ---
     "httpx>=0.27,<1.0",

@@ -12,4 +12,5 @@ paths = [
 regexes = [
   '''change_me[_a-z]*''',
   '''ci[-_][a-z0-9_-]{4,}''',  # valores de teste do CI (ci_admin, ci-jwt-secret-..., ci-app-field-key-...)
+  '''claude\.ai/code/\S+''',   # trailer de sessão do Claude Code nos commits — referência, não segredo
 ]

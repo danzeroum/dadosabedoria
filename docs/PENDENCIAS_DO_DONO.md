@@ -11,8 +11,12 @@ atualizada no `roadmap.md`** (o dev pode ter acrescentado itens).
 >   DATASUS/INEP/PNCP), cobertura PNCP e SICONFI, generateMetadata em 10 páginas, panorama como hub.
 > - **Rate-limit tier profundo (PR #132, ADR-0038):** 1.000 req/h por chave, fixed-window Redis,
 >   degradação graciosa, cabeçalhos X-RateLimit-* + Retry-After.
-> - **Estado técnico geral:** backbone completo, 12 produtos ao vivo, tudo testado, CI verde.
->   Bloqueios todos por gates externos (abaixo).
+> - **Estado técnico geral:** backbone completo, 12 produtos **prontos-para-vivo**, tudo testado, CI
+>   verde. Bloqueios todos por gates externos (abaixo).
+> - **Nota de leitura (vivo ≠ ao vivo):** "ao vivo"/"ingestão nacional executada" aqui se refere a
+>   **buscas reais únicas em VPS de rede aberta**, registradas em ADR — **não** é estado do repo nem
+>   reproduzível deste checkout. Neste contêiner/CI tudo é `demo=true` (seed < 50 mun). Ver glossário
+>   no `CLAUDE.md` §Doutrina dado-vivo.
 >
 > **MODO DEV (2026-06-07 + 2026-06-08 + 2026-06-09):** você ampliou a autonomia — o dev **abre PRs, acompanha a CI
 > e mergeia no verde sozinho** (barra inalterada: só verde genuíno). **O que mudou desde o último

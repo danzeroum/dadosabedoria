@@ -32,13 +32,14 @@ isso o #0 vive aqui. Última sonda: **abertos** `apidatalake.tesouro.gov.br` (SI
 **Estado dos produtos à TELA (maratona 2026-06-07):** o backbone foi puxado até a tela por valor —
 **Pulso Produtivo (TRAB-01)**: `/v1/pulso-produtivo/{ibge}` + tela `/pulso/{ibge}` sobre o saldo CAGED
 real (ADR-0027); **OndeFoi (TRANSP-06)**: contrato (ADR-0026) + `/v1/onde-foi/{ibge}` + tela
-`/onde-foi/{ibge}` em **grau-demo** (DS atual — o handoff de design sumiu num reset, ver Lista de
-desbloqueio); **Panorama do município**: `/v1/territorios/{ibge}/panorama` + tela `/municipio/{ibge}`
-(todos os indicadores, supressão honesta); **porta de entrada** em `/`. **OndeFoi pós-#0:** a forma já
-está presa (ADR-0028); falta a **esteira viva de despesa por função** (Anexo I-E → função como
-dimensão → `run_siconfi`/Dagster) **e** o **🟡 do dono** — o #0 revelou que "recebido por função" não
-existe na fonte, então a re-ancoragem é **Liquidado/Empenhado** (ADR-0028 §5); a tela segue grau-demo
-até referendar. Os demais produtos seguem por valor (roadmap), telas na **DS atual** (ADR-0009,
+`/onde-foi/{ibge}` **referendado** (ADR-0029; selo "demonstração" removido no PR-94 — render local
+em `demo=true` enquanto o seed < 50 mun; DS atual); **Panorama do município**: `/v1/territorios/{ibge}/panorama` + tela `/municipio/{ibge}`
+(todos os indicadores, supressão honesta); **porta de entrada** em `/`. **OndeFoi pós-#0:** a forma está
+presa (ADR-0028) e a **re-ancoragem foi referendada** — Liquidado÷Empenhado por função (ADR-0029),
+escala corrigida (ADR-0034), banda calibrada com ~5.541 municípios (ADR-0035), selo removido (PR-94);
+a esteira viva (Anexo I-E → função como dimensão → `run_siconfi_funcoes`/Dagster) está
+**pronta-para-vivo**. Como todo produto, o render local/CI segue `demo=true` até a ingestão nacional do
+SICONFI no ambiente de rede aberta (VPS). Os demais produtos seguem por valor (roadmap), telas na **DS atual** (ADR-0009,
 acessível) até o handoff voltar.
 
 ## O plano vive no repo
@@ -61,6 +62,12 @@ acessível) até o handoff voltar.
   por fetcher *fake* (mesmo nível de CAGED/ESTBAN); o dado real flui no ambiente com rede aberta.
   Desbloqueio (🔴 do dono do ambiente): liberar no allowlist `apidatalake.tesouro.gov.br` (SICONFI),
   `servicodados.ibge.gov.br` (IBGE), `www4.bcb.gov.br` (CAGED/ESTBAN) → rodar `python -m app.ingestao.run_<fonte>`.
+  - **Glossário "vivo" vs. "ao vivo" (evita super-conclusão):** quando o repo/ADR diz que um conector
+    está **"vivo"/"ao vivo"/"validado"**, isso significa **esteira pronta-para-vivo** (adapter→ouro +
+    schedule + fixture fiel + fetcher real, exercida em CI por fake) e/ou uma **busca real única em VPS
+    de rede aberta** registrada em ADR. **Não** significa dado nacional servindo aqui: neste
+    contêiner/CI **tudo é `demo=true` rotulado** (seed < 50 mun; `GET /v1/cobertura/<fonte>`). O dado
+    real só flui no ambiente de rede aberta e **não é reproduzível a partir deste checkout**.
 
 ## Fluxo de trabalho (cada fatia)
 1. Branch nova a partir de `origin/main` (o contêiner é efêmero e **reseta**; sempre

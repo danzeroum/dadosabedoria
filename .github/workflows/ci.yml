@@ -154,11 +154,21 @@ jobs:
         run: |
           python -m pip install --upgrade pip pip-audit
           pip install -e .
-          # Advisory triado SEM fix compatível com as versões fixadas (risco aceito; revisitar ao
-          # subir as libs): PYSEC-2026-161 (starlette — requer FastAPI com suporte a starlette 1.x).
-          pip-audit --ignore-vuln PYSEC-2026-161
+          # Advisories de starlette SEM fix alcançável sob o teto `fastapi<0.137` (que evita o
+          # `_IncludedRouter`, incompatível com o prometheus-fastapi-instrumentator): starlette fica
+          # em 0.46.x e os fixes exigem 0.47+/1.x (só com FastAPI 0.137+/1.x). Risco aceito e baixo
+          # (API só-leitura atrás de rate-limit no Traefik). Revisitar ao modernizar o framework —
+          # ver docs/pendencia_v2.md (D3).
+          pip-audit \
+            --ignore-vuln PYSEC-2026-161 \
+            --ignore-vuln CVE-2025-54121 --ignore-vuln CVE-2025-62727 \
+            --ignore-vuln CVE-2026-48818 --ignore-vuln CVE-2026-48817 \
+            --ignore-vuln CVE-2026-54283 --ignore-vuln CVE-2026-54282
       - name: gitleaks (segredos)
-        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact
+        # Imagem PINADA na org oficial (gitleaks/gitleaks). A antiga `zricethezav/gitleaks:latest`
+        # é tag flutuante da org descontinuada, com regras antigas (falsos-positivos de generic-api-key)
+        # e não-reproduzível. 8.21.2 roda limpo no repo (verificado: árvore inteira + commits).
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact
 
   # ----------------------------------- screenshot da tela (Playwright) → artefato + smoke visual
   screenshot:

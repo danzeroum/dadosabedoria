@@ -94,6 +94,10 @@
   homoglyph cirílico (Python+TS) + regen do contrato OpenAPI. **MERGEADO** ✓.
 - **PR #163** (`claude/auditoria-v2-descoberta-rollout`): rollout do `<ProdutosRelacionados>` a 26 páginas
   de produto municipal (completa o follow-up do 3.1). **MERGEADO** ✓.
+- **PR #165** (`claude/auditoria-v2-hardening`): hardening pós-revisão — helper `_liquidado_ou_zero`
+  (SICONFI) + teste de regressão, `api.test.ts` (helpers de fetch), comentário do `pedirSilencioso`.
+- **PR (docs)** (`claude/auditoria-v2-revisao-final`): roadmap reflete #162/#163/#165 + veredito da revisão
+  final independente.
 
 ## Resumo da execução (2026-06-20)
 **Mergeado, CI verde (6 PRs, #158–#163):** Bloco 0 (docs), **0.5 (resgate da CI vermelha — gap
@@ -109,5 +113,15 @@ e CI-verde.
 - **`api.ts` (PR #162) verificado por construção:** diff `path→modo` confirma **zero flips** de cache
   (no-store×revalidate) e de modo de erro (404→null × silencioso × lança) nas 49 funções.
 - **`main` verde** após os merges #162/#163 (CI por merge-ref).
-- _Revisão independente (subagente, leitura-única) sobre invariantes (privacidade/PII/IA-ancorada/
-  honestidade-demo) **em curso**; o veredito será anexado como follow-up nesta mesma branch/PR._
+- **Revisão independente (subagente, leitura-única): SEM bloqueio.** Veredito: a auditoria pode ser
+  chamada de **concluída** — nenhum item CRIT/HIGH. Confirmados sãos: **Inv. 1** (supressão/k-anon antes
+  de gravar, fail-closed; `test_supressao.py` + BDD), **Inv. 2** (isolamento de PII com **teste que
+  reprova o build**, `tests/integration/test_pii_isolation.py`: a role analítica leva
+  `InsufficientPrivilegeError` ao tocar `app.*`), **Inv. 3** (curiosidades só justapõem valor recuperado,
+  citam `fonte_nome`, filtram suprimidos, `[]` sem fato), **doutrina de honestidade** (`demo` rotulado +
+  proveniência nas 28 telas; mapa IVM degrada "Sem mapa para {uf}" sem falsa cobertura nacional),
+  contrato OpenAPI e a refatoração do `api.ts`. Trackers conferem com a realidade.
+- **3 follow-ups não-bloqueantes → endereçados no PR #165 (hardening):** [MED] proteger o `NULL SUM()→0.0`
+  do SICONFI (helper `_liquidado_ou_zero` documentado + teste de regressão nos 11 produtos); [LOW] helpers
+  de `api.ts` sem teste unitário (`api.test.ts` novo, 6 testes — modos de erro e de cache); [LOW] comentar
+  que `pedirSilencioso` não recebe `rotulo` (2ª posição é o `ModoCache`).

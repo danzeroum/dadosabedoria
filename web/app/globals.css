@@ -343,6 +343,7 @@ section h2 {
 /* Coropleta + seletor de UF */
 .ufs {
   display: flex;
+  flex-wrap: wrap; /* 27 UFs: quebram em várias linhas em vez de estourar a largura */
   align-items: center;
   gap: 10px;
   margin: 14px 0;
@@ -2556,4 +2557,137 @@ section h2 {
 }
 .estado-suprimido {
   border-color: #f59e0b;
+}
+
+/* ---------------------------------------------------------------------------
+ * Auditoria v2 — descoberta (Dados Relacionados) + onboarding + tier tablet
+ * ------------------------------------------------------------------------- */
+
+/* "Veja também" — produtos relacionados do mesmo domínio (Bloco 3.1). */
+.relacionados {
+  margin: 28px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cor-borda);
+}
+.relacionados h2 {
+  font-size: 1rem;
+  color: var(--cor-texto-suave);
+  margin: 0 0 10px;
+}
+.relacionados ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.relacionados li a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  padding: 10px 12px;
+  height: 100%;
+}
+.relacionados li a:hover,
+.relacionados li a:focus {
+  border-color: var(--cor-marca);
+  background: var(--cor-fundo-suave, #f8fafc);
+}
+.relacionados li a strong {
+  color: var(--cor-marca);
+}
+.relacionados li a span {
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+/* Onboarding do primeiro acesso (Bloco 3.4). */
+.onboarding {
+  position: relative;
+  margin: 0 0 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--cor-marca);
+  border-radius: 12px;
+  background: var(--cor-fundo-suave, #f8fafc);
+}
+.onboarding-passo {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-marca);
+  margin: 0 0 4px;
+}
+.onboarding h2 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+.onboarding-busca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.onboarding-busca label {
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+.onboarding-busca input {
+  flex: 1 1 240px;
+  padding: 8px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  font: inherit;
+}
+.onboarding-busca button {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cor-marca);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.onboarding-dica {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+.onboarding-fechar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--cor-texto-suave);
+  cursor: pointer;
+}
+
+/* Tier tablet (Bloco 1.3): os breakpoints existentes cobrem 540–600px (celular);
+ * aqui a faixa intermediária (≤ 1024px) empilha colunas largas e dá folga ao mapa. */
+@media (max-width: 1024px) {
+  .enquadra {
+    flex-direction: column;
+  }
+  .coropleta-svg {
+    width: 100%;
+    height: auto;
+  }
+  .relacionados ul {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 680px) {
+  .relacionados ul {
+    grid-template-columns: 1fr;
+  }
+  .onboarding-busca button {
+    flex: 1 1 100%;
+  }
 }

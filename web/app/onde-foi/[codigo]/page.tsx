@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AcoesOndeFoi } from "../../../components/AcoesOndeFoi";
 import { Donut } from "../../../components/Donut";
 import { ExecucaoFuncoes } from "../../../components/ExecucaoFuncoes";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { SeloConfianca } from "../../../components/SeloConfianca";
 import { buscarOndeFoi } from "../../../lib/api";
 import { formatarMilhoes, mensagemBanda } from "../../../lib/onde-foi";
@@ -111,9 +112,9 @@ export default async function OndeFoiPage({ params }: { params: { codigo: string
         <p className="metodologia">{d.meta.metodologia}</p>
       </section>
 
+      <ProdutosRelacionados slug="onde-foi" codigoIbge={d.codigo_ibge} />
+
       <p style={{ marginTop: "16px" }}>
-        <Link href={`/obra-viva/${d.codigo_ibge}`}>Ver o ObraViva (contratos via PNCP) →</Link>
-        <br />
         <Link href={`/municipio/${d.codigo_ibge}`}>Ver o panorama completo do município →</Link>
       </p>
     </main>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Onboarding } from "../components/Onboarding";
 import { buscarFontes } from "../lib/api";
 import { DESTAQUES } from "../lib/catalogo";
 
@@ -35,6 +36,7 @@ export default async function Home() {
   const acervo = await acervoResumo();
   return (
     <main className="pagina home">
+      <Onboarding />
       <section className="home-hero">
         <h1>Inteligência de dados públicos brasileiros</h1>
         <p className="home-lead">

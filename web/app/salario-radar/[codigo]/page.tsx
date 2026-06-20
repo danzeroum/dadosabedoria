@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { DemoAviso } from "../../../components/DemoAviso";
 import { buscarSalarioRadar } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelSalario } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -126,6 +127,8 @@ export default async function SalarioRadarPage({ params }: { params: { codigo: s
           Ver o Giro Local (emprego + crédito per capita) →
         </Link>
       </p>
+
+      <ProdutosRelacionados slug="salario-radar" codigoIbge={s.codigo_ibge} />
     </main>
   );
 }

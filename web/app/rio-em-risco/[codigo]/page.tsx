@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarRioEmRisco } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelSeca } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -142,6 +143,8 @@ export default async function RioEmRiscoPage({ params }: { params: { codigo: str
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="rio-em-risco" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

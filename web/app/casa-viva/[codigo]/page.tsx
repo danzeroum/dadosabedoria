@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarCasaViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelHabitacao } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function CasaVivaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="casa-viva" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

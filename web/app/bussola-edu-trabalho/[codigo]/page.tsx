@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarBussolaEduTrab } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAviso } from "../../../components/DemoAviso";
 import type { NivelEducacao, NivelEmprego, NivelSalario } from "../../../lib/types";
 
@@ -216,6 +217,8 @@ export default async function BussolaEduTrabPage({ params }: { params: { codigo:
         <br />
         <Link href={`/giro-local/${b.codigo_ibge}`}>Ver o Giro Local (emprego + crédito per capita) →</Link>
       </p>
+
+      <ProdutosRelacionados slug="bussola-edu-trabalho" codigoIbge={b.codigo_ibge} />
     </main>
   );
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarCacadorArboviroses } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelArboviroses } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -210,6 +211,8 @@ export default async function CacadorArboviroesPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="cacador-arboviroses" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

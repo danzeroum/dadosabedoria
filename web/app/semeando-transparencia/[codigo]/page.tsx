@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSemeandoTransparencia } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelInvestimento } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function SemeandoTransparenciaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="semeando-transparencia" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

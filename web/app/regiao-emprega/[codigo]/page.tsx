@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DemoAviso } from "../../../components/DemoAviso";
 import { buscarRegiaoEmprega } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelEmprego } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -155,6 +156,8 @@ export default async function RegiaoEmpregaPage({ params }: { params: { codigo: 
           </dd>
         </div>
       </dl>
+
+      <ProdutosRelacionados slug="regiao-emprega" codigoIbge={r.codigo_ibge} />
     </main>
   );
 }

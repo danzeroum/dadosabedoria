@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarAguaViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import { DemoAvisoSnis } from "../../../components/DemoAvisoSnis";
 import type { NivelAcesso } from "../../../lib/types";
 
@@ -161,6 +162,8 @@ export default async function AguaVivaPage({ params }: { params: { codigo: strin
         <br />
         <Link href={`/municipio/${av.codigo_ibge}`}>Ver o panorama completo do município →</Link>
       </p>
+
+      <ProdutosRelacionados slug="agua-viva" codigoIbge={av.codigo_ibge} />
     </main>
   );
 }

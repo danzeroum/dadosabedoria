@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarAssisViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelAssistencia } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function AssisVivaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="assis-viva" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

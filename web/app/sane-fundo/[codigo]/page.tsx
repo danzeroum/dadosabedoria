@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarSaneFundo } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelSaneamento } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function SaneFundoPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="sane-fundo" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

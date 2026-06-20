@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buscarEscolaViva } from "../../../lib/api";
+import { ProdutosRelacionados } from "../../../components/ProdutosRelacionados";
 import type { NivelEducacaoPublica } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function EscolaVivaPage({
           </p>
         )}
       </section>
+
+      <ProdutosRelacionados slug="escola-viva" codigoIbge={data.codigo_ibge} />
     </main>
   );
 }

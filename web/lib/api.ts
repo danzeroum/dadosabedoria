@@ -45,7 +45,7 @@ import type {
   RespostaQuota,
   RespostaValores,
   SalarioRadarProduto,
-  SentinelaMaternаResponse,
+  SentinelaMaternaResponse,
   SentinelaRespProduto,
   ViaVivaResponse,
 } from "./types";
@@ -56,181 +56,176 @@ const BASE = process.env.API_URL ?? "http://localhost:8000";
 // Cache de leitura de 5 min — alinha com o cache do backend e a periodicidade mensal do dado.
 const REVALIDATE = 300;
 
-export async function buscarIVM(periodo?: string): Promise<RespostaIVM> {
-  const url = new URL("/v1/ivm", BASE);
-  if (periodo) url.searchParams.set("periodo", periodo);
-  const resp = await fetch(url, { next: { revalidate: REVALIDATE } });
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar IVM (${resp.status})`);
+// ---------------------------------------------------------------------------
+// Núcleo do cliente HTTP. Três modos de erro, um por degradação esperada:
+//   pedir          — recurso que sempre existe; !ok → lança (a tela erra).
+//   pedirOuNull    — recurso opcional; 404 → null (notFound), outro !ok → lança.
+//   pedirSilencioso — bloco opcional/cobertura/quota; qualquer !ok → null.
+// O modo de cache é EXPLÍCITO por chamada: "no-store" (cobertura/flag-demo, que
+// o pipeline invalida e a tela reflete na hora) vs "revalidate" (leitura de 5 min).
+// ---------------------------------------------------------------------------
+type ModoCache = "revalidate" | "no-store";
+
+function montarUrl(caminho: string, params?: Record<string, string | undefined>): URL {
+  const url = new URL(caminho, BASE);
+  for (const [chave, valor] of Object.entries(params ?? {})) {
+    if (valor != null) url.searchParams.set(chave, valor);
   }
-  return resp.json();
+  return url;
 }
 
-export async function buscarMalhaIVM(
-  uf: string,
-  periodo?: string,
-): Promise<FeatureCollectionIVM> {
-  const url = new URL("/v1/mapa/ivm", BASE);
-  url.searchParams.set("uf", uf);
-  if (periodo) url.searchParams.set("periodo", periodo);
-  const resp = await fetch(url, { next: { revalidate: REVALIDATE } });
+function opcoes(modo: ModoCache, headers?: Record<string, string>): RequestInit {
+  const base: RequestInit =
+    modo === "no-store" ? { cache: "no-store" } : { next: { revalidate: REVALIDATE } };
+  return headers ? { ...base, headers } : base;
+}
+
+async function pedir<T>(
+  caminho: string,
+  rotulo: string,
+  modo: ModoCache = "revalidate",
+  params?: Record<string, string | undefined>,
+): Promise<T> {
+  const resp = await fetch(montarUrl(caminho, params), opcoes(modo));
   if (!resp.ok) {
-    throw new Error(`Falha ao buscar malha do IVM (${resp.status})`);
+    throw new Error(`Falha ao buscar ${rotulo} (${resp.status})`);
   }
-  return resp.json();
+  return resp.json() as Promise<T>;
+}
+
+async function pedirOuNull<T>(
+  caminho: string,
+  rotulo: string,
+  modo: ModoCache = "revalidate",
+  params?: Record<string, string | undefined>,
+): Promise<T | null> {
+  const resp = await fetch(montarUrl(caminho, params), opcoes(modo));
+  if (resp.status === 404) {
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error(`Falha ao buscar ${rotulo} (${resp.status})`);
+  }
+  return resp.json() as Promise<T>;
+}
+
+async function pedirSilencioso<T>(
+  caminho: string,
+  modo: ModoCache = "revalidate",
+  params?: Record<string, string | undefined>,
+  headers?: Record<string, string>,
+): Promise<T | null> {
+  const resp = await fetch(montarUrl(caminho, params), opcoes(modo, headers));
+  if (!resp.ok) {
+    return null;
+  }
+  return resp.json() as Promise<T>;
+}
+
+// --------------------------------------------------------------------------- IVM
+
+export async function buscarIVM(periodo?: string): Promise<RespostaIVM> {
+  return pedir<RespostaIVM>("/v1/ivm", "IVM", "revalidate", { periodo });
+}
+
+export async function buscarMalhaIVM(uf: string, periodo?: string): Promise<FeatureCollectionIVM> {
+  return pedir<FeatureCollectionIVM>("/v1/mapa/ivm", "malha do IVM", "revalidate", { uf, periodo });
 }
 
 export async function buscarSerieIVM(codigoIbge: string): Promise<RespostaIVMSerie | null> {
-  const resp = await fetch(new URL(`/v1/ivm/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar série do IVM (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<RespostaIVMSerie>(`/v1/ivm/${codigoIbge}`, "série do IVM");
 }
 
-// Cidades parecidas (mesma UF, IVM mais próximo). Degrada para [] em erro — bloco opcional na tela.
+// Cidades parecidas (mesma UF, IVM mais próximo). Degrada para null em erro — bloco opcional.
 export async function buscarSimilaresIVM(codigoIbge: string): Promise<RespostaIVMSerie | null> {
-  const resp = await fetch(new URL(`/v1/ivm/${codigoIbge}/similares`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (!resp.ok) {
-    return null;
-  }
-  return resp.json();
+  return pedirSilencioso<RespostaIVMSerie>(`/v1/ivm/${codigoIbge}/similares`);
 }
+
+// --------------------------------------------------------------------------- Produtos por território
 
 export async function buscarPulso(codigoIbge: string): Promise<PulsoProduto | null> {
-  const resp = await fetch(new URL(`/v1/pulso-produtivo/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar o Pulso Produtivo (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<PulsoProduto>(`/v1/pulso-produtivo/${codigoIbge}`, "o Pulso Produtivo");
 }
 
 export async function buscarRegiaoEmprega(
   codigoIbge: string,
 ): Promise<RegiaoEmpregaProduto | null> {
-  const resp = await fetch(new URL(`/v1/regiao-emprega/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar Região Emprega (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<RegiaoEmpregaProduto>(`/v1/regiao-emprega/${codigoIbge}`, "Região Emprega");
 }
 
 export async function buscarSalarioRadar(codigoIbge: string): Promise<SalarioRadarProduto | null> {
-  const resp = await fetch(new URL(`/v1/salario-radar/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar Salário Radar (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<SalarioRadarProduto>(`/v1/salario-radar/${codigoIbge}`, "Salário Radar");
 }
 
 export async function buscarGiroLocal(codigoIbge: string): Promise<GiroLocalProduto | null> {
-  const resp = await fetch(new URL(`/v1/giro-local/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar Giro Local (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<GiroLocalProduto>(`/v1/giro-local/${codigoIbge}`, "Giro Local");
 }
 
 // Diretório do OndeFoi (lista de municípios). Degrada para null em erro — a tela mostra o vazio.
 export async function buscarListaOndeFoi(): Promise<OndeFoiLista | null> {
-  const resp = await fetch(new URL("/v1/onde-foi", BASE), { next: { revalidate: REVALIDATE } });
-  if (!resp.ok) {
-    return null;
-  }
-  return resp.json();
+  return pedirSilencioso<OndeFoiLista>("/v1/onde-foi");
 }
 
 export async function buscarOndeFoi(codigoIbge: string): Promise<OndeFoiProduto | null> {
-  const resp = await fetch(new URL(`/v1/onde-foi/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar o OndeFoi (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<OndeFoiProduto>(`/v1/onde-foi/${codigoIbge}`, "o OndeFoi");
 }
 
+export async function buscarBussolaEduTrab(
+  codigoIbge: string,
+): Promise<BussolaEduTrabProduto | null> {
+  return pedirOuNull<BussolaEduTrabProduto>(
+    `/v1/bussola-edu-trabalho/${codigoIbge}`,
+    "a Bússola Educação-Trabalho",
+  );
+}
+
+export async function buscarSentinelaResp(
+  codigoIbge: string,
+): Promise<SentinelaRespProduto | null> {
+  return pedirOuNull<SentinelaRespProduto>(
+    `/v1/sentinela-resp/${codigoIbge}`,
+    "a Sentinela Respiratória",
+  );
+}
+
+export async function buscarRadarEvasao(codigoIbge: string): Promise<RadarEvasaoProduto | null> {
+  return pedirOuNull<RadarEvasaoProduto>(`/v1/radar-evasao/${codigoIbge}`, "o Radar de Evasão");
+}
+
+export async function buscarObraViva(codigoIbge: string): Promise<ObraVivaProduto | null> {
+  return pedirOuNull<ObraVivaProduto>(`/v1/obra-viva/${codigoIbge}`, "o ObraViva");
+}
+
+// --------------------------------------------------------------------------- Território / panorama
+
 export async function buscarTerritorios(q: string): Promise<RespostaBuscaTerritorios> {
-  const url = new URL("/v1/territorios", BASE);
-  url.searchParams.set("q", q);
-  url.searchParams.set("limit", "20");
-  const resp = await fetch(url, { cache: "no-store" });
-  if (!resp.ok) {
-    return { dados: [], total: 0 };
-  }
-  return resp.json();
+  // Busca interativa (no-store): cada tecla é uma consulta nova. Degrada para vazio.
+  const resp = await pedirSilencioso<RespostaBuscaTerritorios>("/v1/territorios", "no-store", {
+    q,
+    limit: "20",
+  });
+  return resp ?? { dados: [], total: 0 };
 }
 
 export async function buscarPanorama(codigoIbge: string): Promise<Panorama | null> {
-  const resp = await fetch(new URL(`/v1/territorios/${codigoIbge}/panorama`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar o panorama (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<Panorama>(`/v1/territorios/${codigoIbge}/panorama`, "o panorama");
 }
 
 export async function buscarCuriosidades(
   codigoIbge: string,
 ): Promise<CuriosidadesResposta | null> {
-  const resp = await fetch(new URL(`/v1/territorios/${codigoIbge}/curiosidades`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar curiosidades (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<CuriosidadesResposta>(
+    `/v1/territorios/${codigoIbge}/curiosidades`,
+    "curiosidades",
+  );
 }
 
 // Ficha técnica de um indicador. 404 → null (a tela responde com notFound).
 export async function buscarIndicador(codigo: string): Promise<IndicadorDetalhe | null> {
-  const resp = await fetch(new URL(`/v1/indicadores/${encodeURIComponent(codigo)}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar o indicador (${resp.status})`);
-  }
-  return resp.json();
+  return pedirOuNull<IndicadorDetalhe>(
+    `/v1/indicadores/${encodeURIComponent(codigo)}`,
+    "o indicador",
+  );
 }
 
 // Série de um indicador num território (drill-down do panorama). 404/erro → null.
@@ -238,62 +233,15 @@ export async function buscarValores(
   indicador: string,
   territorio: string,
 ): Promise<RespostaValores | null> {
-  const url = new URL("/v1/valores", BASE);
-  url.searchParams.set("indicador", indicador);
-  url.searchParams.set("territorio", territorio);
-  const resp = await fetch(url, { next: { revalidate: REVALIDATE } });
-  if (!resp.ok) {
-    return null;
-  }
-  return resp.json();
+  return pedirSilencioso<RespostaValores>("/v1/valores", "revalidate", { indicador, territorio });
 }
 
 // Fontes do acervo (proveniência consolidada). Degrada para null em erro — a tela mostra o vazio.
 export async function buscarFontes(): Promise<RespostaFontes | null> {
-  const resp = await fetch(new URL("/v1/fontes", BASE), { next: { revalidate: REVALIDATE } });
-  if (!resp.ok) {
-    return null;
-  }
-  return resp.json();
+  return pedirSilencioso<RespostaFontes>("/v1/fontes");
 }
 
-export async function buscarBussolaEduTrab(
-  codigoIbge: string,
-): Promise<BussolaEduTrabProduto | null> {
-  const resp = await fetch(new URL(`/v1/bussola-edu-trabalho/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar a Bússola Educação-Trabalho (${resp.status})`);
-  }
-  return resp.json();
-}
-
-export async function buscarSentinelaResp(
-  codigoIbge: string,
-): Promise<SentinelaRespProduto | null> {
-  const resp = await fetch(new URL(`/v1/sentinela-resp/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar a Sentinela Respiratória (${resp.status})`);
-  }
-  return resp.json();
-}
-
-export async function buscarCoberturaCAGED(): Promise<CoberturaCAGED | null> {
-  // no-store: após ingestão o pipeline invalida o cache Redis do backend e a tela reflete
-  // imediatamente — sem necessidade de rebuild. Backend Redis (300 s) absorve o custo.
-  const resp = await fetch(new URL("/v1/cobertura/caged", BASE), { cache: "no-store" });
-  if (!resp.ok) return null;
-  return resp.json();
-}
+// --------------------------------------------------------------------------- IA ancorada
 
 export async function perguntarIA(corpo: PerguntaInput): Promise<RespostaIA> {
   // POST server-side (a IA recupera no banco e ancora a resposta). Sem cache: cada pergunta é única.
@@ -309,278 +257,169 @@ export async function perguntarIA(corpo: PerguntaInput): Promise<RespostaIA> {
   return resp.json();
 }
 
-export async function buscarRadarEvasao(
-  codigoIbge: string,
-): Promise<RadarEvasaoProduto | null> {
-  const resp = await fetch(new URL(`/v1/radar-evasao/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar o Radar de Evasão (${resp.status})`);
-  }
-  return resp.json();
-}
-
-export async function buscarObraViva(
-  codigoIbge: string,
-): Promise<ObraVivaProduto | null> {
-  const resp = await fetch(new URL(`/v1/obra-viva/${codigoIbge}`, BASE), {
-    next: { revalidate: REVALIDATE },
-  });
-  if (resp.status === 404) {
-    return null;
-  }
-  if (!resp.ok) {
-    throw new Error(`Falha ao buscar o ObraViva (${resp.status})`);
-  }
-  return resp.json();
-}
+// --------------------------------------------------------------------------- Saúde / saneamento / função
+// no-store: após ingestão o pipeline invalida o cache Redis do backend e a tela reflete na hora.
 
 export async function buscarAguaViva(codigo: string): Promise<AguaVivaResponse | null> {
-  const url = `${BASE}/v1/agua-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`AguaViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<AguaVivaResponse>;
+  return pedirOuNull<AguaVivaResponse>(`/v1/agua-viva/${codigo}`, "AguaViva", "no-store");
 }
 
 export async function buscarLuzNoMapa(codigo: string): Promise<LuzNoMapaResponse | null> {
-  const url = `${BASE}/v1/luz-no-mapa/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`LuzNoMapa ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<LuzNoMapaResponse>;
+  return pedirOuNull<LuzNoMapaResponse>(`/v1/luz-no-mapa/${codigo}`, "LuzNoMapa", "no-store");
 }
 
 export async function buscarRioEmRisco(codigo: string): Promise<RioEmRiscoResponse | null> {
-  const url = `${BASE}/v1/rio-em-risco/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`RioEmRisco ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<RioEmRiscoResponse>;
-}
-
-export async function buscarCoberturaSnis(): Promise<CoberturaSnis | null> {
-  const resp = await fetch(new URL("/v1/cobertura/snis", BASE), { cache: "no-store" });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
-export async function buscarCoberturaDatasus(): Promise<CoberturaDatasus | null> {
-  const resp = await fetch(new URL("/v1/cobertura/datasus", BASE), { cache: "no-store" });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
-export async function buscarCoberturaInep(): Promise<CoberturaInep | null> {
-  const resp = await fetch(new URL("/v1/cobertura/inep", BASE), { cache: "no-store" });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
-export async function buscarCoberturaPncp(): Promise<CoberturaPncp | null> {
-  const resp = await fetch(new URL("/v1/cobertura/pncp", BASE), { cache: "no-store" });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
-export async function buscarCoberturaSiconfi(): Promise<CoberturaSiconfi | null> {
-  const resp = await fetch(new URL("/v1/cobertura/siconfi", BASE), { cache: "no-store" });
-  if (!resp.ok) return null;
-  return resp.json();
+  return pedirOuNull<RioEmRiscoResponse>(`/v1/rio-em-risco/${codigo}`, "RioEmRisco", "no-store");
 }
 
 export async function buscarEsgotoInvisivel(
   codigo: string,
 ): Promise<EsgotoInvisivelResponse | null> {
-  const url = `${BASE}/v1/esgoto-invisivel/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`EsgotoInvisivel ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<EsgotoInvisivelResponse>;
+  return pedirOuNull<EsgotoInvisivelResponse>(
+    `/v1/esgoto-invisivel/${codigo}`,
+    "EsgotoInvisivel",
+    "no-store",
+  );
 }
 
 export async function buscarPratoFrio(codigo: string): Promise<PratoFrioResponse | null> {
-  const url = `${BASE}/v1/prato-frio/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`PratoFrio ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<PratoFrioResponse>;
+  return pedirOuNull<PratoFrioResponse>(`/v1/prato-frio/${codigo}`, "PratoFrio", "no-store");
 }
 
 export async function buscarSemeandoTransparencia(
-  codigo: string
+  codigo: string,
 ): Promise<SemeandoTransparenciaResponse | null> {
-  const url = `${BASE}/v1/semeando-transparencia/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`SemeandoTransparencia ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<SemeandoTransparenciaResponse>;
+  return pedirOuNull<SemeandoTransparenciaResponse>(
+    `/v1/semeando-transparencia/${codigo}`,
+    "SemeandoTransparencia",
+    "no-store",
+  );
 }
 
 export async function buscarFomeOculta(codigo: string): Promise<FomeOcultaResponse | null> {
-  const url = `${BASE}/v1/fome-oculta/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`FomeOculta ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<FomeOcultaResponse>;
+  return pedirOuNull<FomeOcultaResponse>(`/v1/fome-oculta/${codigo}`, "FomeOculta", "no-store");
 }
 
 export async function buscarSentinelaMaterna(
   codigo: string,
-): Promise<SentinelaMaternаResponse | null> {
-  const url = `${BASE}/v1/sentinela-materna/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`SentinelaMaterna ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<SentinelaMaternаResponse>;
+): Promise<SentinelaMaternaResponse | null> {
+  return pedirOuNull<SentinelaMaternaResponse>(
+    `/v1/sentinela-materna/${codigo}`,
+    "SentinelaMaterna",
+    "no-store",
+  );
 }
 
 export async function buscarCacadorArboviroses(
   codigo: string,
 ): Promise<CacadorArboviroesResponse | null> {
-  const url = `${BASE}/v1/cacador-arboviroses/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`CacadorArboviroses ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<CacadorArboviroesResponse>;
+  return pedirOuNull<CacadorArboviroesResponse>(
+    `/v1/cacador-arboviroses/${codigo}`,
+    "CacadorArboviroses",
+    "no-store",
+  );
 }
 
-export async function buscarPressaoSus(
-  codigo: string,
-): Promise<PressaoSusResponse | null> {
-  const url = `${BASE}/v1/pressao-sus/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`PressaoSus ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<PressaoSusResponse>;
+export async function buscarPressaoSus(codigo: string): Promise<PressaoSusResponse | null> {
+  return pedirOuNull<PressaoSusResponse>(`/v1/pressao-sus/${codigo}`, "PressaoSus", "no-store");
 }
 
-export async function buscarCasaViva(
-  codigo: string,
-): Promise<CasaVivaResponse | null> {
-  const url = `${BASE}/v1/casa-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`CasaViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<CasaVivaResponse>;
+export async function buscarCasaViva(codigo: string): Promise<CasaVivaResponse | null> {
+  return pedirOuNull<CasaVivaResponse>(`/v1/casa-viva/${codigo}`, "CasaViva", "no-store");
 }
 
-export async function buscarViaViva(
-  codigo: string,
-): Promise<ViaVivaResponse | null> {
-  const url = `${BASE}/v1/via-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`ViaViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<ViaVivaResponse>;
+export async function buscarViaViva(codigo: string): Promise<ViaVivaResponse | null> {
+  return pedirOuNull<ViaVivaResponse>(`/v1/via-viva/${codigo}`, "ViaViva", "no-store");
 }
 
-export async function buscarEcoVivo(
-  codigo: string,
-): Promise<EcoVivaResponse | null> {
-  const url = `${BASE}/v1/eco-vivo/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`EcoVivo ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<EcoVivaResponse>;
+export async function buscarEcoVivo(codigo: string): Promise<EcoVivaResponse | null> {
+  return pedirOuNull<EcoVivaResponse>(`/v1/eco-vivo/${codigo}`, "EcoVivo", "no-store");
 }
 
-export async function buscarEscolaViva(
-  codigo: string,
-): Promise<EscolaVivaResponse | null> {
-  const url = `${BASE}/v1/escola-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`EscolaViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<EscolaVivaResponse>;
+export async function buscarEscolaViva(codigo: string): Promise<EscolaVivaResponse | null> {
+  return pedirOuNull<EscolaVivaResponse>(`/v1/escola-viva/${codigo}`, "EscolaViva", "no-store");
 }
 
-export async function buscarSaneFundo(
-  codigo: string,
-): Promise<SaneFundoResponse | null> {
-  const url = `${BASE}/v1/sane-fundo/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`SaneFundo ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<SaneFundoResponse>;
+export async function buscarSaneFundo(codigo: string): Promise<SaneFundoResponse | null> {
+  return pedirOuNull<SaneFundoResponse>(`/v1/sane-fundo/${codigo}`, "SaneFundo", "no-store");
 }
 
-export async function buscarAssisViva(
-  codigo: string,
-): Promise<AssisVivaResponse | null> {
-  const url = `${BASE}/v1/assis-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`AssisViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<AssisVivaResponse>;
+export async function buscarAssisViva(codigo: string): Promise<AssisVivaResponse | null> {
+  return pedirOuNull<AssisVivaResponse>(`/v1/assis-viva/${codigo}`, "AssisViva", "no-store");
 }
 
-export async function buscarCulturaViva(
-  codigo: string,
-): Promise<CulturaVivaResponse | null> {
-  const url = `${BASE}/v1/cultura-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`CulturaViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<CulturaVivaResponse>;
+export async function buscarCulturaViva(codigo: string): Promise<CulturaVivaResponse | null> {
+  return pedirOuNull<CulturaVivaResponse>(`/v1/cultura-viva/${codigo}`, "CulturaViva", "no-store");
 }
 
-export async function buscarSegurancaViva(
-  codigo: string,
-): Promise<SegurancaVivaResponse | null> {
-  const url = `${BASE}/v1/seguranca-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`SegurancaViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<SegurancaVivaResponse>;
+export async function buscarSegurancaViva(codigo: string): Promise<SegurancaVivaResponse | null> {
+  return pedirOuNull<SegurancaVivaResponse>(
+    `/v1/seguranca-viva/${codigo}`,
+    "SegurancaViva",
+    "no-store",
+  );
 }
 
-export async function buscarCidadeViva(
-  codigo: string,
-): Promise<CidadeVivaResponse | null> {
-  const url = `${BASE}/v1/cidade-viva/${codigo}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`CidadeViva ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<CidadeVivaResponse>;
+export async function buscarCidadeViva(codigo: string): Promise<CidadeVivaResponse | null> {
+  return pedirOuNull<CidadeVivaResponse>(`/v1/cidade-viva/${codigo}`, "CidadeViva", "no-store");
 }
 
-// Tier profundo: uso da cota de uma chave de API (GET /v1/quota, lê sem debitar). A chave é
-// SEGREDO — esta função roda só no servidor (Server Action / RSC), nunca embarca no bundle do
-// cliente. Sem chave válida (401/403/404/erro) → null, e a tela mostra o estado honesto.
-export async function consultarQuota(chave: string): Promise<RespostaQuota | null> {
-  const resp = await fetch(new URL("/v1/quota", BASE), {
-    headers: { Authorization: `Bearer ${chave}` },
-    cache: "no-store",
-  });
-  if (!resp.ok) {
-    return null;
-  }
-  return resp.json();
-}
+// --------------------------------------------------------------------------- Analytics inferencial
 
-// Analytics Inferencial (Perfil Orçamentário) — restauradas aqui: o merge da main nesta branch
-// derrubou estas definições (main e esta branch appendaram funções no mesmo fim de arquivo).
 export async function buscarPerfilOrcamentario(
   codigo: string,
 ): Promise<PerfilOrcamentarioResponse | null> {
-  const url = `${BASE}/v1/inferencia/municipio/${codigo}/orcamento`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`PerfilOrcamentario ${codigo}: HTTP ${res.status}`);
-  return res.json() as Promise<PerfilOrcamentarioResponse>;
+  return pedirOuNull<PerfilOrcamentarioResponse>(
+    `/v1/inferencia/municipio/${codigo}/orcamento`,
+    "PerfilOrcamentario",
+    "no-store",
+  );
 }
 
 export async function buscarDistribuicaoFuncao(
   funcaoCod: string,
 ): Promise<DistribuicaoFuncaoResponse | null> {
-  const url = `${BASE}/v1/inferencia/distribuicao-funcao/${funcaoCod}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`DistribuicaoFuncao ${funcaoCod}: HTTP ${res.status}`);
-  return res.json() as Promise<DistribuicaoFuncaoResponse>;
+  return pedirOuNull<DistribuicaoFuncaoResponse>(
+    `/v1/inferencia/distribuicao-funcao/${funcaoCod}`,
+    "DistribuicaoFuncao",
+    "no-store",
+  );
+}
+
+// --------------------------------------------------------------------------- Cobertura (flag-demo)
+// no-store: a cobertura reflete a última ingestão; o backend (Redis 300 s) absorve o custo.
+
+export async function buscarCoberturaCAGED(): Promise<CoberturaCAGED | null> {
+  return pedirSilencioso<CoberturaCAGED>("/v1/cobertura/caged", "no-store");
+}
+
+export async function buscarCoberturaSnis(): Promise<CoberturaSnis | null> {
+  return pedirSilencioso<CoberturaSnis>("/v1/cobertura/snis", "no-store");
+}
+
+export async function buscarCoberturaDatasus(): Promise<CoberturaDatasus | null> {
+  return pedirSilencioso<CoberturaDatasus>("/v1/cobertura/datasus", "no-store");
+}
+
+export async function buscarCoberturaInep(): Promise<CoberturaInep | null> {
+  return pedirSilencioso<CoberturaInep>("/v1/cobertura/inep", "no-store");
+}
+
+export async function buscarCoberturaPncp(): Promise<CoberturaPncp | null> {
+  return pedirSilencioso<CoberturaPncp>("/v1/cobertura/pncp", "no-store");
+}
+
+export async function buscarCoberturaSiconfi(): Promise<CoberturaSiconfi | null> {
+  return pedirSilencioso<CoberturaSiconfi>("/v1/cobertura/siconfi", "no-store");
+}
+
+// --------------------------------------------------------------------------- Tier profundo (quota)
+
+// Uso da cota de uma chave de API (GET /v1/quota, lê sem debitar). A chave é SEGREDO — esta função
+// roda só no servidor (Server Action / RSC), nunca embarca no bundle do cliente. Sem chave válida
+// (401/403/404/erro) → null, e a tela mostra o estado honesto.
+export async function consultarQuota(chave: string): Promise<RespostaQuota | null> {
+  return pedirSilencioso<RespostaQuota>("/v1/quota", "no-store", undefined, {
+    Authorization: `Bearer ${chave}`,
+  });
 }

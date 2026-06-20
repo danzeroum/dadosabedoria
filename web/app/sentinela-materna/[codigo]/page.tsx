@@ -47,7 +47,7 @@ function formatarPct(valor: number | null): string {
   );
 }
 
-export default async function SentinelaMaternаPage({
+export default async function SentinelaMaternaPage({
   params,
 }: {
   params: { codigo: string };

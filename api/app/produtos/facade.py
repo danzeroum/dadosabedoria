@@ -76,7 +76,7 @@ from app.produtos.modelos import (
     SaneFundoOut,
     SegurancaVivaOut,
     SemeandoTransparenciaOut,
-    SentinelaMaternаOut,
+    SentinelaMaternaOut,
     SentinelaRespOut,
     ViaVivaOut,
 )
@@ -1138,7 +1138,7 @@ class FomeOcultaFacade:
         )
 
 
-class SentinelaMaternаFacade:
+class SentinelaMaternaFacade:
     """Fachada do produto Sentinela Materna — SAUDE-03."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -1146,7 +1146,7 @@ class SentinelaMaternаFacade:
         self._repo = RepositorioIndicadores()
 
     @cache_leitura("v1:sentinela-materna")
-    async def sentinela_materna(self, *, codigo_ibge: str) -> SentinelaMaternаOut:
+    async def sentinela_materna(self, *, codigo_ibge: str) -> SentinelaMaternaOut:
         terr = await self._repo.obter_territorio(self._s, codigo_ibge)
         if terr is None:
             raise NaoEncontradoError(f"território '{codigo_ibge}'")
@@ -1187,7 +1187,7 @@ class SentinelaMaternаFacade:
             n_gestantes=n_gest,
             gestante_baixo_peso_pct=pct,
         )
-        return SentinelaMaternаOut(
+        return SentinelaMaternaOut(
             codigo_ibge=sm.codigo_ibge,
             nome=sm.nome,
             uf=sm.uf,

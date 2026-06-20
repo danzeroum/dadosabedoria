@@ -455,7 +455,7 @@ class SemeandoTransparenciaOut(BaseModel):
 # ------------------------------------------------- SentinelaMaterna (SAUDE-03)
 
 
-class SentinelaMaternаOut(BaseModel):
+class SentinelaMaternaOut(BaseModel):
     """Risco nutricional de gestantes — SAUDE-03 Sentinela Materna."""
 
     codigo_ibge: str

@@ -3001,7 +3001,7 @@ components:
       - meta
       title: SemeandoTransparenciaOut
       type: object
-    SentinelaMatern_Out:
+    SentinelaMaternaOut:
       description: Risco nutricional de gestantes — SAUDE-03 Sentinela Materna.
       properties:
         ano:
@@ -3067,7 +3067,7 @@ components:
       - gestante_baixo_peso_pct
       - nivel
       - meta
-      title: SentinelaMaternаOut
+      title: SentinelaMaternaOut
       type: object
     SentinelaRespOut:
       description: Internações respiratórias SUS por município/mês com supressão honesta
@@ -4902,7 +4902,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SentinelaMatern_Out'
+                $ref: '#/components/schemas/SentinelaMaternaOut'
           description: Successful Response
         '422':
           content:

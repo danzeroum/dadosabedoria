@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { IndicadorCard } from "../../../components/IndicadorCard";
+import { VoceSabia } from "../../../components/VoceSabia";
 import { buscarPanorama } from "../../../lib/api";
 import type { IndicadorValor } from "../../../lib/types";
 
@@ -85,6 +86,8 @@ export default async function MunicipioPage({ params }: { params: { codigo: stri
           )}
         </ul>
       </nav>
+
+      <VoceSabia codigoIbge={p.codigo_ibge} />
 
       {grupos.length === 0 ? (
         <p className="vazio">Sem indicadores para este território ainda.</p>

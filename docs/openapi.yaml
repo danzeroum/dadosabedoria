@@ -728,6 +728,52 @@ components:
       - meta
       title: CulturaVivaOut
       type: object
+    CuriosidadeOut:
+      description: Fato recuperado do acervo, enquadrado como convite à exploração
+        — sem causalidade.
+      properties:
+        fonte:
+          title: Fonte
+          type: string
+        produto:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Produto
+        texto:
+          title: Texto
+          type: string
+      required:
+      - texto
+      - fonte
+      title: CuriosidadeOut
+      type: object
+    CuriosidadesOut:
+      description: Curiosidades ancoradas de um território. Lista vazia = sem fato
+        nítido (honesto).
+      properties:
+        codigo_ibge:
+          title: Codigo Ibge
+          type: string
+        curiosidades:
+          items:
+            $ref: '#/components/schemas/CuriosidadeOut'
+          title: Curiosidades
+          type: array
+        nome:
+          title: Nome
+          type: string
+        uf:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uf
+      required:
+      - codigo_ibge
+      - nome
+      - curiosidades
+      title: CuriosidadesOut
+      type: object
     DistribuicaoFuncaoOut:
       description: Distribuição nacional de investimento per capita em uma função
         SICONFI.
@@ -4981,6 +5027,38 @@ paths:
       summary: Obter Territorio
       tags:
       - indicadores
+  /v1/territorios/{codigo_ibge}/curiosidades:
+    get:
+      description: '''Você Sabia?'' — fatos ANCORADOS do território (Invariante 3):
+        só valores recuperados, com
+
+        fonte, sem causalidade. 404 só se o território não existir; sem fato nítido
+        → lista vazia.'
+      operationId: curiosidades_territorio_v1_territorios__codigo_ibge__curiosidades_get
+      parameters:
+      - in: path
+        name: codigo_ibge
+        required: true
+        schema:
+          title: Codigo Ibge
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuriosidadesOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Curiosidades Territorio
+      tags:
+      - indicadores
+      - curiosidades
   /v1/territorios/{codigo_ibge}/panorama:
     get:
       description: 'Panorama do município: o último valor de cada indicador público,

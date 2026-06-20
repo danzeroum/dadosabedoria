@@ -115,6 +115,26 @@ class PanoramaOut(BaseModel):
     indicadores: list[IndicadorValorOut]
 
 
+# ----------------------------------------- "Você Sabia?" (curiosidades ancoradas — Invariante 3)
+
+
+class CuriosidadeOut(BaseModel):
+    """Fato recuperado do acervo, enquadrado como convite à exploração — sem causalidade."""
+
+    texto: str
+    fonte: str
+    produto: str | None = None  # slug do produto para aprofundar (ex.: "esgoto-invisivel")
+
+
+class CuriosidadesOut(BaseModel):
+    """Curiosidades ancoradas de um território. Lista vazia = sem fato nítido (honesto)."""
+
+    codigo_ibge: str
+    nome: str
+    uf: str | None = None
+    curiosidades: list[CuriosidadeOut]
+
+
 class ErroOut(BaseModel):
     """Envelope de erro padronizado (§7)."""
 

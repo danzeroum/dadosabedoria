@@ -18,6 +18,7 @@ from app.indicadores.modelos import (
     CoberturaPncp,
     CoberturaSiconfi,
     CoberturaSnis,
+    CuriosidadesOut,
     IndicadorOut,
     PanoramaOut,
     RespostaBuscaTerritorios,
@@ -122,6 +123,20 @@ async def panorama_territorio(
     ainda sem indicadores). Célula suprimida aparece como protegida (valor nulo), nunca exposta.
     """
     return await IndicadoresFacade(session).panorama(codigo_ibge=codigo_ibge)
+
+
+@router.get(
+    "/territorios/{codigo_ibge}/curiosidades",
+    response_model=CuriosidadesOut,
+    tags=["curiosidades"],
+)
+async def curiosidades_territorio(
+    codigo_ibge: str, session: AsyncSession = Depends(get_session)
+) -> CuriosidadesOut:
+    """'Você Sabia?' — fatos ANCORADOS do território (Invariante 3): só valores recuperados, com
+    fonte, sem causalidade. 404 só se o território não existir; sem fato nítido → lista vazia.
+    """
+    return await IndicadoresFacade(session).curiosidades(codigo_ibge=codigo_ibge)
 
 
 @router.get("/ivm", response_model=RespostaIVM, tags=["ivm"])

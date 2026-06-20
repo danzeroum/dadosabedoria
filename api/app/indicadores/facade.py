@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache import cache_leitura
 from app.core.erros import NaoEncontradoError
+from app.indicadores.curiosidades import ValorIndicador, montar_curiosidades
 from app.indicadores.modelos import (
     CoberturaCAGED,
     CoberturaDatasus,
@@ -16,6 +17,8 @@ from app.indicadores.modelos import (
     CoberturaPncp,
     CoberturaSiconfi,
     CoberturaSnis,
+    CuriosidadeOut,
+    CuriosidadesOut,
     FonteAcervoOut,
     IndicadorOut,
     IndicadorValorOut,
@@ -155,6 +158,33 @@ class IndicadoresFacade:
             nivel=terr["nivel"],
             uf=terr["uf"],
             indicadores=indicadores,
+        )
+
+    @cache_leitura("v1:curiosidades")
+    async def curiosidades(self, *, codigo_ibge: str) -> CuriosidadesOut:
+        """'Você Sabia?' — fatos ancorados do território (Invariante 3). Reusa o panorama; só usa
+        valores recuperados e não suprimidos; sem dado nítido → lista vazia (honesto)."""
+        terr = await self._repo.obter_territorio(self._s, codigo_ibge)
+        if terr is None:
+            raise NaoEncontradoError(f"território '{codigo_ibge}'")
+        linhas = await self._repo.panorama_municipio(self._s, codigo_ibge=codigo_ibge)
+        indicadores = {
+            r["codigo"]: ValorIndicador(
+                valor=float(r["valor"]),
+                fonte=r["fonte_nome"],
+                periodo=r["periodo"].strftime("%Y-%m"),
+            )
+            for r in linhas
+            if r["valor"] is not None and not r["suprimido"]
+        }
+        cs = montar_curiosidades(indicadores)
+        return CuriosidadesOut(
+            codigo_ibge=terr["codigo_ibge"],
+            nome=terr["nome"],
+            uf=terr["uf"],
+            curiosidades=[
+                CuriosidadeOut(texto=c.texto, fonte=c.fonte, produto=c.produto) for c in cs
+            ],
         )
 
     @cache_leitura("v1:fontes")

@@ -139,6 +139,18 @@ def _meta(row: RowMapping) -> MetaProveniencia:
     )
 
 
+def _liquidado_ou_zero(row: RowMapping | None) -> float:
+    """``SUM(liquidado)`` de uma função no período → float, com **NULL → 0.0**.
+
+    O guard ``periodo is None → 404`` (em cada facade) já garante que o município TEM
+    execução SICONFI em ALGUMA função; logo "nenhuma linha nesta função" significa
+    honestamente **R$ 0 liquidados nela** — classifica como crítico/incipiente, e NÃO
+    ``sem_dado``. Ver a docstring de cada produto SICONFI (Casa/Via/Eco/Escola/…Viva).
+    """
+    raw = row["liquidado"] if row else None
+    return float(raw) if raw is not None else 0.0
+
+
 class PulsoProdutivoFacade:
     def __init__(self, session: AsyncSession) -> None:
         self._s = session
@@ -1049,8 +1061,7 @@ class SemeandoTransparenciaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         st = calcular_semeando(
             terr["codigo_ibge"],
@@ -1309,8 +1320,7 @@ class PressaoSusFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         ps = calcular_pressao_sus(
             terr["codigo_ibge"],
@@ -1382,8 +1392,7 @@ class CasaVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         cv = calcular_casa_viva(
             terr["codigo_ibge"],
@@ -1455,8 +1464,7 @@ class ViaVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         vv = calcular_via_viva(
             terr["codigo_ibge"],
@@ -1528,8 +1536,7 @@ class EcoVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         ev = calcular_eco_vivo(
             terr["codigo_ibge"],
@@ -1601,8 +1608,7 @@ class EscolaVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         esv = calcular_escola_viva(
             terr["codigo_ibge"],
@@ -1674,8 +1680,7 @@ class SaneFundoFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         sf = calcular_sane_fundo(
             terr["codigo_ibge"],
@@ -1747,8 +1752,7 @@ class AssisVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         av = calcular_assis_viva(
             terr["codigo_ibge"],
@@ -1820,8 +1824,7 @@ class CulturaVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         cv = calcular_cultura_viva(
             terr["codigo_ibge"],
@@ -1893,8 +1896,7 @@ class SegurancaVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         sv = calcular_seguranca_viva(
             terr["codigo_ibge"],
@@ -1966,8 +1968,7 @@ class CidadeVivaFacade:
             .mappings()
             .first()
         )
-        liquidado_raw = row["liquidado"] if row else None
-        valor_liquidado = float(liquidado_raw) if liquidado_raw is not None else 0.0
+        valor_liquidado = _liquidado_ou_zero(row)
 
         cv = calcular_cidade_viva(
             terr["codigo_ibge"],

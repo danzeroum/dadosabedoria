@@ -165,7 +165,10 @@ jobs:
             --ignore-vuln CVE-2026-48818 --ignore-vuln CVE-2026-48817 \
             --ignore-vuln CVE-2026-54283 --ignore-vuln CVE-2026-54282
       - name: gitleaks (segredos)
-        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact
+        # Imagem PINADA na org oficial (gitleaks/gitleaks). A antiga `zricethezav/gitleaks:latest`
+        # é tag flutuante da org descontinuada, com regras antigas (falsos-positivos de generic-api-key)
+        # e não-reproduzível. 8.21.2 roda limpo no repo (verificado: árvore inteira + commits).
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact
 
   # ----------------------------------- screenshot da tela (Playwright) → artefato + smoke visual
   screenshot:

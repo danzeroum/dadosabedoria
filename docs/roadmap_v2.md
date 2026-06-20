@@ -20,6 +20,9 @@
 - [x] 0.5.2 Bump `cryptography>=48.0.1` (GHSA-537c-gmf6-5ccf) e `py7zr>=1.1.3` (CVE-2026-23879/55206/55195).
 - [x] 0.5.3 pip-audit do CI ignora as CVEs de starlette inalcançáveis sob `fastapi<0.137` (doc + D3 na
   pendencia_v2). Verificado local: 811 testes ✓, cobertura 89%/100%, OpenAPI sem diff, ruff/mypy/bandit ✓.
+- [x] 0.5.4 gitleaks: pina a imagem oficial `ghcr.io/gitleaks/gitleaks:v8.21.2` (a `zricethezav:latest`
+  era tag flutuante da org descontinuada, com falsos-positivos) + allowlist do trailer claude.ai/code.
+  Verificado local (8.21.2): árvore inteira e commits sem leaks.
 
 ## Bloco 1 — Quick wins de frontend 🟢 (sem dep nova)
 - [ ] 1.1 De-hardcodar UFs do mapa IVM (`web/app/ivm/page.tsx`): lista de UFs dinâmica + degradação

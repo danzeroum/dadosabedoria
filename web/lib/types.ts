@@ -668,7 +668,7 @@ export interface FomeOcultaResponse {
 
 export type NivelMaterno = "crítico" | "elevado" | "moderado" | "baixo" | "sem_dado";
 
-export interface SentinelaMaternаResponse {
+export interface SentinelaMaternaResponse {
   codigo_ibge: string;
   nome: string;
   uf: string | null;

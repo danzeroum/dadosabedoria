@@ -39,7 +39,7 @@ from app.produtos.facade import (
     SaneFundoFacade,
     SegurancaVivaFacade,
     SemeandoTransparenciaFacade,
-    SentinelaMaternаFacade,
+    SentinelaMaternaFacade,
     SentinelaRespFacade,
     ViaVivaFacade,
 )
@@ -70,7 +70,7 @@ from app.produtos.modelos import (
     SaneFundoOut,
     SegurancaVivaOut,
     SemeandoTransparenciaOut,
-    SentinelaMaternаOut,
+    SentinelaMaternaOut,
     SentinelaRespOut,
     ViaVivaOut,
 )
@@ -293,10 +293,10 @@ async def fome_oculta(
     return await FomeOcultaFacade(session).fome_oculta(codigo_ibge=codigo_ibge)
 
 
-@router.get("/sentinela-materna/{codigo_ibge}", response_model=SentinelaMaternаOut)
+@router.get("/sentinela-materna/{codigo_ibge}", response_model=SentinelaMaternaOut)
 async def sentinela_materna(
     codigo_ibge: str, session: AsyncSession = Depends(get_session)
-) -> SentinelaMaternаOut:
+) -> SentinelaMaternaOut:
     """Risco nutricional de gestantes acompanhadas pelo SISVAN/MS (SAUDE-03).
 
     % de gestantes com baixo peso (IMC pré-gestacional) acompanhadas pelo SISVAN.
@@ -304,7 +304,7 @@ async def sentinela_materna(
     Dado de origem sensível: células abaixo de 5 gestantes são suprimidas (k-anonimato).
     404 quando não há dado SISVAN gestante para o município.
     """
-    return await SentinelaMaternаFacade(session).sentinela_materna(codigo_ibge=codigo_ibge)
+    return await SentinelaMaternaFacade(session).sentinela_materna(codigo_ibge=codigo_ibge)
 
 
 @router.get("/cacador-arboviroses/{codigo_ibge}", response_model=CacadorArboviroesOut)

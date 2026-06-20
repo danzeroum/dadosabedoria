@@ -58,9 +58,10 @@ const REVALIDATE = 300;
 
 // ---------------------------------------------------------------------------
 // Núcleo do cliente HTTP. Três modos de erro, um por degradação esperada:
-//   pedir          — recurso que sempre existe; !ok → lança (a tela erra).
-//   pedirOuNull    — recurso opcional; 404 → null (notFound), outro !ok → lança.
-//   pedirSilencioso — bloco opcional/cobertura/quota; qualquer !ok → null.
+//   pedir          — recurso que sempre existe; !ok → lança (a tela erra). 2º arg = rotulo do erro.
+//   pedirOuNull    — recurso opcional; 404 → null (notFound), outro !ok → lança. 2º arg = rotulo.
+//   pedirSilencioso — bloco opcional/cobertura/quota; qualquer !ok → null. SEM rotulo (o erro é
+//                     engolido): a 2ª posição já é o ModoCache, não uma string de rótulo.
 // O modo de cache é EXPLÍCITO por chamada: "no-store" (cobertura/flag-demo, que
 // o pipeline invalida e a tela reflete na hora) vs "revalidate" (leitura de 5 min).
 // ---------------------------------------------------------------------------

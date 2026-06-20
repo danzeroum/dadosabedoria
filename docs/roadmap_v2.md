@@ -44,7 +44,8 @@
 ## Bloco 3 — Curiosidade/descoberta (maior lacuna de produto)
 - [x] 3.1 🟢 "Dados Relacionados" (domínio+território) — recomendação não-linear (PR #159): helper
   `lib/relacionados.ts` (reusa o catálogo) + `<ProdutosRelacionados>` + teste; troca os links fixos de
-  pulso/onde-foi pelo componente catálogo-driven. _Rollout aos demais produtos: follow-up._
+  pulso/onde-foi pelo componente catálogo-driven. _Rollout completo (26 páginas de produto
+  municipal, total 28): PR #163 — pulado em indicador/ivm/municipio/perfil-orcamentario (não-municipais)._
 - [x] 3.2 🟢 "Você Sabia?" — módulo backend ancorado/honesto (PR #160): `curiosidades.py` (regras puras,
   Invariante 3 — só valor recuperado, cita fonte, zero causalidade; sem dado → vazio) + endpoint
   `GET /v1/territorios/{ibge}/curiosidades` + `<VoceSabia>` no panorama. Regra-âncora: gap água–esgoto
@@ -58,18 +59,28 @@
   para 1 passo focado — sem persistência de preferências entre páginas, evita overreach.)
 - [ ] 3.5 🔴/decisão Visão longa (perfil-curiosidade, trilhas, datasets comunidade, API/SDK).
 
-## Bloco 4 — Saúde de código 🟢 (recomendado como PRÓXIMA frente)
+## Bloco 4 — Saúde de código 🟢
 > Dívida real (Auditor B MEDIO-02), **não delicada** mas de refactor amplo — cada item merece a
-> própria fatia cuidadosa (não um big-bang no fim de uma maratona). Recomendo nesta ordem:
+> própria fatia cuidadosa (não um big-bang no fim de uma maratona).
 - [ ] 4.1 Gerar tipos do front do OpenAPI (`openapi-typescript`) → mata o drift de `types.ts` (890
-  linhas manuais). _Cuidado: gerar + adotar incrementalmente (gerar sem usar = peso morto)._
-- [ ] 4.2 Quebrar `facade.py` (1992 linhas) em módulos por produto. _Refactor amplo; um produto por vez._
-- [ ] 4.3 Helper de fetch genérico p/ `api.ts` (570 linhas, ~50 funções quase idênticas).
+  linhas manuais). _Cuidado: gerar + adotar incrementalmente (gerar sem usar = peso morto). Ainda aberto:
+  o valor está na ADOÇÃO (arriscada), não no scaffolding — merece fatia dedicada._
+- [ ] 4.2 Quebrar `facade.py` (1992 linhas) em módulos por produto. _Refactor amplo; um produto por vez.
+  Ainda aberto: 28 classes independentes e bem seccionadas (split mecânico mas ~2000 linhas movidas +
+  refiação de imports em `rotas.py`) — fatia dedicada, não fim-de-maratona._
+- [x] 4.3 Helper de fetch genérico p/ `api.ts` (PR #162): 3 helpers (`pedir`/`pedirOuNull`/
+  `pedirSilencioso`), as 49 funções viram 1-linhas; **modo de cache (no-store×revalidate) e modo de erro
+  preservados, verificado por diff path→modo** (zero flips). _De quebra, corrige um homoglyph cirílico._
 
 ## Novos gaps achados durante a execução
 - **CI vermelha em `main` por drift de dependência** (resolvido no Bloco 0.5): `fastapi` sem teto subiu
   p/ 0.138 e quebrou o instrumentator (`_IncludedRouter`); CVEs novas no pip-audit. Lição: as deps de
   runtime precisam de teto/lock — ver D3 (pendencia_v2) p/ modernização do framework.
+- **Homoglyph cirílico `SentinelaMatern[а]`** (resolvido no PR #162): o identificador da camada API/web
+  usava `а` cirílico (U+0430), enquanto a classe de domínio `SentinelaMaterna` é latina — dois nomes
+  visualmente idênticos, porém distintos (footgun; alguém digitando o latino teria `undefined`). Corrigido
+  em 6 arquivos (Python+TS) com alvo preciso `perl \x{0430}`; o contrato OpenAPI regenerado de quebra
+  limpou um nome de schema mangled (`SentinelaMatern_Out` → `SentinelaMaternaOut`).
 
 ## Log de PRs
 - **PR #158** (`claude/wizardly-cray-aj9fpw`): Bloco 0 (docs) + Bloco 0.5 (destrava CI). **MERGEADO** ✓.
@@ -78,11 +89,39 @@
 - **PR #160** (`claude/auditoria-v2-curiosidades`): Bloco 3.2 "Você Sabia?" (backend ancorado + endpoint
   + card + seed demo). **MERGEADO** ✓.
 - **PR #161** (`claude/auditoria-v2-trackers`): disposição final dos itens restantes (1.4/3.3 adiados com
-  ressalva; 4.x recomendado como próxima frente; gates anotados).
+  ressalva; 4.x recomendado como próxima frente; gates anotados). **MERGEADO** ✓.
+- **PR #162** (`claude/auditoria-v2-saude-codigo`): Bloco 4.3 (helper de fetch no `api.ts`) + correção do
+  homoglyph cirílico (Python+TS) + regen do contrato OpenAPI. **MERGEADO** ✓.
+- **PR #163** (`claude/auditoria-v2-descoberta-rollout`): rollout do `<ProdutosRelacionados>` a 26 páginas
+  de produto municipal (completa o follow-up do 3.1). **MERGEADO** ✓.
+- **PR #165** (`claude/auditoria-v2-hardening`): hardening pós-revisão — helper `_liquidado_ou_zero`
+  (SICONFI) + teste de regressão, `api.test.ts` (helpers de fetch), comentário do `pedirSilencioso`.
+- **PR (docs)** (`claude/auditoria-v2-revisao-final`): roadmap reflete #162/#163/#165 + veredito da revisão
+  final independente.
 
 ## Resumo da execução (2026-06-20)
-**Mergeado, CI verde:** Bloco 0 (docs), **0.5 (resgate da CI vermelha — gap pré-existente)**, 1.1, 1.3,
-3.1, 3.2, 3.4. **Adiado com ressalva (redundante/delicado):** 1.4, 3.3. **Gated (dono/VPS, em
-`pendencia_v2`):** 1.2, 2.1, 2.2, 3.5, D1, D2, D3, G3. **Recomendado próxima frente:** Bloco 4 (saúde de
-código). A camada de **descoberta** (a maior lacuna do Auditor B) foi entregue: mapa nacional, Dados
-Relacionados, onboarding e "Você Sabia?" — tudo honesty-first e CI-verde.
+**Mergeado, CI verde (6 PRs, #158–#163):** Bloco 0 (docs), **0.5 (resgate da CI vermelha — gap
+pré-existente)**, 1.1, 1.3, 3.1 **+ rollout completo (28 telas)**, 3.2, 3.4, **4.3 (helper de fetch) +
+homoglyph cirílico**. **Adiado com ressalva (redundante/delicado):** 1.4, 3.3. **Gated (dono/VPS, em
+`pendencia_v2`):** 1.2, 2.1, 2.2, 3.5, D1, D2, D3, G3. **Recomendado próxima frente (fatia dedicada):**
+4.1 (tipos do OpenAPI — adoção) e 4.2 (split do `facade.py`) — refactors amplos que **não** devem ser
+big-bang de fim-de-maratona. A camada de **descoberta** (a maior lacuna do Auditor B) está completa: mapa
+nacional, Dados Relacionados (em todas as 28 telas de produto), onboarding e "Você Sabia?" — honesty-first
+e CI-verde.
+
+### Revisão final (2026-06-20)
+- **`api.ts` (PR #162) verificado por construção:** diff `path→modo` confirma **zero flips** de cache
+  (no-store×revalidate) e de modo de erro (404→null × silencioso × lança) nas 49 funções.
+- **`main` verde** após os merges #162/#163 (CI por merge-ref).
+- **Revisão independente (subagente, leitura-única): SEM bloqueio.** Veredito: a auditoria pode ser
+  chamada de **concluída** — nenhum item CRIT/HIGH. Confirmados sãos: **Inv. 1** (supressão/k-anon antes
+  de gravar, fail-closed; `test_supressao.py` + BDD), **Inv. 2** (isolamento de PII com **teste que
+  reprova o build**, `tests/integration/test_pii_isolation.py`: a role analítica leva
+  `InsufficientPrivilegeError` ao tocar `app.*`), **Inv. 3** (curiosidades só justapõem valor recuperado,
+  citam `fonte_nome`, filtram suprimidos, `[]` sem fato), **doutrina de honestidade** (`demo` rotulado +
+  proveniência nas 28 telas; mapa IVM degrada "Sem mapa para {uf}" sem falsa cobertura nacional),
+  contrato OpenAPI e a refatoração do `api.ts`. Trackers conferem com a realidade.
+- **3 follow-ups não-bloqueantes → endereçados no PR #165 (hardening):** [MED] proteger o `NULL SUM()→0.0`
+  do SICONFI (helper `_liquidado_ou_zero` documentado + teste de regressão nos 11 produtos); [LOW] helpers
+  de `api.ts` sem teste unitário (`api.test.ts` novo, 6 testes — modos de erro e de cache); [LOW] comentar
+  que `pedirSilencioso` não recebe `rotulo` (2ª posição é o `ModoCache`).

@@ -258,7 +258,7 @@ async def prato_frio(
 ) -> PratoFrioOut:
     """Produção agrícola municipal per capita — IBGE PAM (PratoFrio — ALIM-01).
 
-    Valor total da produção (lavouras temporárias + permanentes, variável 762) em BRL por habitante.
+    Valor total da produção (lavouras temporárias + permanentes, variável 215) em BRL por habitante.
     Níveis: alta (≥ R$ 5.000/hab/ano), moderada (≥ R$ 500/hab/ano), baixa (< R$ 500/hab/ano).
     Produção varia por bioma/clima — use como contexto, não ranking. Forma a confirmar na 1ª busca
     real (servicodados.ibge.gov.br). 404 quando não há dado PAM para o município.

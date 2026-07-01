@@ -1,7 +1,7 @@
 """Adaptador IBGE PAM (Pesquisa Agrícola Municipal) — domínio ``alimentacao``.
 
 Bronze: consome a API SIDRA v3 do IBGE para as tabelas 1612 (lavouras temporárias) e
-1613 (lavouras permanentes), variável 762 (Valor da produção em Mil Reais).
+1613 (lavouras permanentes), variável 215 (Valor da produção em Mil Reais).
 
 Indicador:
 - ``valor_brl``: valor total da produção agrícola municipal (BRL), soma das duas lavouras.
@@ -12,7 +12,7 @@ Ouro: soma de valor_brl por município (consolida lavouras temporárias + perman
 ASSUNÇÕES a confirmar na 1ª busca real (#0, host ``servicodados.ibge.gov.br``):
 - Resposta JSON: lista de objetos com "resultados[].series[].localidade.id" (cod_ibge 7 díg.)
   e "resultados[].series[].serie.<ano>" (valor em Mil Reais como string; "-" = sem dado).
-- Tabelas 1612 (lavouras temporárias) e 1613 (lavouras permanentes), variável 762.
+- Tabelas 1612 (lavouras temporárias) e 1613 (lavouras permanentes), variável 215.
 - Nível de agregação N6 = municípios.
 """
 
@@ -121,7 +121,9 @@ class FetcherPamHTTP:
 
     BASE = "https://servicodados.ibge.gov.br/api/v3/agregados"
     _TABELAS = ("1612", "1613")
-    _VAR = "762"
+    # Variável 215 = "Valor da produção" (Mil Reais). Confirmado ao vivo (2026-07-01):
+    # a var 762 não existe nos metadados de 1612/1613 e retorna HTTP 500.
+    _VAR = "215"
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
         import urllib.request

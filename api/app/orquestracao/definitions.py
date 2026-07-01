@@ -415,7 +415,7 @@ def valores_ana(context: dg.AssetExecutionContext) -> dg.MaterializeResult:  # p
     group_name="alimentacao",
     description=(
         "Valor da produção agrícola municipal por habitante — IBGE PAM "
-        "(lavouras temporárias 1612 + permanentes 1613, variável 762)."
+        "(lavouras temporárias 1612 + permanentes 1613, variável 215)."
     ),
     metadata={"fonte": "IBGE PAM", "lag_tipico": "~12 meses"},
 )

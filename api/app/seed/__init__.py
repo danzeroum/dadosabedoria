@@ -507,7 +507,7 @@ INDICADORES: list[dict[str, Any]] = [
         "nome": "Valor da produção agrícola municipal",
         "descricao": (
             "Valor total da produção agrícola municipal (lavouras temporárias + permanentes)"
-            " em BRL por município/ano. Fonte: IBGE PAM, tabelas 1612 e 1613, variável 762."
+            " em BRL por município/ano. Fonte: IBGE PAM, tabelas 1612 e 1613, variável 215."
         ),
         "dominio": "alimentacao",
         "subdominio": "producao",
@@ -523,7 +523,7 @@ INDICADORES: list[dict[str, Any]] = [
         "fonte": "ibge_pam",
         "codigo_externo": "PAM_762",
         "metodologia": (
-            "Soma do Valor da Produção (variável 762, Mil Reais) das lavouras temporárias "
+            "Soma do Valor da Produção (variável 215, Mil Reais) das lavouras temporárias "
             "(tabela 1612) e permanentes (tabela 1613) do IBGE PAM por município/ano. "
             "Convertido de Mil BRL para BRL (× 1000). "
             "Forma a confirmar na 1ª busca real (servicodados.ibge.gov.br)."

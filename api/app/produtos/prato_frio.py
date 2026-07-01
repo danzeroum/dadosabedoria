@@ -3,7 +3,7 @@
 Pergunta do produto: **quanto o município produz agricolamente por habitante?**
 
 Usa o indicador ``alimentacao.producao.valor_total`` (soma do Valor da Produção das lavouras
-temporárias/1612 e permanentes/1613 do IBGE PAM, variável 762, convertido de Mil BRL para BRL).
+temporárias/1612 e permanentes/1613 do IBGE PAM, variável 215, convertido de Mil BRL para BRL).
 
 Classificação por valor_por_hab (BRL/habitante/ano):
 - ``alta``      : ≥ R$ 5.000/hab/ano
@@ -34,7 +34,7 @@ _LIMIAR_MODERADA = 500.0  # BRL/hab/ano
 NOTA_HONESTA = (
     "Valor total da produção agrícola municipal (lavouras temporárias + permanentes)"
     " por habitante. "
-    "Fonte: IBGE PAM (Pesquisa Agrícola Municipal), tabelas 1612 e 1613, variável 762 "
+    "Fonte: IBGE PAM (Pesquisa Agrícola Municipal), tabelas 1612 e 1613, variável 215 "
     "(Valor da produção, Mil Reais). "
     "Produção agrícola varia por geografia, solo e clima — municípios urbanos terão"
     " naturalmente valores baixos. Interprete como vocação produtiva do território,"

@@ -3,7 +3,7 @@
 Forma a confirmar na 1ª busca real (#0, host ``servicodados.ibge.gov.br``):
 - JSON com lista de tabelas; cada tabela tem "resultados[].series[]"
 - "localidade.id" = IBGE 7 díg., "serie.<ano>" = valor em Mil Reais como string
-- "-" = sem dado para o município; dados de tabelas 1612 + 1613, variável 762
+- "-" = sem dado para o município; dados de tabelas 1612 + 1613, variável 215
 - SP (3550308): 1612=5000, 1613=1000 → total=6.000.000 BRL
 - Campinas (3509502): 1612=8000, 1613=2000 → total=10.000.000 BRL
 - Rio (3304557): 1612=200, sem 1613 → total=200.000 BRL

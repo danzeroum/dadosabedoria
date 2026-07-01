@@ -930,18 +930,18 @@ async def executar_sisvan(
     Vivo-pronto: forma a confirmar na 1ª busca real (#0, host s3.sa-east-1.amazonaws.com).
     """
     bruto, url = adaptador.baixar_bruto(janela)
-    hash_origem = gravar_bronze(store, f"sisvan/{janela.ano}.csv", bruto)
+    hash_origem = gravar_bronze(store, f"sisvan/{janela.ano}.json", bruto)
     df = adaptador.parse(bruto)
     CONTRATO_SISVAN.validar(df)
     agregado = adaptador.agregar(adaptador.transformar_prata(df))
 
     ind_sisvan = await _carregar_indicador(conn, CODIGO_SISVAN)
-    mapa7 = await _mapa_municipios(conn)
+    mapa6 = {k[:6]: v for k, v in (await _mapa_municipios(conn)).items()}  # SISVAN usa IBGE 6 díg.
 
     celulas: list[CelulaOuro] = []
     ignorados = 0
     for row in agregado.iter_rows(named=True):
-        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        territorio_id = mapa6.get(str(row["cod_ibge"]))
         if territorio_id is None:
             ignorados += 1
             continue
@@ -987,18 +987,18 @@ async def executar_sisvan_gestante(
     Vivo-pronto: forma a confirmar na 1ª busca real (#0, host s3.sa-east-1.amazonaws.com).
     """
     bruto, url = adaptador.baixar_bruto(janela)
-    hash_origem = gravar_bronze(store, f"sisvan_gestante/{janela.ano}.csv", bruto)
+    hash_origem = gravar_bronze(store, f"sisvan_gestante/{janela.ano}.json", bruto)
     df = adaptador.parse(bruto)
     CONTRATO_SISVAN_GESTANTE.validar(df)
     agregado = adaptador.agregar(adaptador.transformar_prata(df))
 
     ind_gestante = await _carregar_indicador(conn, CODIGO_SISVAN_GESTANTE)
-    mapa7 = await _mapa_municipios(conn)
+    mapa6 = {k[:6]: v for k, v in (await _mapa_municipios(conn)).items()}  # SISVAN usa IBGE 6 díg.
 
     celulas: list[CelulaOuro] = []
     ignorados = 0
     for row in agregado.iter_rows(named=True):
-        territorio_id = mapa7.get(str(row["cod_ibge"]))
+        territorio_id = mapa6.get(str(row["cod_ibge"]))
         if territorio_id is None:
             ignorados += 1
             continue

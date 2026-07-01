@@ -1,7 +1,9 @@
-"""CLI de ingestão: ``python -m app.ingestao.run_sisvan <ano>`` (SISVAN, anual).
+"""CLI de ingestão: ``python -m app.ingestao.run_sisvan <ano>`` (SISVAN).
 
-Vivo-pronto: a esteira completa existe; a 1ª busca real requer
-``s3.sa-east-1.amazonaws.com`` no allowlist do ambiente (VPS).
+Fonte: API de Dados Abertos do MS (``apidadosabertos.saude.gov.br/sisvan/estado-nutricional``),
+JSON paginado por competência. Aqui busca a competência ``<ano>01``; a estratégia de bulk
+nacional (competência mensal × município, cap de ~20 registros/página) é decisão em aberto —
+ver ``pendencias.md`` (SISVAN).
 """
 
 from __future__ import annotations

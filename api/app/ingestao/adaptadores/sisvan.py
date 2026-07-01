@@ -1,27 +1,37 @@
 """Adaptador SISVAN — estado nutricional de crianças < 5 anos e gestantes, domínio saúde.
 
-Bronze: CSV individual de acompanhamento nutricional publicado pelo Ministério da Saúde.
-URL pública: https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SISVAN/
+Bronze: **API pública de Dados Abertos do Ministério da Saúde** (JSON), endpoint
+``/sisvan/estado-nutricional`` em ``apidadosabertos.saude.gov.br``. O antigo CSV no bucket S3
+(``ckan.saude.gov.br/SISVAN``) foi desativado (403 AccessDenied) e a fonte migrou para esta API.
 
 Indicadores:
-- ``baixo_peso_pct``: % de crianças < 5 anos com magreza ou magreza acentuada
-  (CO_ESTADO_NUTRI_CRIANCA in [1, 2]) entre as acompanhadas no município.
-- ``gestante_baixo_peso_pct``: % de gestantes com baixo peso (IMC pré-gestacional)
-  (CO_ESTADO_NUTRI_GESTANTE = 1) entre as acompanhadas no município.
+- ``baixo_peso_pct``: % de crianças < 5 anos com **magreza** ou **magreza acentuada**
+  (``crianca_imc_x_idade``) entre as acompanhadas no município.
+- ``gestante_baixo_peso_pct``: % de gestantes com **baixo peso**
+  (``codigo_estado_nutricional_imc_gestante``) entre as acompanhadas no município.
 
-Prata: filtra crianças < 5 anos (NU_IDADE_ANO in [0,1,2,3,4]) com estado nutricional válido.
-Ouro: % com baixo peso por município; n_amostra = total de crianças acompanhadas (k-anon n≥5).
+Prata: filtra crianças < 5 anos com classificação IMC-x-idade válida (não nula).
+Ouro: % com baixo peso por município; n_amostra = total acompanhado (k-anon n≥5).
 
-ASSUNÇÕES a confirmar na 1ª busca real (#0, host s3.sa-east-1.amazonaws.com):
-- CSV com separador ";", encoding UTF-8 ou latin-1.
-- Colunas: CO_MUNICIPIO_IBGE (7 díg.), NU_IDADE_ANO (int), CO_ESTADO_NUTRI_CRIANCA (int 1–6).
-- Código 1 = magreza acentuada, 2 = magreza, 3 = eutrofia, 4+ = sobrepeso/obesidade.
-- Cobre apenas beneficiários acompanhados pelo SISVAN/CadÚnico — não é censo populacional.
+FORMA REAL confirmada ao vivo (2026-07-01, host ``apidadosabertos.saude.gov.br``):
+- JSON ``{"estados_nutricionais": [ {...}, ... ]}``.
+- ``codigo_municipio`` = IBGE de **6 dígitos** (sem dígito verificador; ex. 355030).
+- ``idade`` = int (anos completos).
+- ``crianca_imc_x_idade`` = **texto** (não código): "Magreza acentuada", "Magreza", "Eutrofia",
+  "Risco de sobrepeso", "Sobrepeso", "Obesidade", "Obesidade grave" — nulo p/ não-criança.
+- ``codigo_estado_nutricional_imc_gestante`` = **texto** (apesar do nome "codigo"):
+  "Baixo peso", "Adequado ou eutrófico", "Sobrepeso", "Obesidade" — nulo fora de gestante.
+- ``ano_mes_competencia`` = "YYYYMM" (filtro incremental — invariante 6).
+
+RESSALVA de ingestão nacional (ver ``pendencias.md``): a API entrega no máximo ~20 registros por
+resposta (paginação por ``offset``), o que torna o bulk nacional lento. A esteira/forma abaixo
+está correta; a fonte definitiva do bulk nacional é decisão do dono do ambiente.
 """
 
 from __future__ import annotations
 
-import io
+import json
+import unicodedata
 
 import polars as pl
 
@@ -30,14 +40,22 @@ from app.ingestao.contratos import ContratoFonte
 
 CODIGO_INDICADOR = "alimentacao.nutricao.baixo_peso_pct"
 
-COL_IBGE = "CO_MUNICIPIO_IBGE"
-COL_IDADE = "NU_IDADE_ANO"
-COL_ESTADO = "CO_ESTADO_NUTRI_CRIANCA"
+COL_IBGE = "codigo_municipio"
+COL_IDADE = "idade"
+COL_ESTADO = "crianca_imc_x_idade"
 
-#: Códigos de baixo peso (magreza acentuada=1 e magreza=2).
-_BAIXO_PESO = {1, 2}
 #: Crianças < 5 anos (0, 1, 2, 3, 4 anos completos).
 _IDADE_MAX = 5
+
+
+def _normalizar(texto: str) -> str:
+    """Minúsculas sem acento, para casar a classificação textual de forma robusta."""
+    sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+    return sem_acento.strip().lower()
+
+
+#: Classificações de baixo peso infantil (IMC-x-idade), normalizadas.
+_BAIXO_PESO = frozenset({"magreza acentuada", "magreza"})
 
 CONTRATO = ContratoFonte(
     fonte="sisvan",
@@ -45,8 +63,23 @@ CONTRATO = ContratoFonte(
 )
 
 
+def _parse_json(bruto: bytes, colunas: list[str]) -> pl.DataFrame:
+    """JSON SISVAN → DataFrame só com as ``colunas`` de interesse (tudo como texto)."""
+    try:
+        dados = json.loads(bruto)
+    except (json.JSONDecodeError, ValueError):
+        return pl.DataFrame({c: pl.Series([], dtype=pl.Utf8) for c in colunas})
+    registros = dados.get("estados_nutricionais", []) if isinstance(dados, dict) else []
+    linhas = [
+        {c: (None if r.get(c) is None else str(r.get(c))) for c in colunas} for r in registros
+    ]
+    if not linhas:
+        return pl.DataFrame({c: pl.Series([], dtype=pl.Utf8) for c in colunas})
+    return pl.DataFrame(linhas, schema=dict.fromkeys(colunas, pl.Utf8))
+
+
 class AdaptadorSisvan:
-    """Isola o formato do CSV SISVAN/MS. Fetcher injetado (testável sem rede)."""
+    """Isola o formato da API SISVAN/MS (crianças). Fetcher injetado (testável sem rede)."""
 
     codigo = "sisvan"
 
@@ -57,31 +90,8 @@ class AdaptadorSisvan:
         return self._fetcher.baixar(janela)
 
     def parse(self, bruto: bytes) -> pl.DataFrame:
-        """CSV SISVAN → DataFrame com as 3 colunas de produto."""
-        for enc in ("utf-8", "latin-1"):
-            try:
-                df = pl.read_csv(
-                    io.BytesIO(bruto),
-                    separator=";",
-                    encoding=enc,
-                    infer_schema_length=0,
-                    ignore_errors=True,
-                )
-                if COL_IBGE in df.columns:
-                    return df.select(
-                        pl.col(COL_IBGE).cast(pl.Utf8),
-                        pl.col(COL_IDADE).cast(pl.Utf8),
-                        pl.col(COL_ESTADO).cast(pl.Utf8),
-                    )
-            except Exception:  # noqa: BLE001, S112  # nosec B112
-                continue
-        return pl.DataFrame(
-            {
-                COL_IBGE: pl.Series([], dtype=pl.Utf8),
-                COL_IDADE: pl.Series([], dtype=pl.Utf8),
-                COL_ESTADO: pl.Series([], dtype=pl.Utf8),
-            }
-        )
+        """JSON SISVAN → DataFrame com as 3 colunas de produto."""
+        return _parse_json(bruto, [COL_IBGE, COL_IDADE, COL_ESTADO])
 
     def extrair(self, janela: Janela) -> pl.DataFrame:
         bruto, _ = self.baixar_bruto(janela)
@@ -90,32 +100,34 @@ class AdaptadorSisvan:
         return df
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Filtra crianças < 5 anos com estado nutricional válido."""
+        """Filtra crianças < 5 anos com classificação válida; marca baixo peso (0/1)."""
+        baixo = list(_BAIXO_PESO)
         return (
             df.with_columns(
                 pl.col(COL_IBGE).str.strip_chars().alias("cod_ibge"),
                 pl.col(COL_IDADE).cast(pl.Int32, strict=False).alias("idade"),
-                pl.col(COL_ESTADO).cast(pl.Int32, strict=False).alias("estado"),
+                pl.col(COL_ESTADO)
+                .map_elements(
+                    lambda v: _normalizar(v) if v is not None else None, return_dtype=pl.Utf8
+                )
+                .alias("estado_norm"),
             )
             .filter(
                 pl.col("cod_ibge").is_not_null()
                 & (pl.col("cod_ibge") != "")
                 & pl.col("idade").is_not_null()
                 & (pl.col("idade") < _IDADE_MAX)
-                & pl.col("estado").is_not_null()
-                & (pl.col("estado") >= 1)
-                & (pl.col("estado") <= 6)
+                & pl.col("estado_norm").is_not_null()
+                & (pl.col("estado_norm") != "")
             )
-            .select("cod_ibge", "estado")
+            .with_columns(pl.col("estado_norm").is_in(baixo).cast(pl.Int32).alias("baixo_peso"))
+            .select("cod_ibge", "baixo_peso")
         )
 
     def agregar(self, df_prata: pl.DataFrame) -> pl.DataFrame:
         """% de crianças < 5 com baixo peso por município; n = total acompanhado."""
         return (
-            df_prata.with_columns(
-                pl.col("estado").is_in(list(_BAIXO_PESO)).cast(pl.Int32).alias("baixo_peso")
-            )
-            .group_by("cod_ibge")
+            df_prata.group_by("cod_ibge")
             .agg(
                 pl.len().alias("n_total"),
                 pl.col("baixo_peso").sum().alias("n_baixo_peso"),
@@ -129,47 +141,65 @@ class AdaptadorSisvan:
         )
 
 
-class FetcherSisvanHTTP:
-    """Fetcher real: baixa o CSV de estado nutricional do bucket público do MS.
+class _FetcherSisvanApiBase:
+    """Fetcher real: pagina o endpoint JSON da API de Dados Abertos do MS por competência.
 
-    Host bloqueado no contêiner (rede Custom) — exercitado apenas com rede aberta.
+    A API responde no máximo ~20 registros por página → itera ``offset`` até esvaziar (bom-cidadão,
+    invariante 6). Host bloqueado no contêiner github-only — exercitado só com rede aberta/VPS.
     """
 
-    _BASE = "https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SISVAN"
+    _BASE = "https://apidadosabertos.saude.gov.br/sisvan/estado-nutricional"
+    _LIMIT = 1000  # a API ignora acima de ~20; mantemos alto para o dia em que aumentarem
+    _TIMEOUT = 120
 
-    def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+    def _baixar_paginado(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+        import urllib.parse
         import urllib.request
 
-        url = f"{self._BASE}/sisvan_estado_nutricional_{janela.ano}.csv"
-        with urllib.request.urlopen(url, timeout=300) as resp:  # noqa: S310  # nosec B310
-            return resp.read(), url
+        comp = janela.competencia
+        registros: list[dict] = []
+        offset = 0
+        url_ref = f"{self._BASE}?ano_mes_competencia={comp}"
+        while True:
+            query = urllib.parse.urlencode(
+                {"ano_mes_competencia": comp, "limit": self._LIMIT, "offset": offset}
+            )
+            url = f"{self._BASE}?{query}"
+            with urllib.request.urlopen(url, timeout=self._TIMEOUT) as resp:  # noqa: S310  # nosec B310
+                pagina = json.loads(resp.read()).get("estados_nutricionais", [])
+            if not pagina:
+                break
+            registros.extend(pagina)
+            offset += len(pagina)
+        return json.dumps({"estados_nutricionais": registros}).encode("utf-8"), url_ref
+
+
+class FetcherSisvanHTTP(_FetcherSisvanApiBase):
+    """Fetcher real de crianças (mesma API; o parser seleciona as colunas)."""
+
+    def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
+        return self._baixar_paginado(janela)
 
 
 # ============================================================= Gestantes (SAUDE-03)
 
 CODIGO_INDICADOR_GESTANTE = "saude.materno.gestante_baixo_peso_pct"
 
-COL_PUBLICO = "CO_PUBLICO_ALVO"
-COL_ESTADO_GESTANTE = "CO_ESTADO_NUTRI_GESTANTE"
-_PUBLICO_GESTANTE = "GESTANTE"
-_ESTADOS_VALIDOS_GESTANTE = {1, 2, 3, 4}
-_BAIXO_PESO_GESTANTE = {1}
+COL_ESTADO_GESTANTE = "codigo_estado_nutricional_imc_gestante"
+#: Classificação de baixo peso gestacional (texto), normalizada.
+_BAIXO_PESO_GESTANTE = frozenset({"baixo peso"})
 
 CONTRATO_GESTANTE = ContratoFonte(
     fonte="sisvan",
-    colunas_obrigatorias=frozenset({COL_IBGE, COL_PUBLICO, COL_ESTADO_GESTANTE}),
+    colunas_obrigatorias=frozenset({COL_IBGE, COL_ESTADO_GESTANTE}),
 )
 
 
 class AdaptadorSisvanGestante:
-    """Isola o formato do CSV SISVAN/MS para gestantes (SAUDE-03).
+    """Isola o formato da API SISVAN/MS para gestantes (SAUDE-03).
 
-    Fetcher injetado (testável sem rede). O CSV de gestantes tem colunas diferentes do de crianças:
-    CO_MUNICIPIO_IBGE, CO_PUBLICO_ALVO, CO_ESTADO_NUTRI_GESTANTE.
-
-    ASSUNÇÕES a confirmar na 1ª busca real (#0, host s3.sa-east-1.amazonaws.com):
-    - CO_ESTADO_NUTRI_GESTANTE: 1=baixo_peso, 2=adequado, 3=sobrepeso, 4=obesidade.
-    - CO_PUBLICO_ALVO = 'GESTANTE' filtra apenas gestantes (arquivo pode conter outros públicos).
+    A gestante é identificada pela presença da classificação
+    ``codigo_estado_nutricional_imc_gestante`` (só gestantes têm IMC gestacional na fonte).
     """
 
     codigo = "sisvan_gestante"
@@ -181,31 +211,8 @@ class AdaptadorSisvanGestante:
         return self._fetcher.baixar(janela)
 
     def parse(self, bruto: bytes) -> pl.DataFrame:
-        """CSV SISVAN gestante → DataFrame com as 3 colunas de produto."""
-        for enc in ("utf-8", "latin-1"):
-            try:
-                df = pl.read_csv(
-                    io.BytesIO(bruto),
-                    separator=";",
-                    encoding=enc,
-                    infer_schema_length=0,
-                    ignore_errors=True,
-                )
-                if COL_IBGE in df.columns and COL_ESTADO_GESTANTE in df.columns:
-                    return df.select(
-                        pl.col(COL_IBGE).cast(pl.Utf8),
-                        pl.col(COL_PUBLICO).cast(pl.Utf8),
-                        pl.col(COL_ESTADO_GESTANTE).cast(pl.Utf8),
-                    )
-            except Exception:  # noqa: BLE001, S112  # nosec B112
-                continue
-        return pl.DataFrame(
-            {
-                COL_IBGE: pl.Series([], dtype=pl.Utf8),
-                COL_PUBLICO: pl.Series([], dtype=pl.Utf8),
-                COL_ESTADO_GESTANTE: pl.Series([], dtype=pl.Utf8),
-            }
-        )
+        """JSON SISVAN → DataFrame com cod_ibge + classificação gestacional."""
+        return _parse_json(bruto, [COL_IBGE, COL_ESTADO_GESTANTE])
 
     def extrair(self, janela: Janela) -> pl.DataFrame:
         bruto, _ = self.baixar_bruto(janela)
@@ -214,33 +221,31 @@ class AdaptadorSisvanGestante:
         return df
 
     def transformar_prata(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Filtra gestantes com estado nutricional válido (1–4)."""
+        """Filtra gestantes (classificação não nula); marca baixo peso (0/1)."""
+        baixo = list(_BAIXO_PESO_GESTANTE)
         return (
             df.with_columns(
                 pl.col(COL_IBGE).str.strip_chars().alias("cod_ibge"),
-                pl.col(COL_PUBLICO).str.strip_chars().alias("publico"),
-                pl.col(COL_ESTADO_GESTANTE).cast(pl.Int32, strict=False).alias("estado"),
+                pl.col(COL_ESTADO_GESTANTE)
+                .map_elements(
+                    lambda v: _normalizar(v) if v is not None else None, return_dtype=pl.Utf8
+                )
+                .alias("estado_norm"),
             )
             .filter(
                 pl.col("cod_ibge").is_not_null()
                 & (pl.col("cod_ibge") != "")
-                & (pl.col("publico") == _PUBLICO_GESTANTE)
-                & pl.col("estado").is_not_null()
-                & pl.col("estado").is_in(list(_ESTADOS_VALIDOS_GESTANTE))
+                & pl.col("estado_norm").is_not_null()
+                & (pl.col("estado_norm") != "")
             )
-            .select("cod_ibge", "estado")
+            .with_columns(pl.col("estado_norm").is_in(baixo).cast(pl.Int32).alias("baixo_peso"))
+            .select("cod_ibge", "baixo_peso")
         )
 
     def agregar(self, df_prata: pl.DataFrame) -> pl.DataFrame:
         """% de gestantes com baixo peso por município; n = total acompanhado."""
         return (
-            df_prata.with_columns(
-                pl.col("estado")
-                .is_in(list(_BAIXO_PESO_GESTANTE))
-                .cast(pl.Int32)
-                .alias("baixo_peso")
-            )
-            .group_by("cod_ibge")
+            df_prata.group_by("cod_ibge")
             .agg(
                 pl.len().alias("n_total"),
                 pl.col("baixo_peso").sum().alias("n_baixo_peso"),
@@ -254,14 +259,8 @@ class AdaptadorSisvanGestante:
         )
 
 
-class FetcherSisvanGestanteHTTP:
-    """Fetcher real — forma a confirmar na 1ª busca real (#0, host s3.sa-east-1.amazonaws.com)."""
-
-    _BASE = "https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SISVAN"
+class FetcherSisvanGestanteHTTP(_FetcherSisvanApiBase):
+    """Fetcher real de gestantes — mesma API/competência; o parser seleciona a coluna."""
 
     def baixar(self, janela: Janela) -> tuple[bytes, str]:  # pragma: no cover - rede
-        import urllib.request
-
-        url = f"{self._BASE}/sisvan_estado_nutricional_gestante_{janela.ano}.csv"
-        with urllib.request.urlopen(url, timeout=300) as resp:  # noqa: S310  # nosec B310
-            return resp.read(), url
+        return self._baixar_paginado(janela)

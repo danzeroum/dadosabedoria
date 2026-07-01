@@ -1,31 +1,52 @@
-"""Fixture SISVAN gestante — estado nutricional de gestantes, domínio saude."""
+"""Fixture SISVAN gestante — estado nutricional de gestantes (amostra JSON fiel-à-forma).
+
+Forma real (API de Dados Abertos do MS): ``codigo_estado_nutricional_imc_gestante`` = texto
+("Baixo peso" = baixo peso; "Adequado ou eutrófico"/"Sobrepeso"/"Obesidade"). Só gestantes têm
+essa classificação preenchida — é o filtro de público. ``codigo_municipio`` = IBGE 6 dígitos.
+
+Municípios de teste (6 dígitos):
+- Campinas (350950): 3 baixo peso em 20 gestantes = 15% → moderado
+- São Paulo (355030): 1 em 30 = 3.3% → baixo
+- Rio (330455): 10 em 40 = 25% → elevado
+- Registros inválidos: sem município, não-gestante (classificação nula) → descartados
+"""
 
 from __future__ import annotations
 
+import json
+
 from app.ingestao.adaptadores.base import Janela
 
-_LINHAS = [
-    # Campinas (3509502): 3 baixo peso em 20 gestantes = 15% → moderado
-    *["3509502;GESTANTE;2"] * 17,
-    "3509502;GESTANTE;1",
-    "3509502;GESTANTE;1",
-    "3509502;GESTANTE;1",
-    # SP (3550308): 1 em 30 = 3.3% → baixo  (below k-anon n_minimo=5 for suppression check)
-    *["3550308;GESTANTE;2"] * 29,
-    "3550308;GESTANTE;1",
-    # Rio (3304557): 10 em 40 = 25% → elevado
-    *["3304557;GESTANTE;2"] * 30,
-    *["3304557;GESTANTE;1"] * 10,
-    # Campinas valid record with outro publico (filtered out)
-    "3509502;CRIANCA;1",
-    # Invalid: empty IBGE
-    ";GESTANTE;1",
-    # Invalid: estado out of range
-    "3509502;GESTANTE;0",
-    "3509502;GESTANTE;5",
+
+def _reg(cod: object, gestante_imc: object) -> dict:
+    return {
+        "codigo_municipio": cod,
+        "uf": "SP",
+        "idade": 28,
+        "fase_vida": "ADULTO",
+        "crianca_imc_x_idade": None,
+        "codigo_estado_nutricional_imc_gestante": gestante_imc,
+        "ano_mes_competencia": "201812",
+    }
+
+
+_REGISTROS: list[dict] = [
+    # Campinas: 3 baixo peso em 20 gestantes (15%) → moderado
+    *[_reg(350950, "Adequado ou eutrófico") for _ in range(17)],
+    *[_reg(350950, "Baixo peso") for _ in range(3)],
+    # SP: 1 em 30 (3.3%) → baixo
+    *[_reg(355030, "Adequado ou eutrófico") for _ in range(29)],
+    _reg(355030, "Baixo peso"),
+    # Rio: 10 em 40 (25%) → elevado
+    *[_reg(330455, "Adequado ou eutrófico") for _ in range(30)],
+    *[_reg(330455, "Baixo peso") for _ in range(10)],
+    # Inválido: sem município
+    _reg(None, "Baixo peso"),
+    # Inválido: não-gestante (classificação gestacional nula)
+    _reg(350950, None),
 ]
-_CSV = "CO_MUNICIPIO_IBGE;CO_PUBLICO_ALVO;CO_ESTADO_NUTRI_GESTANTE\n" + "\n".join(_LINHAS)
-AMOSTRA_GESTANTE: bytes = _CSV.encode("utf-8")
+
+AMOSTRA_GESTANTE: bytes = json.dumps({"estados_nutricionais": _REGISTROS}).encode("utf-8")
 
 
 class FetcherFake:

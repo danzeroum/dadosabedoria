@@ -1,54 +1,64 @@
-"""Fixture SISVAN — estado nutricional infantil (amostra CSV fiel-à-forma).
+"""Fixture SISVAN — estado nutricional infantil (amostra JSON fiel-à-forma).
 
-Colunas: CO_MUNICIPIO_IBGE, NU_IDADE_ANO, CO_ESTADO_NUTRI_CRIANCA (separador ";")
-Códigos de estado: 1=magreza acentuada, 2=magreza, 3=eutrofia, 4=risco sobrepeso,
-                   5=sobrepeso, 6=obesidade
-Municípios de teste:
-- Sorriso (5107925, MT): 4/10 crianças com baixo peso → 40% → crítico
-- Campinas (3509502, SP): 1/20 crianças com baixo peso → 5% → elevado
-- São Paulo (3550308, SP): 1/50 crianças com baixo peso → 2% → moderado
-- Rio (3304557, RJ): 0/5 crianças com baixo peso → 0% → baixo
-- Linha inválida (idade ≥ 5): descartada na prata
-- Linha sem município: descartada na prata
+Forma real (API de Dados Abertos do MS, ``/sisvan/estado-nutricional``):
+- JSON ``{"estados_nutricionais": [...]}``; ``codigo_municipio`` = IBGE **6 dígitos**.
+- ``crianca_imc_x_idade`` = texto ("Magreza acentuada"/"Magreza" = baixo peso; "Eutrofia" etc.).
+- baixo peso = magreza / magreza acentuada.
+
+Municípios de teste (código de 6 dígitos):
+- Sorriso (510792): 4/10 crianças com baixo peso → 40% → crítico
+- Campinas (350950): 1/20 crianças com baixo peso → 5% → elevado
+- São Paulo (355030): 1/50 crianças com baixo peso → 2% → moderado
+- Rio (330455): 0/5 crianças com baixo peso → 0% → baixo
+- Registros inválidos: idade ≥ 5, sem município, classificação nula (não-criança) → descartados
 """
 
 from __future__ import annotations
 
+import json
+
 from app.ingestao.adaptadores.base import Janela
 
-_LINHAS = [
+
+def _reg(cod: object, idade: object, imc: object) -> dict:
+    """Registro fiel-à-forma (subconjunto dos campos reais que o parser consome)."""
+    return {
+        "codigo_municipio": cod,
+        "uf": "SP",
+        "idade": idade,
+        "fase_vida": "ENTRE 2 ANOS A 5 ANOS",
+        "crianca_imc_x_idade": imc,
+        "codigo_estado_nutricional_imc_gestante": None,
+        "ano_mes_competencia": "201812",
+    }
+
+
+_REGISTROS: list[dict] = [
     # Sorriso: 4 baixo peso em 10 crianças (40%) → crítico
-    "5107925;0;1",
-    "5107925;1;2",
-    "5107925;2;1",
-    "5107925;3;2",
-    "5107925;0;3",
-    "5107925;1;3",
-    "5107925;2;3",
-    "5107925;3;3",
-    "5107925;4;3",
-    "5107925;4;3",
+    _reg(510792, 0, "Magreza acentuada"),
+    _reg(510792, 1, "Magreza"),
+    _reg(510792, 2, "Magreza acentuada"),
+    _reg(510792, 3, "Magreza"),
+    *[_reg(510792, 2, "Eutrofia") for _ in range(6)],
     # Campinas: 1 baixo peso em 20 crianças (5%) → elevado
-    *["3509502;2;3"] * 19,
-    "3509502;1;1",
+    *[_reg(350950, 2, "Eutrofia") for _ in range(19)],
+    _reg(350950, 1, "Magreza acentuada"),
     # SP: 1 baixo peso em 50 crianças (2%) → moderado
-    *["3550308;3;3"] * 49,
-    "3550308;0;2",
+    *[_reg(355030, 3, "Eutrofia") for _ in range(49)],
+    _reg(355030, 0, "Magreza"),
     # Rio: 0 em 5 → baixo
-    *["3304557;1;3"] * 5,
-    # Inválida: idade ≥ 5 (deve ser descartada na prata)
-    "3550308;6;1",
-    "3550308;7;2",
-    # Inválida: sem código IBGE
-    ";2;1",
-    "  ;0;2",
-    # Inválida: estado fora do intervalo
-    "5107925;2;0",
-    "5107925;3;7",
+    *[_reg(330455, 1, "Eutrofia") for _ in range(5)],
+    # Inválido: idade ≥ 5 (descartado na prata)
+    _reg(355030, 6, "Magreza acentuada"),
+    _reg(355030, 7, "Magreza"),
+    # Inválido: sem município
+    _reg(None, 2, "Magreza"),
+    _reg("", 0, "Magreza"),
+    # Inválido: não-criança (classificação IMC-x-idade nula)
+    _reg(510792, 30, None),
 ]
 
-_CSV = "CO_MUNICIPIO_IBGE;NU_IDADE_ANO;CO_ESTADO_NUTRI_CRIANCA\n" + "\n".join(_LINHAS)
-AMOSTRA: bytes = _CSV.encode("utf-8")
+AMOSTRA: bytes = json.dumps({"estados_nutricionais": _REGISTROS}).encode("utf-8")
 
 
 class FetcherFake:

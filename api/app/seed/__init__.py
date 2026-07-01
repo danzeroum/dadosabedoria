@@ -534,7 +534,7 @@ INDICADORES: list[dict[str, Any]] = [
         "nome": "Prevalência de baixo peso em crianças < 5 anos",
         "descricao": (
             "% de crianças menores de 5 anos com magreza ou magreza acentuada "
-            "(CO_ESTADO_NUTRI_CRIANCA in [1,2]) entre as acompanhadas pelo SISVAN/MS "
+            "(crianca_imc_x_idade) entre as acompanhadas pelo SISVAN/MS "
             "no município. Proxy de fome oculta (insegurança nutricional)."
         ),
         "dominio": "alimentacao",
@@ -551,17 +551,18 @@ INDICADORES: list[dict[str, Any]] = [
         "fonte": "sisvan",
         "codigo_externo": "SISVAN_baixo_peso_pct",
         "metodologia": (
-            "% de crianças < 5 anos com magreza acentuada (cód. 1) + magreza (cód. 2) "
-            "no estado nutricional do SISVAN, por município/ano. "
-            "Forma a confirmar na 1ª busca real (s3.sa-east-1.amazonaws.com/ckan.saude.gov.br)."
+            "% de crianças < 5 anos classificadas como 'Magreza acentuada' ou 'Magreza' "
+            "em crianca_imc_x_idade (SISVAN), por município/competência. "
+            "Fonte: API de Dados Abertos do MS (apidadosabertos.saude.gov.br)."
         ),
     },
     {
         "codigo": "saude.materno.gestante_baixo_peso_pct",
         "nome": "Gestantes com baixo peso (%)",
         "descricao": (
-            "% de gestantes com baixo peso (CO_ESTADO_NUTRI_GESTANTE = 1) entre as "
-            "acompanhadas pelo SISVAN/MS no município. Indicador de risco nutricional materno "
+            "% de gestantes classificadas como 'Baixo peso' "
+            "(codigo_estado_nutricional_imc_gestante) entre as acompanhadas pelo SISVAN/MS no "
+            "município. Indicador de risco nutricional materno "
             "(SAUDE-03 Sentinela Materna). Origem sensível: supressão k-anon n≥5."
         ),
         "dominio": "saude",
@@ -578,10 +579,10 @@ INDICADORES: list[dict[str, Any]] = [
         "fonte": "sisvan",
         "codigo_externo": "SISVAN_gestante_baixo_peso_pct",
         "metodologia": (
-            "% de gestantes com baixo peso (cód. 1) no estado nutricional do SISVAN "
-            "(CO_ESTADO_NUTRI_GESTANTE), por município/ano. Cobre apenas gestantes "
-            "acompanhadas pelo SISVAN/CadÚnico — não é censo. "
-            "Forma a confirmar na 1ª busca real (s3.sa-east-1.amazonaws.com/ckan.saude.gov.br)."
+            "% de gestantes classificadas como 'Baixo peso' em "
+            "codigo_estado_nutricional_imc_gestante (SISVAN), por município/competência. Cobre "
+            "apenas gestantes acompanhadas pelo SISVAN/CadÚnico — não é censo. "
+            "Fonte: API de Dados Abertos do MS (apidadosabertos.saude.gov.br)."
         ),
     },
     {

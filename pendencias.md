@@ -45,17 +45,26 @@ o caminho real do arquivo por competência não foi descoberto (testados ~10 pad
 **Dúvida:** qual é o endpoint atual de download do ESTBAN (Estatística Bancária Municipal) após a
 migração do site do BCB para SPA?
 
-**Opções:**
-1. Rodar `scripts/diagnostico_estban.py` no **VPS de rede aberta** para capturar a URL real (o
-   docstring do adaptador já prevê isso). **Recomendado.**
-2. Inspecionar o tráfego de rede da página
-   `bcb.gov.br/estatisticas/estatisticabancariamunicipios` (aba Network) para achar a chamada de
-   API/arquivo que a SPA dispara.
-3. Fonte-espelho: Base dos Dados publica o ESTBAN tratado
-   (`basedosdados.org/dataset/.../estban`) — alternativa se o download direto do BCB seguir opaco.
+**Pista nova (2026-07-01):** existe um serviço **Olinda** do BCB para o ESTBAN — o endpoint
+`https://olinda.bcb.gov.br/olinda/servico/ESTBAN/versao/v1/aplicacao` responde **200** (corpo vazio)
+e `.../versao/v1/odata/$metadata` responde **403** (existe, mas exige a coleção certa). Não consegui
+adivinhar o nome da coleção OData (`odata/<Colecao>?$format=json` deu 404 para os palpites testados).
+O caminho de dados provavelmente é `.../ESTBAN/versao/v1/odata/<NomeDaColecao>` — falta descobrir o
+nome exato (via `$metadata` autorizado ou a doc do serviço no portal Olinda do BCB).
 
-**Recomendação:** opção 1/2 para manter a fonte primária (BCB). Sem a URL real não há como corrigir
-o fetcher com confiança — daí ficar como pendência e não como PR.
+**Opções:**
+1. **Descobrir a coleção do serviço Olinda ESTBAN** (pista acima) — fonte estruturada moderna do BCB,
+   dispensaria baixar/descompactar ZIP. **Recomendado** se o `$metadata` puder ser lido.
+2. Rodar `scripts/diagnostico_estban.py` no **VPS de rede aberta** para capturar a URL do ZIP (o
+   docstring do adaptador já prevê isso).
+3. Inspecionar o tráfego de rede da página
+   `bcb.gov.br/estatisticas/estatisticabancariamunicipios` (aba Network) para achar a chamada real.
+4. Fonte-espelho: Base dos Dados publica o ESTBAN tratado
+   (`basedosdados.org/dataset/.../estban`) — alternativa se o BCB seguir opaco.
+
+**Recomendação:** opção 1 (Olinda) e/ou 2/3 para manter a fonte primária (BCB). Sem a URL/coleção
+real confirmada não há como corrigir o fetcher com confiança — daí ficar como pendência e não como PR
+(shipar URL adivinhada quebraria a doutrina de proveniência).
 
 ---
 

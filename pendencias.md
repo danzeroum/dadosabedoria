@@ -66,6 +66,21 @@ nome exato (via `$metadata` autorizado ou a doc do serviço no portal Olinda do 
 real confirmada não há como corrigir o fetcher com confiança — daí ficar como pendência e não como PR
 (shipar URL adivinhada quebraria a doutrina de proveniência).
 
+**Sonda 2026-07-04 (sessão nova, rede aberta — atualiza a pista de 2026-07-01):**
+- `.../ESTBAN/versao/v1/aplicacao` segue **200 (corpo vazio)**; `.../odata/$metadata` agora responde
+  **404** (antes 403) — o serviço existe mas não expõe metadados nem catálogo (`odata/` e
+  `odata?$format=json` = 404). Palpites de coleção testados e reprovados (404):
+  `EstatisticasBancariasPorMunicipio`, `EstatisticaBancariaMunicipios`, `estbans`, `ESTBANs`,
+  `Valores`, `getEstban`. `.../documentacao` responde 200 **vazio**.
+- **Opção 3 parcialmente executada por fora do browser:** baixados o HTML da SPA
+  (`/estatisticas/estatisticabancariamunicipios`), o `main-*.js` e os **51 chunks** lazy do Angular —
+  **nenhum contém a string `estban`** nem a URL de download; a página monta o link via chamada de
+  conteúdo dinâmica (a API `www.bcb.gov.br/api/...` recusa os caminhos óbvios com "Requisição
+  Inválida"). Chromium headless não atravessa o proxy do contêiner (ERR_CONNECTION_RESET), então a
+  captura de tráfego autêntica (aba Network) segue exigindo **VPS/máquina do dono**.
+- **Conclusão:** as opções 2/3 na VPS (ou a fonte-espelho Base dos Dados, opção 4) são o caminho;
+  esgotar palpites de OData daqui tem retorno decrescente.
+
 ---
 
 ## ANEEL (DEC/FEC) — ponte conjunto→município (bloqueado por dado externo)

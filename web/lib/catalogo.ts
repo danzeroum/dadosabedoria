@@ -5,8 +5,9 @@
 // para os produtos órfãos — aqui ela está corrigida (ex.: LuzNoMapa = ANEEL DEC/FEC, não Censo;
 // PressãoSUS = SICONFI Função 10, não CNES; PratoFrio = IBGE/PAM, não PNAE; EscolaViva = SICONFI
 // Função 12). Só entram produtos que possuem PÁGINA (`web/app/<slug>/[codigo]`), para nenhum link
-// cair em 404. São 28 produtos temáticos (o handoff congelou em "24"; a main cresceu desde então,
-// somando AssisViva/CulturaViva/CidadeViva/SegurançaViva, todos SICONFI por função).
+// cair em 404. São 29 produtos temáticos (o handoff congelou em "24"; a main cresceu desde então,
+// somando AssisViva/CulturaViva/CidadeViva/SegurançaViva — SICONFI por função — e o
+// Perfil Orçamentário, da fatia de analytics inferencial).
 
 export type DominioId =
   | "sintese"
@@ -365,6 +366,16 @@ export const CATALOGO: ProdutoCatalogo[] = [
     fonte: "compras · PNCP",
     dominio: "financas",
     destaque: true,
+  },
+  {
+    titulo: "Perfil Orçamentário",
+    pergunta: "Onde o orçamento do município destoa do resto do país?",
+    descricao:
+      "Cada função do orçamento (SICONFI) com o percentil nacional per capita — comparativo, não veredito.",
+    href: `/perfil-orcamentario/${EX}`,
+    cta: "Ver exemplo (São Paulo)",
+    fonte: "finanças · SICONFI/STN",
+    dominio: "financas",
   },
 
   // ----------------------------------------------------------------- Cidade, moradia & ambiente

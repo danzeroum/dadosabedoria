@@ -9,8 +9,10 @@ cada commit.
 incógnitas de forma confirmadas (campos reais; vocabulário de função = Portaria 42 da fonte;
 `exe_estado` válido = `{valor, sem_cobertura}`) e a fixture promovida a **fiel-à-forma**. O egress
 (modo **Custom**) **só vale em sessão NOVA** (resume herda a política antiga e dá falso negativo) — por
-isso o #0 vive aqui. Última sonda: **abertos** `apidatalake.tesouro.gov.br` (SICONFI ✅), IBGE
-`servicodados.ibge.gov.br` e BCB `www4.bcb.gov.br`; **403** INEP/PNCP/DATASUS. Antes da próxima fatia,
+isso o #0 vive aqui. Última sonda (**2026-07-04**): **nenhum host devolve `x-deny-reason`** —
+SICONFI/IBGE/BCB/PNCP ✅ abertos (SICONFI respondeu dado real ao vivo); INEP ⚠️ allowlist ok mas
+**TLS reset no servidor do INEP**; DATASUS/CAGED ⚠️ allowlist HTTPS ok mas **porta 21 (FTP) segue
+bloqueada** — caminho é a VPS (detalhe: `docs/analise-pareto-2026-07.md` §1). Antes da próxima fatia,
 **fure a fila** pelo #0 que ainda rende:
 1. **Sonda** (só confiável em sessão nova) — SICONFI + os ainda-bloqueados:
    ```bash

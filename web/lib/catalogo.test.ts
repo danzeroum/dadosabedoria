@@ -27,11 +27,11 @@ describe("catalogo", () => {
     }
   });
 
-  it("tem 4 telas de síntese e 28 produtos temáticos", () => {
+  it("tem 4 telas de síntese e 29 produtos temáticos", () => {
     const sintese = CATALOGO.filter((p) => p.dominio === "sintese");
     const tematicos = CATALOGO.filter((p) => p.dominio !== "sintese");
     expect(sintese.length).toBe(4);
-    expect(tematicos.length).toBe(28);
+    expect(tematicos.length).toBe(29);
   });
 
   it("não há href duplicado", () => {

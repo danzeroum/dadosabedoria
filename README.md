@@ -40,17 +40,25 @@ consentimento casa o evento (IVM público) com os assinantes e grava uma notific
 Sobre o backbone, os produtos são puxados **até a tela** — cada um é uma pergunta, com proveniência
 e supressão honesta (o protegido aparece como protegido). Tudo numa **porta de entrada** em `/`;
 telas **acessíveis** (WCAG, ADR-0009 — a cor nunca comunica sozinha), cada uma certificada por um
-**screenshot no CI**.
+**screenshot no CI**. O catálogo completo — **4 telas de síntese + 29 produtos temáticos** em 9
+domínios (trabalho, educação, saúde, saneamento/energia, alimentação, finanças, cidade, social) —
+vive em `/produtos`, com fonte única em [`web/lib/catalogo.ts`](web/lib/catalogo.ts). Destaques:
 
 - **IVM** (`/ivm`) — *"quão vulnerável é o meu município?"*: painel semafórico + drill-down.
 - **Pulso Produtivo** (`/pulso/{ibge}` ← `GET /v1/pulso-produtivo/{ibge}`) — *"como está o emprego
   formal?"*: saldo do Novo CAGED mês a mês, com nível (a batida) + tendência honestos (ADR-0027).
-- **OndeFoi** (`/onde-foi/{ibge}` ← `GET /v1/onde-foi/{ibge}`) — *"a transferência virou serviço?"*:
-  recebido × executado por função (ADR-0026; **grau-demo** até o dado vivo do Tesouro/SICONFI no #0).
+- **OndeFoi** (`/onde-foi/{ibge}` ← `GET /v1/onde-foi/{ibge}`) — *"do que foi empenhado por função,
+  quanto saiu do papel?"*: liquidado × empenhado por função (ADR-0026/0029; ancoragem referendada e
+  banda calibrada com ~5.541 municípios, ADR-0035 — `demo=true` rotulado enquanto o acervo local
+  tiver seed parcial, ver `GET /v1/cobertura/siconfi`).
 - **Panorama do município** (`/municipio/{ibge}` ← `GET /v1/territorios/{ibge}/panorama`) — *"o que
   sabemos sobre o meu município?"*: o último valor de **cada** indicador do acervo, com a fonte.
 - **Pergunte aos dados** (`/perguntar` ← `POST /v1/ia/perguntar`) — a IA ancorada responde **só** com
   o que recupera, **com citação**; sem dado, **abstém-se** (e narra em modo *template* sem chave de LLM).
+- **Perfil Orçamentário** (`/perfil-orcamentario/{ibge}`) — cada função do orçamento com o percentil
+  nacional per capita (analytics inferencial); **famílias `*-Viva`** (SICONFI por função), saúde
+  (Sentinela Respiratória/Materna, Caçador de Arboviroses), saneamento/energia (AguaViva, LuzNoMapa,
+  RioEmRisco) e mais — a lista viva está em `/produtos`.
 
 ## Invariantes inegociáveis
 
@@ -146,6 +154,8 @@ export ADMIN_DATABASE_URL=postgresql+asyncpg://postgres:PWD@localhost:5432/dados
 export DATABASE_URL=postgresql+asyncpg://role_analitica:PWD@localhost:5432/dadosabedoria
 export CONSENT_DATABASE_URL=postgresql+asyncpg://role_consentimento:PWD@localhost:5432/dadosabedoria
 export REDIS_URL=redis://localhost:6379/0
+# os testes de consentimento/alertas exigem a chave de cifragem de campo (Fernet):
+export APP_FIELD_KEY=$(python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
 pytest --cov=app           # roda migra+seed via fixture, depois integração + cobertura
 ```
 

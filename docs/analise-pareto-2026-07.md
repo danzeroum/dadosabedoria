@@ -42,20 +42,25 @@ atendido para HTTPS. A pendência ESTBAN foi re-sondada (Olinda + bundle da SPA 
 ## 2. Diagrama de Pareto — valor × esforço
 
 Pontuação: **valor** = alcance cívico × visibilidade × reuso de esteira existente (0–10);
-**esforço** = dias-dev estimados. Ordenado por razão valor/esforço; a linha acumulada mostra que
-**P1–P5 (≈23% do esforço total) entregam ≈72% do valor da carteira**.
+**esforço** = dias-dev estimados. Barras em ordem decrescente de **valor/esforço**; a linha é o
+valor acumulado. Leitura honesta da curva: **as 6 primeiras barras custam 47% do esforço e
+entregam 77% do valor; as 3 últimas custam 53% do esforço para os 23% restantes** (as 5 primeiras:
+32% do esforço → 61% do valor).
 
 ```mermaid
 xychart-beta
-    title "Pareto: valor entregue × esforço acumulado"
-    x-axis ["P1 catalogo/SEO/docs", "P2 cobertura fontes", "P3 produtos F28/F04/F27/F09", "P4 tela distribuicao nacional", "P5 seed execucao_funcao", "P6 ESTBAN (VPS)", "P7 types.ts gerado", "P8 z-score badge", "P9 split facade.py"]
+    title "Pareto: valor por melhoria × valor acumulado (0-10 = 0-100%)"
+    x-axis ["P1 catalogo/SEO/docs", "P2 cobertura fontes", "P6 ESTBAN (VPS)", "P4 tela distribuicao nacional", "P5 seed execucao_funcao", "P3 produtos F28/F04/F27/F09", "P7 types.ts gerado", "P8 z-score badge", "P9 split facade.py"]
     y-axis "valor (pontos)" 0 --> 10
-    bar [6, 6, 9, 7, 7, 8, 5, 4, 4]
-    line [1.1, 2.1, 4.9, 6.2, 7.4, 8.8, 9.3, 9.7, 10]
+    bar [6, 6, 8, 7, 7, 9, 5, 4, 4]
+    line [1.1, 2.1, 3.6, 4.8, 6.1, 7.7, 8.6, 9.3, 10]
 ```
 
-_A linha (escala 0–10 ≙ 0–100% do valor acumulado) cruza ~72% em P5; do P6 em diante cada ponto de
-valor custa proporcionalmente mais (gates externos, refactors largos)._
+_Total da carteira: 56 pontos de valor, 19 dias de esforço. Acumulados por barra — valor: 10,7% /
+21,4% / 35,7% / 48,2% / 60,7% / 76,8% / 85,7% / 92,9% / 100%; esforço: 2,6% / 7,9% / 15,8% / 23,7% /
+31,6% / 47,4% / 60,5% / 73,7% / 100%. P6 é gated (só na VPS) — na prática a Fase 1 executável pula
+para P4/P5/P3, e a curva executável fica: P1+P2+P4+P5+P3 = 35 de 48 pontos (73%) por 7,5 de 17,5
+dias (43%)._
 
 | # | Melhoria | Esforço (d) | Valor | V/E | Evidência |
 |---|---|---|---|---|---|
